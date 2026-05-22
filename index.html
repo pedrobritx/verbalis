@@ -1,41 +1,14 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verbalis</title>
-  <link href='/style.css' rel='stylesheet'>
-</head>
-<body>
-  <nav class="menu-bar">
-    <ul class="menu-bar-list">
-      <li>Project</li>
-      <li>Edit</li>
-      <li>Show</li>
-      <li>Options</li>
-    </ul>
-  </nav>
-  <main>
-    <section class="document-section">
-      <h2 class="section-title">Doc</h2>
-      <article class="document-content"></article>
-      <h2 class="status-bar">Status</h2>
-    </section>
-    <aside class="side-panel">
-      <section class="panel-section">
-        <h2 class="section-title">Glossary</h2>
-        <div class="section-content glossary-content"></div>
-      </section>
-      <section class="panel-section">
-        <h2 class="section-title">Automatic Translation</h2>
-        <div class="section-content auto-translation-content"></div>
-      </section>
-      <section class="panel-section">
-        <h2 class="section-title">Dictionary</h2>
-        <div class="section-content dictionary-content"></div>
-      </section>
-    </aside>
-  </main>
-<script defer type="text/javascript" src="/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/verbalis/icons/icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0f10" />
+    <title>VERBALIS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

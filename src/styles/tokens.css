@@ -1,0 +1,16 @@
+:root {
+  --color-bg: #0d0f10;
+  --color-surface: #161a1d;
+  --color-border: #252a2e;
+  --color-text: #e8eaed;
+  --color-muted: #8a9099;
+  --color-accent: #00c2cc;
+  --color-confirm: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --font-ui: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  --sidebar-width: 220px;
+  --sidebar-collapsed-width: 52px;
+  --topbar-height: 44px;
+}
