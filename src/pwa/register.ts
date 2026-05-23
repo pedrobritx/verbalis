@@ -1,12 +1,14 @@
 import { registerSW } from 'virtual:pwa-register'
+import { setNeedRefresh, setOfflineReady, setUpdateSW } from './usePwaStore'
 
 export function registerPWA() {
-  registerSW({
+  const updateSW = registerSW({
     onNeedRefresh() {
-      // Future: show "update available" toast
+      setNeedRefresh(true)
     },
     onOfflineReady() {
-      // Future: show "ready to work offline" toast
+      setOfflineReady(true)
     },
   })
+  setUpdateSW(updateSW)
 }

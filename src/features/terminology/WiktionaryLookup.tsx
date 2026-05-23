@@ -8,7 +8,11 @@ import {
   WiktionaryError,
   type WiktionaryResult,
 } from '@/core/glossary/wiktionary'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import type { GlossaryEditDraft } from './GlossaryEditDialog'
+
+const OFFLINE_MESSAGE =
+  "You're offline — only previously looked-up terms are available."
 
 const LANG_OPTIONS = [
   { value: 'en', label: 'English' },
@@ -29,17 +33,26 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
   const [result, setResult] = useState<WiktionaryResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const online = useNetworkStatus()
   // In-memory cache keyed by `${lang}:${term-lowercase}`.
   const cacheRef = useRef<Map<string, WiktionaryResult>>(new Map())
 
+  const trimmed = term.trim()
+  const cacheKey = `${lang}:${trimmed.toLowerCase()}`
+  const hasCacheHit = trimmed ? cacheRef.current.has(cacheKey) : false
+  const lookupDisabled = loading || !trimmed || (!online && !hasCacheHit)
+
   async function handleLookup() {
-    const trimmed = term.trim()
     if (!trimmed) return
-    const key = `${lang}:${trimmed.toLowerCase()}`
-    const cached = cacheRef.current.get(key)
+    const cached = cacheRef.current.get(cacheKey)
     if (cached) {
       setResult(cached)
       setError(null)
+      return
+    }
+    if (!online) {
+      setError(OFFLINE_MESSAGE)
+      setResult(null)
       return
     }
     setLoading(true)
@@ -47,15 +60,19 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
     setResult(null)
     try {
       const res = await fetchWiktionaryEntry(trimmed, lang)
-      cacheRef.current.set(key, res)
+      cacheRef.current.set(cacheKey, res)
       setResult(res)
     } catch (err) {
       if (err instanceof WiktionaryError) {
-        setError(
-          err.code === 'not_found'
-            ? `"${trimmed}" not found on ${lang}.wiktionary.org`
-            : err.message,
-        )
+        if (err.code === 'network' && typeof navigator !== 'undefined' && !navigator.onLine) {
+          setError(OFFLINE_MESSAGE)
+        } else {
+          setError(
+            err.code === 'not_found'
+              ? `"${trimmed}" not found on ${lang}.wiktionary.org`
+              : err.message,
+          )
+        }
       } else {
         setError(err instanceof Error ? err.message : 'Lookup failed')
       }
@@ -118,7 +135,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
         </Select>
         <Button
           onClick={handleLookup}
-          disabled={loading || !term.trim()}
+          disabled={lookupDisabled}
           data-testid="wiktionary-lookup-button"
         >
           <Search />
