@@ -43,6 +43,12 @@ export interface TMEntry {
   date: string
 }
 
+export interface TMMatch {
+  entry: TMEntry
+  score: number
+  isExact: boolean
+}
+
 export interface GlossaryEntry {
   id: string
   term: string

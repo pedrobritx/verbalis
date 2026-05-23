@@ -6,6 +6,7 @@ import { segmentRepo } from '@/storage/repositories/segmentRepo'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
+  '/tm': 'Translation Memory',
   '/settings': 'Settings',
 }
 
