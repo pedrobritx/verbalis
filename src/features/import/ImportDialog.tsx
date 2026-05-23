@@ -72,7 +72,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
       >
         <DialogHeader>
           <DialogTitle style={{ color: 'var(--color-text)' }}>Import file</DialogTitle>
-          <DialogDescription>Create a new project from a TXT or MD file.</DialogDescription>
+          <DialogDescription>Create a new project from a TXT, MD, or DOCX file.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
@@ -81,7 +81,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
             <Input
               id="import-file"
               type="file"
-              accept=".txt,.md,text/plain,text/markdown"
+              accept=".txt,.md,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
               required
             />

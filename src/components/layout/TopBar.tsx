@@ -1,8 +1,9 @@
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Command as CommandIcon } from 'lucide-react'
 import { useTheme } from '@/app/providers'
 import { useLocation, matchPath } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
@@ -58,6 +59,7 @@ function ActiveProjectId(): string | null {
 export function TopBar() {
   const { theme, toggleTheme } = useTheme()
   const projectId = ActiveProjectId()
+  const openPalette = useCommandPaletteStore((s) => s.setOpen)
 
   return (
     <header
@@ -80,14 +82,30 @@ export function TopBar() {
         {projectId && <ProjectProgress projectId={projectId} />}
       </div>
 
-      <button
-        onClick={toggleTheme}
-        className="p-1.5 rounded transition-colors"
-        style={{ color: 'var(--color-muted)' }}
-        aria-label="Toggle theme"
-      >
-        {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => openPalette(true)}
+          className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors"
+          style={{
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-muted)',
+            background: 'transparent',
+          }}
+          aria-label="Open command palette"
+          data-testid="open-command-palette"
+        >
+          <CommandIcon size={12} />
+          <kbd className="text-[10px] opacity-80">K</kbd>
+        </button>
+        <button
+          onClick={toggleTheme}
+          className="p-1.5 rounded transition-colors"
+          style={{ color: 'var(--color-muted)' }}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
     </header>
   )
 }

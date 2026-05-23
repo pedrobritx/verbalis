@@ -9,6 +9,7 @@ interface SegmentRowProps {
   segment: Segment
   isFocused: boolean
   onConfirm: () => void
+  onToggleReviewed: () => void
   onMoveFocus: (direction: -1 | 1) => void
   onFocus: () => void
   registerTextarea: (el: HTMLTextAreaElement | null) => void
@@ -20,6 +21,7 @@ export function SegmentRow({
   segment,
   isFocused,
   onConfirm,
+  onToggleReviewed,
   onMoveFocus,
   onFocus,
   registerTextarea,
@@ -51,6 +53,15 @@ export function SegmentRow({
   }, [target, segment.id, segment.status])
 
   async function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
+      e.preventDefault()
+      if (target !== lastSavedRef.current) {
+        lastSavedRef.current = target
+        await segmentRepo.update(segment.id, { target })
+      }
+      onToggleReviewed()
+      return
+    }
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
       // Flush latest text first; await so EditorPage.confirm sees current DB state.

@@ -39,7 +39,7 @@ export default function ProjectsPage() {
           style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
         >
           <FileText className="mx-auto mb-3 opacity-60" size={32} />
-          <p className="text-sm">No projects yet. Import a TXT or MD file to start.</p>
+          <p className="text-sm">No projects yet. Import a TXT, MD, or DOCX file to start.</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2" data-testid="project-list">
