@@ -1,6 +1,8 @@
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/app/providers'
-import { useLocation } from 'react-router-dom'
+import { useLocation, matchPath } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { segmentRepo } from '@/storage/repositories/segmentRepo'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
@@ -20,8 +22,41 @@ function Breadcrumb() {
   )
 }
 
+function ProjectProgress({ projectId }: { projectId: string }) {
+  const counts = useLiveQuery(() => segmentRepo.countByStatus(projectId), [projectId])
+  if (!counts) return null
+  const total =
+    counts.untranslated + counts.draft + counts.translated + counts.reviewed + counts.locked
+  const done = counts.translated + counts.reviewed + counts.locked
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+
+  return (
+    <div className="flex items-center gap-2" data-testid="topbar-progress">
+      <span className="text-xs tabular-nums" style={{ color: 'var(--color-muted)' }}>
+        {done} / {total}
+      </span>
+      <div
+        className="h-1.5 w-24 rounded-full overflow-hidden"
+        style={{ background: 'var(--color-border)' }}
+      >
+        <div
+          className="h-full"
+          style={{ width: `${pct}%`, background: 'var(--color-accent)' }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function ActiveProjectId(): string | null {
+  const { pathname } = useLocation()
+  const match = matchPath('/project/:id', pathname)
+  return match?.params.id ?? null
+}
+
 export function TopBar() {
   const { theme, toggleTheme } = useTheme()
+  const projectId = ActiveProjectId()
 
   return (
     <header
@@ -39,7 +74,10 @@ export function TopBar() {
         VERBALIS
       </span>
 
-      <Breadcrumb />
+      <div className="flex items-center gap-4">
+        <Breadcrumb />
+        {projectId && <ProjectProgress projectId={projectId} />}
+      </div>
 
       <button
         onClick={toggleTheme}
