@@ -1,15 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, PanelRight, PanelRightClose } from 'lucide-react'
+import { ChevronLeft, Eye, PanelRight, PanelRightClose } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { tmRepo } from '@/storage/repositories/tmRepo'
 import { SegmentRow } from './SegmentRow'
 import { useProjectSegments } from './useProjectSegments'
 import { SidebarPanel } from './SidebarPanel'
+import { StatusFilterBar } from './StatusFilterBar'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
+import { useEditorModeStore } from './useEditorModeStore'
+import { useEditorActionsStore } from './useEditorActionsStore'
+import type { Segment, SegmentStatus } from '@/core/types'
 
 export default function EditorPage() {
   const { id } = useParams() as { id?: string }
@@ -19,6 +24,10 @@ export default function EditorPage() {
   const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([])
   const panelOpen = useSidebarPanelStore((s) => s.open)
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
+  const reviewMode = useEditorModeStore((s) => s.reviewMode)
+  const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
+  const statusFilter = useEditorModeStore((s) => s.statusFilter)
+  const setActions = useEditorActionsStore((s) => s.setActions)
 
   const registerTextarea = useCallback((index: number, el: HTMLTextAreaElement | null) => {
     textareaRefs.current[index] = el
@@ -28,6 +37,53 @@ export default function EditorPage() {
     const el = textareaRefs.current[focusIndex]
     if (el && document.activeElement !== el) el.focus()
   }, [focusIndex])
+
+  const visibleSegments = useMemo(() => {
+    if (!segments) return [] as Array<{ seg: Segment; originalIndex: number }>
+    if (statusFilter === 'all') {
+      return segments.map((seg, i) => ({ seg, originalIndex: i }))
+    }
+    return segments
+      .map((seg, i) => ({ seg, originalIndex: i }))
+      .filter(({ seg }) => seg.status === statusFilter)
+  }, [segments, statusFilter])
+
+  const toggleReviewed = useCallback(
+    async (i: number) => {
+      const seg = segments?.[i]
+      if (!seg) return
+      const nextStatus: SegmentStatus = seg.status === 'reviewed' ? 'translated' : 'reviewed'
+      await segmentRepo.update(seg.id, { status: nextStatus })
+    },
+    [segments],
+  )
+
+  useEffect(() => {
+    if (!segments || segments.length === 0) {
+      setActions(null)
+      return
+    }
+    setActions({
+      markCurrentReviewed: () => {
+        void toggleReviewed(focusIndex)
+      },
+      jumpToNextWithStatus: (status) => {
+        const start = focusIndex
+        for (let offset = 1; offset <= segments.length; offset += 1) {
+          const idx = (start + offset) % segments.length
+          if (segments[idx].status === status) {
+            setFocusIndex(idx)
+            return
+          }
+        }
+      },
+      jumpToSegment: (oneBasedIndex) => {
+        const i = oneBasedIndex - 1
+        if (i >= 0 && i < segments.length) setFocusIndex(i)
+      },
+    })
+    return () => setActions(null)
+  }, [segments, focusIndex, toggleReviewed, setActions])
 
   if (!id) return null
 
@@ -115,6 +171,7 @@ export default function EditorPage() {
 
   return (
     <div
+      data-review-mode={reviewMode ? 'on' : 'off'}
       className={
         panelOpen
           ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4 max-w-6xl mx-auto'
@@ -147,6 +204,24 @@ export default function EditorPage() {
               {segments.length} segments
             </span>
             <button
+              onClick={toggleReviewMode}
+              aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}
+              aria-pressed={reviewMode}
+              data-testid="review-mode-toggle"
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs transition-colors',
+                reviewMode ? 'font-semibold' : 'hover:opacity-80',
+              )}
+              style={{
+                borderColor: reviewMode ? 'var(--color-accent)' : 'var(--color-border)',
+                color: reviewMode ? 'var(--color-accent)' : 'var(--color-muted)',
+                background: reviewMode ? 'rgba(0,194,204,0.08)' : 'transparent',
+              }}
+            >
+              <Eye size={12} />
+              Review
+            </button>
+            <button
               onClick={togglePanel}
               aria-label={panelOpen ? 'Hide sidebar' : 'Show sidebar'}
               data-testid="sidebar-toggle"
@@ -158,6 +233,8 @@ export default function EditorPage() {
           </div>
         </div>
 
+        <StatusFilterBar projectId={project.id} />
+
         {segments.length === 0 ? (
           <div
             className="rounded-lg border border-dashed p-10 text-center"
@@ -165,17 +242,26 @@ export default function EditorPage() {
           >
             <p className="text-sm">No segments in this project.</p>
           </div>
+        ) : visibleSegments.length === 0 ? (
+          <div
+            className="rounded-lg border border-dashed p-10 text-center"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
+            data-testid="empty-filter"
+          >
+            <p className="text-sm">No segments match this filter.</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-1.5" data-testid="segment-list">
-            {segments.map((seg, i) => (
+            {visibleSegments.map(({ seg, originalIndex }) => (
               <SegmentRow
                 key={seg.id}
                 segment={seg}
-                isFocused={i === focusIndex}
-                onConfirm={() => confirm(i)}
-                onMoveFocus={(dir) => moveFocus(i, dir)}
-                onFocus={() => setFocusIndex(i)}
-                registerTextarea={(el) => registerTextarea(i, el)}
+                isFocused={originalIndex === focusIndex}
+                onConfirm={() => confirm(originalIndex)}
+                onToggleReviewed={() => toggleReviewed(originalIndex)}
+                onMoveFocus={(dir) => moveFocus(originalIndex, dir)}
+                onFocus={() => setFocusIndex(originalIndex)}
+                registerTextarea={(el) => registerTextarea(originalIndex, el)}
               />
             ))}
           </div>

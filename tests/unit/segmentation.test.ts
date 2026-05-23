@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { segment, detectType } from '@/core/segmentation'
+import { segmentText as segment, detectType } from '@/core/segmentation'
 
 describe('detectType', () => {
   it('treats .md and .markdown as md', () => {
     expect(detectType('foo.md')).toBe('md')
     expect(detectType('Foo.MARKDOWN')).toBe('md')
+  })
+  it('treats .docx as docx', () => {
+    expect(detectType('foo.docx')).toBe('docx')
+    expect(detectType('Foo.DOCX')).toBe('docx')
   })
   it('defaults to txt', () => {
     expect(detectType('foo.txt')).toBe('txt')

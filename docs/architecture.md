@@ -59,6 +59,12 @@ Critical GH Pages constraints:
 - `HashRouter` (not BrowserRouter) — no server-side routing on GH Pages
 - PWA `start_url: "."` and `scope: "."` — relative paths required
 
+## Command Palette & Review Modes (Phase 4)
+
+A global `CommandPalette` (cmdk-based) is mounted in `src/app/App.tsx` and opened with `Ctrl+K` / `⌘K`. It exposes navigation, theme toggle, the global Import dialog, and — when on `/project/:id` — editor actions: toggle review mode, mark current segment reviewed, jump-to-status, status filter. Two small Zustand stores back it: `useCommandPaletteStore` (open state) and `useEditorActionsStore` (the editor exposes its current actions here so the palette can call into it without prop drilling). Editor-mode state (`reviewMode`, `statusFilter`) lives in `useEditorModeStore`. Reviewer keystroke: `Ctrl+Shift+Enter` on a segment toggles between `translated` and `reviewed`. `Ctrl+Shift+R` toggles review mode globally.
+
+DOCX import uses `mammoth.convertToHtml`, then a small DOM walker (`src/core/segmentation/docx.ts`) maps the HTML tree back to the same `ParsedSegment` shape used for TXT/MD. The walker stays on the main thread because mammoth depends on JSZip + DOMParser; the existing parsing worker remains TXT/MD-only.
+
 ## Phase Roadmap
 
 | Phase | Scope |
@@ -67,6 +73,6 @@ Critical GH Pages constraints:
 | 1 | TXT + MD import, segmentation, side-by-side editor ✅ |
 | 2 | Translation Memory — store, exact/fuzzy match, TMX import/export ✅ |
 | 3 | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅ |
-| 4 | DOCX import, command palette, review modes |
+| 4 | DOCX import, command palette, review modes ✅ |
 | 5 | PWA hardening, offline edge cases, update notification |
 | 6+ | AI integrations (Ollama, Claude, DeepL), semantic TM |

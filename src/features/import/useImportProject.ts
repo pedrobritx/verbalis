@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
-import { detectType, segment as segmentContent } from '@/core/segmentation'
+import { detectType, segmentText, segmentDocx } from '@/core/segmentation'
+import type { ParsedSegment } from '@/core/segmentation'
 import type { Segment } from '@/core/types'
 
 export interface ImportProjectInput {
@@ -22,13 +23,17 @@ export function useImportProject() {
       setIsImporting(true)
       setError(null)
       try {
-        const content = await file.text()
         const type = detectType(file.name)
-        // Phase 1: segmentation runs on the main thread. Files are small (TXT/MD)
-        // and the worker pipeline isn't worker-safe yet (sbd transitively pulls
-        // sanitize-html which assumes a DOM at module load when bundled). Move
-        // back into the worker in Phase 2 alongside search.
-        const parsed = segmentContent(content, type)
+        // Segmentation runs on the main thread. TXT/MD files are small; DOCX uses
+        // mammoth (also main-thread-only — see workers/parsing.worker.ts).
+        let parsed: ParsedSegment[]
+        if (type === 'docx') {
+          const buffer = await file.arrayBuffer()
+          parsed = await segmentDocx(buffer)
+        } else {
+          const content = await file.text()
+          parsed = segmentText(content, type)
+        }
 
         if (parsed.length === 0) {
           throw new Error('File produced no translatable segments.')

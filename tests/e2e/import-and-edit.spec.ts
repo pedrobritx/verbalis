@@ -37,4 +37,18 @@ test('import a markdown file, edit a segment, confirm with Ctrl+Enter', async ({
 
   // TopBar progress reflects the confirmation.
   await expect(page.getByTestId('topbar-progress')).toContainText('1 / 10')
+
+  // --- Phase 4: status filter narrows the visible list.
+  await page.getByTestId('status-filter-translated').click()
+  await expect(list.locator('[data-segment-row]')).toHaveCount(1)
+  await page.getByTestId('status-filter-all').click()
+  await expect(list.locator('[data-segment-row]')).toHaveCount(10)
+
+  // --- Phase 4: Ctrl+Shift+Enter promotes translated → reviewed and back.
+  await target1.click()
+  await target1.press('Control+Shift+Enter')
+  await expect(row1Pill).toHaveAttribute('data-status', 'reviewed')
+  await target1.click()
+  await target1.press('Control+Shift+Enter')
+  await expect(row1Pill).toHaveAttribute('data-status', 'translated')
 })
