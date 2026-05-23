@@ -50,13 +50,13 @@ export function SegmentRow({
     return () => clearTimeout(handle)
   }, [target, segment.id, segment.status])
 
-  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+  async function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
-      // flush latest text first
+      // Flush latest text first; await so EditorPage.confirm sees current DB state.
       if (target !== lastSavedRef.current) {
         lastSavedRef.current = target
-        void segmentRepo.update(segment.id, { target })
+        await segmentRepo.update(segment.id, { target })
       }
       onConfirm()
       return

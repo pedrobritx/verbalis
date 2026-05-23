@@ -15,6 +15,8 @@ export const segmentRepo = {
   byProject: (projectId: string) =>
     db.segments.where('projectId').equals(projectId).sortBy('index'),
 
+  getById: (id: string) => db.segments.get(id),
+
   bulkCreate: (segments: Segment[]) => db.segments.bulkAdd(segments),
 
   update: (id: string, changes: Partial<Segment>) =>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4">
+  <header creationtool="ManualFixture" creationtoolversion="1.0" segtype="sentence" o-tmf="verbalis" adminlang="en" srclang="en" datatype="plaintext"/>
+  <body>
+    <tu>
+      <tuv xml:lang="en"><seg>Imported one.</seg></tuv>
+      <tuv xml:lang="es"><seg>Importado uno.</seg></tuv>
+    </tu>
+    <tu>
+      <tuv xml:lang="en"><seg>Imported two.</seg></tuv>
+      <tuv xml:lang="es"><seg>Importado dos.</seg></tuv>
+    </tu>
+  </body>
+</tmx>
