@@ -74,5 +74,16 @@ DOCX import uses `mammoth.convertToHtml`, then a small DOM walker (`src/core/seg
 | 2 | Translation Memory — store, exact/fuzzy match, TMX import/export ✅ |
 | 3 | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅ |
 | 4 | DOCX import, command palette, review modes ✅ |
-| 5 | PWA hardening, offline edge cases, update notification |
+| 5 | PWA hardening, offline edge cases, update notification ✅ |
 | 6+ | AI integrations (Ollama, Claude, DeepL), semantic TM |
+
+## Phase 5 — PWA Layer
+
+Verbalis is installable and works fully offline once the service worker has cached the shell. Phase 5 turns three latent stubs into real behaviour and hardens the one network-dependent feature (Wiktionary).
+
+- **Update notification (prompt mode)**. `vite-plugin-pwa` is configured with `registerType: 'prompt'` so a new build is not auto-applied — `src/pwa/register.ts` wires `onNeedRefresh` into a Zustand store (`src/pwa/usePwaStore.ts`) and `src/pwa/UpdateBanner.tsx` renders a fixed banner with "Reload" and "Later". Reload calls the `updateSW(true)` function returned by `registerSW`, which triggers `skipWaiting` + page reload. This keeps in-flight textarea edits safe.
+- **First-run offline-ready toast**. `onOfflineReady` flips the same store; `src/pwa/OfflineReadyToast.tsx` shows a one-shot "ready to work offline" toast gated by `localStorage` (`verbalis.pwa.offlineReadyAck`). The ack key is cleared whenever `onNeedRefresh` fires so a post-update install re-confirms.
+- **Online/offline awareness**. `src/hooks/useNetworkStatus.ts` subscribes to window `online`/`offline` and seeds from `navigator.onLine`. `src/components/layout/OfflineBadge.tsx` renders a small "Offline" pill in the TopBar when offline. `WiktionaryLookup` uses it to gate the Look-up button on either being online or having an in-memory cache hit, and translates `WiktionaryError('network')` into a clear offline message.
+- **Wiktionary runtime cache**. `vite.config.ts` adds two Workbox `runtimeCaching` rules (StaleWhileRevalidate, max 100 entries / 30 days) — one for the REST `/api/rest_v1/page/definition/*` endpoint, one for the action API `/w/api.php`. Previously-looked-up terms therefore resolve from cache when the network is unavailable.
+- **Navigation fallback**. `workbox.navigateFallback: '/verbalis/index.html'` keeps offline deep-refreshes inside the SPA shell rather than hitting Workbox's default 404.
+- **Build identity**. `vite.config.ts` injects `__APP_VERSION__` (from `package.json`), `__BUILD_SHA__` (from `git rev-parse --short HEAD`, falling back to `'dev'`), and `__BUILD_TIME__` via `define`. The Settings page shows all three in an "About" section so users can report bugs against a specific build.

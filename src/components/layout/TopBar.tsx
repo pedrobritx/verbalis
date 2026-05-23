@@ -4,6 +4,7 @@ import { useLocation, matchPath } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
+import { OfflineBadge } from './OfflineBadge'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
@@ -82,7 +83,8 @@ export function TopBar() {
         {projectId && <ProjectProgress projectId={projectId} />}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        <OfflineBadge />
         <button
           onClick={() => openPalette(true)}
           className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors"
