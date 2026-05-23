@@ -64,9 +64,9 @@ Critical GH Pages constraints:
 | Phase | Scope |
 |---|---|
 | 0 | Foundation — scaffold, CI/CD, PWA, app shell ✅ |
-| 1 | TXT + MD import, segmentation, side-by-side editor |
-| 2 | Translation Memory — store, exact/fuzzy match, TMX import/export |
-| 3 | Terminology — glossary, Wiktionary adapter |
+| 1 | TXT + MD import, segmentation, side-by-side editor ✅ |
+| 2 | Translation Memory — store, exact/fuzzy match, TMX import/export ✅ |
+| 3 | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅ |
 | 4 | DOCX import, command palette, review modes |
 | 5 | PWA hardening, offline edge cases, update notification |
 | 6+ | AI integrations (Ollama, Claude, DeepL), semantic TM |

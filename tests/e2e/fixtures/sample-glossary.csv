@@ -1,0 +1,4 @@
+term,definition,sourceLang,targetLang,translation,notes
+sentence,A grammatical unit expressing a complete thought.,en,es,frase,
+paragraph,A distinct section of writing.,en,es,párrafo,used in markdown
+paragraph,A distinct section of writing.,en,fr,paragraphe,

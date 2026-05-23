@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<martif type="TBX-Basic" xml:lang="en">
+  <martifHeader>
+    <fileDesc>
+      <sourceDesc><p>Verbalis fixture</p></sourceDesc>
+    </fileDesc>
+  </martifHeader>
+  <text>
+    <body>
+      <termEntry id="te-1">
+        <descrip type="definition">A list of words.</descrip>
+        <langSet xml:lang="en"><tig><term>vocabulary</term></tig></langSet>
+        <langSet xml:lang="es"><tig><term>vocabulario</term></tig></langSet>
+      </termEntry>
+      <termEntry id="te-2">
+        <descrip type="definition">A summary item.</descrip>
+        <langSet xml:lang="en"><tig><term>item</term></tig></langSet>
+        <langSet xml:lang="es"><tig><term>elemento</term></tig></langSet>
+      </termEntry>
+    </body>
+  </text>
+</martif>
