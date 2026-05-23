@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { FolderOpen, Database, Settings, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { FolderOpen, Database, BookA, Settings, PanelLeftClose, PanelLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { to: '/', icon: FolderOpen, label: 'Projects', end: true },
   { to: '/tm', icon: Database, label: 'TM', end: false },
+  { to: '/terminology', icon: BookA, label: 'Glossary', end: false },
   { to: '/settings', icon: Settings, label: 'Settings', end: false },
 ]
 

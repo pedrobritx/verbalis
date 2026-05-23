@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
-import { X } from 'lucide-react'
 import type { TMMatch } from '@/core/types'
 import { useTMMatches } from './useTMMatches'
-import { useTMPanelStore } from './useTMPanelStore'
 
 interface TMPanelProps {
   focusedSource: string | undefined
@@ -74,11 +72,10 @@ function MatchCard({
 
 export function TMPanel({ focusedSource, sourceLang, targetLang, onApply }: TMPanelProps) {
   const matches = useTMMatches(focusedSource, sourceLang, targetLang)
-  const setOpen = useTMPanelStore((s) => s.setOpen)
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
-      if (!(e.ctrlKey || e.metaKey)) return
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey) return
       const n = parseInt(e.key, 10)
       if (!Number.isFinite(n) || n < 1 || n > matches.length) return
       const target = matches[n - 1]?.entry.target
@@ -90,41 +87,27 @@ export function TMPanel({ focusedSource, sourceLang, targetLang, onApply }: TMPa
     return () => window.removeEventListener('keydown', handler)
   }, [matches, onApply])
 
-  return (
-    <aside
-      data-testid="tm-panel"
-      className="flex flex-col gap-3 rounded-md border p-3 h-fit sticky top-0"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-          Translation Memory
-        </h2>
-        <button
-          onClick={() => setOpen(false)}
-          aria-label="Close TM panel"
-          className="p-1 rounded transition-colors hover:opacity-70"
-          style={{ color: 'var(--color-muted)' }}
-        >
-          <X size={14} />
-        </button>
-      </div>
+  if (!focusedSource?.trim()) {
+    return (
+      <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+        Focus a segment to see matches.
+      </p>
+    )
+  }
 
-      {!focusedSource?.trim() ? (
-        <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-          Focus a segment to see matches.
-        </p>
-      ) : matches.length === 0 ? (
-        <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-          No matches above 70%.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {matches.map((m, i) => (
-            <MatchCard key={m.entry.id} match={m} index={i} onApply={onApply} />
-          ))}
-        </div>
-      )}
-    </aside>
+  if (matches.length === 0) {
+    return (
+      <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+        No matches above 70%.
+      </p>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {matches.map((m, i) => (
+        <MatchCard key={m.entry.id} match={m} index={i} onApply={onApply} />
+      ))}
+    </div>
   )
 }

@@ -8,8 +8,8 @@ import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { tmRepo } from '@/storage/repositories/tmRepo'
 import { SegmentRow } from './SegmentRow'
 import { useProjectSegments } from './useProjectSegments'
-import { TMPanel } from './tm/TMPanel'
-import { useTMPanelStore } from './tm/useTMPanelStore'
+import { SidebarPanel } from './SidebarPanel'
+import { useSidebarPanelStore } from './useSidebarPanelStore'
 
 export default function EditorPage() {
   const { id } = useParams() as { id?: string }
@@ -17,8 +17,8 @@ export default function EditorPage() {
   const segments = useProjectSegments(id)
   const [focusIndex, setFocusIndex] = useState(0)
   const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([])
-  const panelOpen = useTMPanelStore((s) => s.open)
-  const togglePanel = useTMPanelStore((s) => s.toggle)
+  const panelOpen = useSidebarPanelStore((s) => s.open)
+  const togglePanel = useSidebarPanelStore((s) => s.toggle)
 
   const registerTextarea = useCallback((index: number, el: HTMLTextAreaElement | null) => {
     textareaRefs.current[index] = el
@@ -85,6 +85,32 @@ export default function EditorPage() {
     if (el) el.focus()
   }
 
+  const handleInsertGlossary = async (text: string) => {
+    const seg = segments[focusIndex]
+    const el = textareaRefs.current[focusIndex]
+    if (!seg || !el) return
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? el.value.length
+    const before = el.value.slice(0, start)
+    const after = el.value.slice(end)
+    const newValue = before + text + after
+    const trimmed = newValue.trim()
+    const nextStatus =
+      seg.status === 'untranslated' && trimmed.length > 0 ? 'draft' : seg.status
+    await segmentRepo.update(seg.id, { target: newValue, status: nextStatus })
+    requestAnimationFrame(() => {
+      const target = textareaRefs.current[focusIndex]
+      if (!target) return
+      target.focus()
+      const caret = start + text.length
+      try {
+        target.setSelectionRange(caret, caret)
+      } catch {
+        // selection range not supported on this element type — ignore.
+      }
+    })
+  }
+
   const focusedSource = segments[focusIndex]?.source
 
   return (
@@ -122,8 +148,8 @@ export default function EditorPage() {
             </span>
             <button
               onClick={togglePanel}
-              aria-label={panelOpen ? 'Hide TM panel' : 'Show TM panel'}
-              data-testid="tm-panel-toggle"
+              aria-label={panelOpen ? 'Hide sidebar' : 'Show sidebar'}
+              data-testid="sidebar-toggle"
               className="p-1.5 rounded transition-colors"
               style={{ color: 'var(--color-muted)' }}
             >
@@ -157,11 +183,13 @@ export default function EditorPage() {
       </div>
 
       {panelOpen && (
-        <TMPanel
+        <SidebarPanel
           focusedSource={focusedSource}
+          projectId={project.id}
           sourceLang={project.sourceLang}
           targetLang={project.targetLang}
-          onApply={handleApplyTM}
+          onApplyTM={handleApplyTM}
+          onInsertGlossary={handleInsertGlossary}
         />
       )}
     </div>
