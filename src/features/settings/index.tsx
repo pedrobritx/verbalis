@@ -1,6 +1,7 @@
 import { APP_VERSION, BUILD_SHA, BUILD_TIME } from '@/lib/version'
 import { MTSettingsSection } from './MTSettingsSection'
 import { SemanticTMSection } from './SemanticTMSection'
+import { LookupSettingsSection } from './LookupSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -48,6 +49,10 @@ export default function SettingsPage() {
       </Section>
 
       <MTSettingsSection />
+
+      <Section title="Quick Lookup defaults">
+        <LookupSettingsSection />
+      </Section>
 
       <SemanticTMSection />
 

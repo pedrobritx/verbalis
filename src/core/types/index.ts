@@ -100,3 +100,8 @@ export interface EmbeddingRecord {
   vector: Float32Array
   createdAt: string
 }
+
+export interface LookupSettings {
+  defaultTargetLang: string
+  lastSourceLang?: string
+}

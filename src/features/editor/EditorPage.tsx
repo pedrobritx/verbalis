@@ -10,6 +10,7 @@ import { tmRepo } from '@/storage/repositories/tmRepo'
 import { SegmentRow } from './SegmentRow'
 import { useProjectSegments } from './useProjectSegments'
 import { SidebarPanel } from './SidebarPanel'
+import { MobileSidebarSheet } from './MobileSidebarSheet'
 import { StatusFilterBar } from './StatusFilterBar'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
@@ -26,6 +27,15 @@ export default function EditorPage() {
   const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([])
   const panelOpen = useSidebarPanelStore((s) => s.open)
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
+  const handleTogglePanel = useCallback(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+    if (isMobile) {
+      setMobileSheetOpen((v) => !v)
+    } else {
+      togglePanel()
+    }
+  }, [togglePanel])
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
@@ -255,8 +265,8 @@ export default function EditorPage() {
               Review
             </button>
             <button
-              onClick={togglePanel}
-              aria-label={panelOpen ? 'Hide sidebar' : 'Show sidebar'}
+              onClick={handleTogglePanel}
+              aria-label={panelOpen ? 'Hide tools' : 'Show tools'}
               data-testid="sidebar-toggle"
               className="p-1.5 rounded transition-colors"
               style={{ color: 'var(--color-muted)' }}
@@ -302,7 +312,23 @@ export default function EditorPage() {
       </div>
 
       {panelOpen && (
-        <SidebarPanel
+        <div className="hidden md:block">
+          <SidebarPanel
+            focusedSource={focusedSource}
+            projectId={project.id}
+            sourceLang={project.sourceLang}
+            targetLang={project.targetLang}
+            onApplyTM={handleApplyTM}
+            onInsertGlossary={handleInsertGlossary}
+            onApplyMT={handleApplyTM}
+          />
+        </div>
+      )}
+
+      <div className="md:hidden">
+        <MobileSidebarSheet
+          open={mobileSheetOpen}
+          onOpenChange={setMobileSheetOpen}
           focusedSource={focusedSource}
           projectId={project.id}
           sourceLang={project.sourceLang}
@@ -311,7 +337,7 @@ export default function EditorPage() {
           onInsertGlossary={handleInsertGlossary}
           onApplyMT={handleApplyTM}
         />
-      )}
+      </div>
     </div>
   )
 }

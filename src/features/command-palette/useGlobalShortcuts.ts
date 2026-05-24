@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { useCommandPaletteStore } from './useCommandPaletteStore'
 import { useEditorModeStore } from '@/features/editor/useEditorModeStore'
+import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
 
 export function useGlobalShortcuts() {
   const toggle = useCommandPaletteStore((s) => s.toggle)
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
+  const openLookup = useQuickLookupStore((s) => s.openWith)
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -16,6 +18,12 @@ export function useGlobalShortcuts() {
         toggle()
         return
       }
+      if (e.key === 'l' || e.key === 'L') {
+        if (e.shiftKey) return
+        e.preventDefault()
+        openLookup()
+        return
+      }
       if (e.shiftKey && (e.key === 'r' || e.key === 'R')) {
         e.preventDefault()
         toggleReviewMode()
@@ -23,7 +31,7 @@ export function useGlobalShortcuts() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [toggle, toggleReviewMode])
+  }, [toggle, toggleReviewMode, openLookup])
 }
 
 export function GlobalShortcuts() {

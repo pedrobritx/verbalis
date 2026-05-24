@@ -1,15 +1,17 @@
-import { Moon, Sun, Command as CommandIcon } from 'lucide-react'
+import { Moon, Sun, Command as CommandIcon, Languages } from 'lucide-react'
 import { useTheme } from '@/app/providers'
 import { useLocation, matchPath } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
+import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
 import { OfflineBadge } from './OfflineBadge'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
   '/tm': 'Translation Memory',
   '/settings': 'Settings',
+  '/terminology': 'Glossary',
 }
 
 function Breadcrumb() {
@@ -57,18 +59,25 @@ function ActiveProjectId(): string | null {
   return match?.params.id ?? null
 }
 
-export function TopBar() {
+interface TopBarProps {
+  collapsed?: boolean
+}
+
+export function TopBar({ collapsed = false }: TopBarProps) {
   const { theme, toggleTheme } = useTheme()
   const projectId = ActiveProjectId()
   const openPalette = useCommandPaletteStore((s) => s.setOpen)
+  const openLookup = useQuickLookupStore((s) => s.openWith)
 
   return (
     <header
-      className="flex items-center justify-between px-4 shrink-0 border-b"
+      className="flex items-center justify-between px-3 md:px-4 shrink-0 border-b transition-transform duration-200"
       style={{
         height: 'var(--topbar-height)',
         borderColor: 'var(--color-border)',
         background: 'var(--color-surface)',
+        paddingTop: 'env(safe-area-inset-top)',
+        transform: collapsed ? 'translateY(-100%)' : 'translateY(0)',
       }}
     >
       <span
@@ -78,16 +87,25 @@ export function TopBar() {
         VERBALIS
       </span>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden md:flex items-center gap-4">
         <Breadcrumb />
         {projectId && <ProjectProgress projectId={projectId} />}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 md:gap-2">
         <OfflineBadge />
         <button
+          onClick={() => openLookup()}
+          className="p-1.5 rounded transition-colors"
+          style={{ color: 'var(--color-muted)' }}
+          aria-label="Quick lookup"
+          data-testid="open-quick-lookup"
+        >
+          <Languages size={16} />
+        </button>
+        <button
           onClick={() => openPalette(true)}
-          className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors"
+          className="hidden md:inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors"
           style={{
             borderColor: 'var(--color-border)',
             color: 'var(--color-muted)',
