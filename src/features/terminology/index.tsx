@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select'
 import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import type { GlossaryEntry, Project } from '@/core/types'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { GlossaryTable } from './GlossaryTable'
 import { GlossaryEditDialog, type GlossaryEditDraft } from './GlossaryEditDialog'
 import { GlossaryImportButton } from './GlossaryImportButton'
@@ -125,26 +126,24 @@ export default function TerminologyPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
-            Glossary
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-            {entries === undefined
-              ? 'Loading…'
-              : `${entries.length} total ${entries.length === 1 ? 'term' : 'terms'}`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={openNew} data-testid="glossary-new-button">
-            <Plus />
-            New term
-          </Button>
-          <GlossaryImportButton />
-          <GlossaryExportButton entries={filtered} />
-        </div>
-      </div>
+      <PageHeader
+        title="Glossary"
+        subtitle={
+          entries === undefined
+            ? 'Loading…'
+            : `${entries.length} total ${entries.length === 1 ? 'term' : 'terms'}`
+        }
+        actions={
+          <>
+            <Button onClick={openNew} data-testid="glossary-new-button">
+              <Plus />
+              New term
+            </Button>
+            <GlossaryImportButton />
+            <GlossaryExportButton entries={filtered} />
+          </>
+        }
+      />
 
       <WiktionaryLookup onAddToGlossary={handleAddFromWiktionary} />
 

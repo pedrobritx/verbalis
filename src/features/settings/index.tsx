@@ -1,11 +1,12 @@
 import { APP_VERSION, BUILD_SHA, BUILD_TIME } from '@/lib/version'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { MTSettingsSection } from './MTSettingsSection'
 import { SemanticTMSection } from './SemanticTMSection'
 import { LookupSettingsSection } from './LookupSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="flex items-center justify-between py-1 text-sm">
+    <div className="flex items-center justify-between py-2 text-callout">
       <span style={{ color: 'var(--color-muted)' }}>{label}</span>
       <span
         className="font-mono tabular-nums"
@@ -21,13 +22,16 @@ function Row({ label, value, testId }: { label: string; value: string; testId?: 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section
-      className="rounded-md border p-4"
+      className="rounded-lg border p-5"
       style={{
         borderColor: 'var(--color-border)',
         background: 'var(--color-surface)',
       }}
     >
-      <h2 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+      <h2
+        className="text-footnote font-semibold uppercase tracking-wider mb-3"
+        style={{ color: 'var(--color-muted)' }}
+      >
         {title}
       </h2>
       {children}
@@ -37,10 +41,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsPage() {
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
-        Settings
-      </h1>
+    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+      <PageHeader title="Settings" />
 
       <Section title="About">
         <Row label="Version" value={APP_VERSION} testId="settings-version" />
@@ -57,7 +59,7 @@ export default function SettingsPage() {
       <SemanticTMSection />
 
       <Section title="Offline">
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-callout" style={{ color: 'var(--color-muted)' }}>
           Translation Memory and Glossary work fully offline. Wiktionary lookups are
           cached after first fetch. Ollama runs locally on your machine; Claude and
           LibreTranslate require network access.

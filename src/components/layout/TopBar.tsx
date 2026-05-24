@@ -9,6 +9,7 @@ import { OfflineBadge } from './OfflineBadge'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Projects',
+  '/translate': 'Translate',
   '/tm': 'Translation Memory',
   '/settings': 'Settings',
   '/terminology': 'Glossary',

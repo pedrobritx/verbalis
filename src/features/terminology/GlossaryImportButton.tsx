@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Upload } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { parseCSV, mergeRows } from '@/core/glossary/csv'
 import { parseTBX } from '@/core/glossary/tbx'
@@ -61,11 +61,11 @@ export function GlossaryImportButton() {
   return (
     <div className="flex flex-col items-end gap-1">
       <Button
-        variant="outline"
+        variant="bordered"
         onClick={() => inputRef.current?.click()}
         data-testid="glossary-import-button"
       >
-        <Upload />
+        <Download />
         Import
       </Button>
       <input
@@ -92,7 +92,7 @@ export function GlossaryImportButton() {
       {error && (
         <span
           className="text-xs"
-          style={{ color: '#ef4444' }}
+          style={{ color: 'var(--color-error)' }}
           data-testid="glossary-import-error"
         >
           {error}

@@ -20,10 +20,13 @@ type TestState =
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section
-      className="rounded-md border p-4"
+      className="rounded-lg border p-5"
       style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
     >
-      <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+      <h2
+        className="text-footnote font-semibold uppercase tracking-wider mb-3"
+        style={{ color: 'var(--color-muted)' }}
+      >
         {title}
       </h2>
       {children}
@@ -44,7 +47,7 @@ function FieldRow({
     <div className="flex flex-col gap-1 py-1.5">
       <label
         htmlFor={htmlFor}
-        className="text-xs"
+        className="text-footnote"
         style={{ color: 'var(--color-muted)' }}
       >
         {label}
@@ -82,17 +85,17 @@ function SecretInput({
       <button
         type="button"
         onClick={() => setShown((s) => !s)}
-        className="text-xs p-1.5 rounded transition-colors hover:opacity-70"
+        className="inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-[var(--color-fill)]"
         style={{ color: 'var(--color-muted)' }}
         aria-label={shown ? 'Hide key' : 'Show key'}
       >
-        {shown ? <EyeOff size={14} /> : <Eye size={14} />}
+        {shown ? <EyeOff size={16} /> : <Eye size={16} />}
       </button>
       {value && (
         <button
           type="button"
           onClick={() => onChange('')}
-          className="text-xs"
+          className="text-footnote hover:opacity-80"
           style={{ color: 'var(--color-muted)' }}
         >
           Clear
@@ -139,12 +142,12 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
 
   return (
     <div
-      className="rounded-md border p-3 flex flex-col gap-2"
-      style={{ borderColor: 'var(--color-border)' }}
+      className="rounded-md border p-4 flex flex-col gap-3"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
       data-testid={`mt-card-${id}`}
     >
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text)' }}>
+        <label className="flex items-center gap-2 text-callout" style={{ color: 'var(--color-text)' }}>
           <input
             type="checkbox"
             checked={enabled}
@@ -163,7 +166,7 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
           <span className="font-semibold">{provider.label}</span>
         </label>
         <label
-          className="text-xs flex items-center gap-1.5"
+          className="text-footnote flex items-center gap-1.5"
           style={{ color: 'var(--color-muted)' }}
         >
           <input
@@ -200,7 +203,7 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
               data-testid="mt-ollama-model"
             />
           </FieldRow>
-          <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+          <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
             Ollama must be running locally and configured to accept this origin
             (<code>OLLAMA_ORIGINS=*</code>).
           </p>
@@ -229,11 +232,11 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             />
           </FieldRow>
           <p
-            className="text-xs rounded border p-2"
+            className="text-footnote rounded-md border p-3"
             style={{
               color: 'var(--color-muted)',
-              borderColor: 'var(--color-border)',
-              background: 'rgba(234, 179, 8, 0.08)',
+              borderColor: 'var(--color-warning)',
+              background: 'color-mix(in srgb, var(--color-warning) 8%, transparent)',
             }}
           >
             Your API key is stored unencrypted in this browser's IndexedDB. Anyone with
@@ -274,19 +277,19 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
           type="button"
           onClick={() => void runTest()}
           disabled={!enabled || test.status === 'pending'}
-          className="text-xs px-2 py-1 rounded transition-colors disabled:opacity-50"
+          className="text-footnote px-3 h-9 rounded-md transition-colors disabled:opacity-50 hover:bg-[var(--color-fill)]"
           style={{ border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
           data-testid={`mt-${id}-test`}
         >
           {test.status === 'pending' ? 'Testing…' : 'Test connection'}
         </button>
         {test.status === 'ok' && (
-          <span className="text-xs" style={{ color: '#22c55e' }}>
+          <span className="text-footnote" style={{ color: 'var(--color-confirm)' }}>
             ✓ ok
           </span>
         )}
         {test.status === 'error' && (
-          <span className="text-xs" style={{ color: '#ef4444' }} title={test.message}>
+          <span className="text-footnote" style={{ color: 'var(--color-error)' }} title={test.message}>
             ✗ {test.message.slice(0, 40)}
           </span>
         )}
@@ -342,7 +345,7 @@ export function MTSettingsSection() {
             void settingsRepo.set(MT_SETTINGS_KEY, DEFAULT_MT_SETTINGS)
             setDraft(DEFAULT_MT_SETTINGS)
           }}
-          className="self-end text-xs"
+          className="self-end text-footnote hover:opacity-80"
           style={{ color: 'var(--color-muted)' }}
           data-testid="mt-reset"
         >

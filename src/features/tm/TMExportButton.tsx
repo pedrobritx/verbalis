@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { exportTMX } from '@/core/tm/tmx'
 import type { TMEntry } from '@/core/types'
@@ -34,12 +34,12 @@ export function TMExportButton({ entries }: TMExportButtonProps) {
 
   return (
     <Button
-      variant="outline"
+      variant="bordered"
       onClick={handleExport}
       disabled={entries.length === 0}
       data-testid="tm-export-button"
     >
-      <Download />
+      <Upload />
       Export TMX
     </Button>
   )

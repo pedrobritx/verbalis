@@ -162,7 +162,7 @@ export function GlossaryEditDialog({
             ))}
             <Button
               type="button"
-              variant="outline"
+              variant="bordered"
               size="sm"
               onClick={addTranslationRow}
               data-testid="glossary-add-translation"
@@ -206,7 +206,7 @@ export function GlossaryEditDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="bordered" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={handleSave} data-testid="glossary-save">
