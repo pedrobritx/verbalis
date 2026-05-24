@@ -1,11 +1,20 @@
 import { wrap, type Remote } from 'comlink'
 import type { ParsingWorker } from './parsing.worker'
+import type { EmbeddingsWorker } from './embeddings.worker'
 
-let cached: Remote<ParsingWorker> | null = null
+let cachedParsing: Remote<ParsingWorker> | null = null
+let cachedEmbeddings: Remote<EmbeddingsWorker> | null = null
 
 export function getParsingWorker(): Remote<ParsingWorker> {
-  if (cached) return cached
+  if (cachedParsing) return cachedParsing
   const worker = new Worker(new URL('./parsing.worker.ts', import.meta.url), { type: 'module' })
-  cached = wrap<ParsingWorker>(worker)
-  return cached
+  cachedParsing = wrap<ParsingWorker>(worker)
+  return cachedParsing
+}
+
+export function getEmbeddingsWorker(): Remote<EmbeddingsWorker> {
+  if (cachedEmbeddings) return cachedEmbeddings
+  const worker = new Worker(new URL('./embeddings.worker.ts', import.meta.url), { type: 'module' })
+  cachedEmbeddings = wrap<EmbeddingsWorker>(worker)
+  return cachedEmbeddings
 }

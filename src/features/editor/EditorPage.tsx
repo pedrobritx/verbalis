@@ -14,7 +14,9 @@ import { StatusFilterBar } from './StatusFilterBar'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
-import type { Segment, SegmentStatus } from '@/core/types'
+import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
+import { getMTSettings } from '@/storage/repositories/settingsRepo'
+import type { Segment, SegmentStatus, MTProviderId } from '@/core/types'
 
 export default function EditorPage() {
   const { id } = useParams() as { id?: string }
@@ -58,6 +60,36 @@ export default function EditorPage() {
     [segments],
   )
 
+  const translateCurrentWithMT = useCallback(
+    async (providerOverride?: MTProviderId): Promise<void> => {
+      const seg = segments?.[focusIndex]
+      if (!seg || !project) return
+      const settings = await getMTSettings()
+      const providerId = providerOverride ?? resolveDefaultProvider(settings)
+      if (!providerId) return
+      try {
+        const res = await translateWith(
+          providerId,
+          {
+            text: seg.source,
+            sourceLang: project.sourceLang,
+            targetLang: project.targetLang,
+          },
+          settings,
+        )
+        const nextStatus = seg.status === 'untranslated' ? 'draft' : seg.status
+        await segmentRepo.update(seg.id, { target: res.text, status: nextStatus })
+      } catch (err) {
+        if (err instanceof MTError) {
+          console.warn(`MT (${err.providerId}/${err.code}):`, err.message)
+        } else {
+          console.warn('MT failed', err)
+        }
+      }
+    },
+    [segments, focusIndex, project],
+  )
+
   useEffect(() => {
     if (!segments || segments.length === 0) {
       setActions(null)
@@ -81,9 +113,10 @@ export default function EditorPage() {
         const i = oneBasedIndex - 1
         if (i >= 0 && i < segments.length) setFocusIndex(i)
       },
+      translateCurrentWithMT: (providerId) => translateCurrentWithMT(providerId),
     })
     return () => setActions(null)
-  }, [segments, focusIndex, toggleReviewed, setActions])
+  }, [segments, focusIndex, toggleReviewed, translateCurrentWithMT, setActions])
 
   if (!id) return null
 
@@ -276,6 +309,7 @@ export default function EditorPage() {
           targetLang={project.targetLang}
           onApplyTM={handleApplyTM}
           onInsertGlossary={handleInsertGlossary}
+          onApplyMT={handleApplyTM}
         />
       )}
     </div>
