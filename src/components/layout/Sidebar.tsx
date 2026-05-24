@@ -1,21 +1,15 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { FolderOpen, Database, BookA, Settings, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { PanelLeftClose, PanelLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const NAV_ITEMS = [
-  { to: '/', icon: FolderOpen, label: 'Projects', end: true },
-  { to: '/tm', icon: Database, label: 'TM', end: false },
-  { to: '/terminology', icon: BookA, label: 'Glossary', end: false },
-  { to: '/settings', icon: Settings, label: 'Settings', end: false },
-]
+import { NAV_ITEMS } from './navItems'
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
     <aside
-      className="flex flex-col shrink-0 border-r transition-all duration-200"
+      className="hidden md:flex flex-col shrink-0 border-r transition-all duration-200"
       style={{
         width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
         background: 'var(--color-surface)',

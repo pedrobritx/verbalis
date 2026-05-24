@@ -91,7 +91,7 @@ export function SegmentRow({
       data-segment-row
       data-segment-id={segment.id}
       data-segment-index={segment.index}
-      className="grid grid-cols-[2.5rem_1fr_1fr_auto] gap-3 rounded-md border px-3 py-2"
+      className="grid grid-cols-[2rem_1fr] md:grid-cols-[2.5rem_1fr_1fr_auto] gap-2 md:gap-3 rounded-md border px-3 py-2"
       style={{
         borderColor: isFocused ? 'var(--color-accent)' : 'var(--color-border)',
         background: 'var(--color-surface)',
@@ -104,35 +104,37 @@ export function SegmentRow({
         {segment.index + 1}
       </span>
 
-      <div
-        className={
-          isCode
-            ? 'whitespace-pre-wrap break-words pt-2 text-sm'
-            : isHeading
-            ? 'pt-2 text-sm font-semibold'
-            : 'pt-2 text-sm whitespace-pre-wrap'
-        }
-        style={{
-          color: 'var(--color-text)',
-          fontFamily: isCode ? 'var(--font-mono)' : undefined,
-        }}
-      >
-        {segment.source}
-      </div>
+      <div className="flex flex-col gap-2 min-w-0 md:contents">
+        <div
+          className={
+            isCode
+              ? 'whitespace-pre-wrap break-words md:pt-2 text-sm'
+              : isHeading
+              ? 'md:pt-2 text-sm font-semibold'
+              : 'md:pt-2 text-sm whitespace-pre-wrap'
+          }
+          style={{
+            color: 'var(--color-text)',
+            fontFamily: isCode ? 'var(--font-mono)' : undefined,
+          }}
+        >
+          {segment.source}
+        </div>
 
-      <Textarea
-        ref={registerTextarea}
-        value={target}
-        onChange={(e) => setTarget(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onFocus={onFocus}
-        placeholder="Translation…"
-        rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
-        data-testid={`target-${segment.index}`}
-      />
+        <Textarea
+          ref={registerTextarea}
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={onFocus}
+          placeholder="Translation…"
+          rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
+          data-testid={`target-${segment.index}`}
+        />
 
-      <div className="flex items-start pt-2">
-        <StatusPill status={segment.status} />
+        <div className="flex items-start md:pt-2">
+          <StatusPill status={segment.status} />
+        </div>
       </div>
     </div>
   )

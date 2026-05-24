@@ -9,19 +9,11 @@ import {
   type WiktionaryResult,
 } from '@/core/glossary/wiktionary'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { LANG_OPTIONS } from '@/core/lang/options'
 import type { GlossaryEditDraft } from './GlossaryEditDialog'
 
 const OFFLINE_MESSAGE =
   "You're offline — only previously looked-up terms are available."
-
-const LANG_OPTIONS = [
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Español' },
-  { value: 'fr', label: 'Français' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'it', label: 'Italiano' },
-  { value: 'pt', label: 'Português' },
-]
 
 interface WiktionaryLookupProps {
   onAddToGlossary: (draft: GlossaryEditDraft) => void

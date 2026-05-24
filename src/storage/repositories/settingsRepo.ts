@@ -1,8 +1,13 @@
 import { db } from '@/storage/db'
-import type { MTSettings, SemanticTMSettings } from '@/core/types'
+import type { LookupSettings, MTSettings, SemanticTMSettings } from '@/core/types'
 
 export const MT_SETTINGS_KEY = 'mt.providers'
 export const SEMANTIC_TM_KEY = 'tm.semantic'
+export const LOOKUP_SETTINGS_KEY = 'lookup.defaults'
+
+export const DEFAULT_LOOKUP_SETTINGS: LookupSettings = {
+  defaultTargetLang: 'en',
+}
 
 export const DEFAULT_MT_SETTINGS: MTSettings = {
   default: undefined,
@@ -64,4 +69,16 @@ export function mergeSemanticTMSettings(
 export async function getSemanticTMSettings(): Promise<SemanticTMSettings> {
   const stored = await settingsRepo.get<Partial<SemanticTMSettings>>(SEMANTIC_TM_KEY)
   return mergeSemanticTMSettings(stored)
+}
+
+export function mergeLookupSettings(
+  stored: Partial<LookupSettings> | undefined,
+): LookupSettings {
+  if (!stored) return { ...DEFAULT_LOOKUP_SETTINGS }
+  return { ...DEFAULT_LOOKUP_SETTINGS, ...stored }
+}
+
+export async function getLookupSettings(): Promise<LookupSettings> {
+  const stored = await settingsRepo.get<Partial<LookupSettings>>(LOOKUP_SETTINGS_KEY)
+  return mergeLookupSettings(stored)
 }
