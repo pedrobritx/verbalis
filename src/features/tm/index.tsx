@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/select'
 import { tmRepo } from '@/storage/repositories/tmRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import type { TMEntry, Project } from '@/core/types'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { TMImportButton } from './TMImportButton'
 import { TMExportButton } from './TMExportButton'
 import { TMTable } from './TMTable'
@@ -90,22 +91,20 @@ export default function TMPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
-            Translation Memory
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-            {entries === undefined
-              ? 'Loading…'
-              : `${entries.length} total ${entries.length === 1 ? 'entry' : 'entries'}`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <TMImportButton />
-          <TMExportButton entries={filtered} />
-        </div>
-      </div>
+      <PageHeader
+        title="Translation Memory"
+        subtitle={
+          entries === undefined
+            ? 'Loading…'
+            : `${entries.length} total ${entries.length === 1 ? 'entry' : 'entries'}`
+        }
+        actions={
+          <>
+            <TMImportButton />
+            <TMExportButton entries={filtered} />
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2">
         <Input

@@ -28,12 +28,12 @@ export function LookupSettingsSection() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+    <div className="flex flex-col gap-3">
+      <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
         Default target language for the global Quick Lookup dialog. Source
         language is auto-detected per lookup.
       </p>
-      <label className="flex flex-col gap-1 text-xs" style={{ color: 'var(--color-muted)' }}>
+      <label className="flex flex-col gap-1 text-footnote" style={{ color: 'var(--color-muted)' }}>
         Default target language
         <Select
           value={draft.defaultTargetLang}

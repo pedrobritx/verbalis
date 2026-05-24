@@ -89,7 +89,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
 
   return (
     <section
-      className="flex flex-col gap-3 rounded-md border p-4"
+      className="flex flex-col gap-3 rounded-lg border p-5"
       style={{
         borderColor: 'var(--color-border)',
         background: 'var(--color-surface)',
@@ -97,10 +97,10 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
       data-testid="wiktionary-section"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        <h2 className="text-headline font-semibold" style={{ color: 'var(--color-text)' }}>
           Wiktionary lookup
         </h2>
-        <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+        <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
           en.wiktionary.org REST API
         </span>
       </div>
@@ -136,7 +136,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
       </div>
 
       {error && (
-        <p className="text-xs" style={{ color: '#ef4444' }} data-testid="wiktionary-error">
+        <p className="text-footnote" style={{ color: 'var(--color-error)' }} data-testid="wiktionary-error">
           {error}
         </p>
       )}
@@ -154,7 +154,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
               </span>
             </span>
             <Button
-              variant="outline"
+              variant="bordered"
               size="sm"
               onClick={handleAdd}
               data-testid="wiktionary-add-button"

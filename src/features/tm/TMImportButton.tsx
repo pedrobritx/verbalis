@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Upload } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { parseTMX } from '@/core/tm/tmx'
 import { tmRepo } from '@/storage/repositories/tmRepo'
@@ -39,11 +39,11 @@ export function TMImportButton() {
   return (
     <div className="flex flex-col items-end gap-1">
       <Button
-        variant="outline"
+        variant="bordered"
         onClick={() => inputRef.current?.click()}
         data-testid="tm-import-button"
       >
-        <Upload />
+        <Download />
         Import TMX
       </Button>
       <input
@@ -59,12 +59,12 @@ export function TMImportButton() {
         }}
       />
       {status && (
-        <span className="text-xs" style={{ color: 'var(--color-accent)' }} data-testid="tm-import-status">
+        <span className="text-footnote" style={{ color: 'var(--color-accent)' }} data-testid="tm-import-status">
           {status}
         </span>
       )}
       {error && (
-        <span className="text-xs" style={{ color: '#ef4444' }} data-testid="tm-import-error">
+        <span className="text-footnote" style={{ color: 'var(--color-error)' }} data-testid="tm-import-error">
           {error}
         </span>
       )}

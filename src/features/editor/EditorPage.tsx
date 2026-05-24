@@ -222,57 +222,61 @@ export default function EditorPage() {
       }
     >
       <div className="flex flex-col gap-4 min-w-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              to="/"
-              className="inline-flex items-center text-sm"
-              style={{ color: 'var(--color-muted)' }}
-            >
-              <ChevronLeft size={16} />
-              Projects
-            </Link>
-            <h1
-              className="text-xl font-semibold truncate"
-              style={{ color: 'var(--color-text)' }}
-            >
-              {project.name}
-            </h1>
-            <Badge variant="outline" style={{ color: 'var(--color-muted)' }}>
-              {project.sourceLang} → {project.targetLang}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-              {segments.length} segments
-            </span>
-            <button
-              onClick={toggleReviewMode}
-              aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}
-              aria-pressed={reviewMode}
-              data-testid="review-mode-toggle"
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs transition-colors',
-                reviewMode ? 'font-semibold' : 'hover:opacity-80',
-              )}
-              style={{
-                borderColor: reviewMode ? 'var(--color-accent)' : 'var(--color-border)',
-                color: reviewMode ? 'var(--color-accent)' : 'var(--color-muted)',
-                background: reviewMode ? 'rgba(0,194,204,0.08)' : 'transparent',
-              }}
-            >
-              <Eye size={12} />
-              Review
-            </button>
-            <button
-              onClick={handleTogglePanel}
-              aria-label={panelOpen ? 'Hide tools' : 'Show tools'}
-              data-testid="sidebar-toggle"
-              className="p-1.5 rounded transition-colors"
-              style={{ color: 'var(--color-muted)' }}
-            >
-              {panelOpen ? <PanelRightClose size={16} /> : <PanelRight size={16} />}
-            </button>
+        <div className="flex flex-col gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-footnote self-start"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            <ChevronLeft size={16} />
+            Projects
+          </Link>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-1 min-w-0">
+              <h1
+                className="text-title-2 font-semibold truncate"
+                style={{ color: 'var(--color-text)' }}
+              >
+                {project.name}
+              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" style={{ color: 'var(--color-muted)' }}>
+                  {project.sourceLang} → {project.targetLang}
+                </Badge>
+                <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
+                  {segments.length} segments
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={toggleReviewMode}
+                aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}
+                aria-pressed={reviewMode}
+                data-testid="review-mode-toggle"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full border h-9 px-3 text-footnote transition-colors',
+                  reviewMode ? 'font-semibold' : 'hover:opacity-80',
+                )}
+                style={{
+                  borderColor: reviewMode ? 'var(--color-accent)' : 'var(--color-border)',
+                  color: reviewMode ? 'var(--color-accent)' : 'var(--color-muted)',
+                  background: reviewMode ? 'var(--color-accent-fill)' : 'transparent',
+                }}
+              >
+                <Eye size={14} />
+                Review
+              </button>
+              <button
+                onClick={handleTogglePanel}
+                aria-label={panelOpen ? 'Hide tools' : 'Show tools'}
+                data-testid="sidebar-toggle"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-[var(--color-fill)]"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                {panelOpen ? <PanelRightClose size={18} /> : <PanelRight size={18} />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -283,7 +287,7 @@ export default function EditorPage() {
             className="rounded-lg border border-dashed p-10 text-center"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
           >
-            <p className="text-sm">No segments in this project.</p>
+            <p className="text-callout">No segments in this project.</p>
           </div>
         ) : visibleSegments.length === 0 ? (
           <div
@@ -291,7 +295,7 @@ export default function EditorPage() {
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
             data-testid="empty-filter"
           >
-            <p className="text-sm">No segments match this filter.</p>
+            <p className="text-callout">No segments match this filter.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5" data-testid="segment-list">

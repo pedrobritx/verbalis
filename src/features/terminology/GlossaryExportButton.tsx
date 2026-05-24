@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { exportCSV } from '@/core/glossary/csv'
 import { exportTBX } from '@/core/glossary/tbx'
@@ -43,12 +43,12 @@ export function GlossaryExportButton({ entries, sourceLang }: GlossaryExportButt
   return (
     <div className="relative">
       <Button
-        variant="outline"
+        variant="bordered"
         onClick={() => setOpen((o) => !o)}
         disabled={disabled}
         data-testid="glossary-export-button"
       >
-        <Download />
+        <Upload />
         Export
       </Button>
       {open && !disabled && (

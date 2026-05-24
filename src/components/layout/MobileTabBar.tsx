@@ -5,9 +5,9 @@ import { NAV_ITEMS } from './navItems'
 export function MobileTabBar() {
   return (
     <nav
-      className="md:hidden fixed inset-x-0 bottom-0 z-30 flex border-t"
+      className="md:hidden fixed inset-x-0 bottom-0 z-30 flex border-t backdrop-blur-xl"
       style={{
-        background: 'var(--color-surface)',
+        background: 'color-mix(in srgb, var(--color-surface) 82%, transparent)',
         borderColor: 'var(--color-border)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
@@ -20,16 +20,15 @@ export function MobileTabBar() {
           end={end}
           className={({ isActive }) =>
             cn(
-              'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors',
-              isActive ? 'font-semibold' : 'hover:opacity-80',
+              'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-hit pt-1.5 pb-1 text-[10px] transition-colors',
+              isActive ? 'font-semibold' : 'font-normal',
             )
           }
           style={({ isActive }) => ({
             color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
-            background: isActive ? 'rgba(0,194,204,0.06)' : 'transparent',
           })}
         >
-          <Icon size={18} />
+          <Icon size={24} strokeWidth={2} />
           <span>{label}</span>
         </NavLink>
       ))}

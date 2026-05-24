@@ -136,7 +136,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           <DialogFooter>
             <Button
               type="button"
-              variant="ghost"
+              variant="plain"
               onClick={() => onOpenChange(false)}
               disabled={isImporting}
             >
