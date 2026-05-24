@@ -79,11 +79,16 @@ export async function fetchWiktionaryEntry(
     throw new WiktionaryError('network', err instanceof Error ? err.message : 'fetch failed')
   }
 
-  if (defResp.status === 404) {
-    throw new WiktionaryError('not_found', `Term "${trimmed}" not found on Wiktionary`)
-  }
   if (!defResp.ok) {
-    throw new WiktionaryError('network', `Wiktionary returned ${defResp.status}`)
+    // The REST definition endpoint returns 404 for missing pages and 501 for
+    // titles it can't route (multi-word phrases, special characters, redirects
+    // to non-dictionary pages). Either way, there's no entry to show — treat
+    // it as "not found" so the UI can degrade gracefully instead of leaking
+    // an HTTP status code.
+    throw new WiktionaryError(
+      'not_found',
+      `Term "${trimmed}" not found on Wiktionary`,
+    )
   }
 
   let defJson: DefinitionResponse

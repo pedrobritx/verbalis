@@ -86,6 +86,17 @@ describe('fetchWiktionaryEntry', () => {
     ).rejects.toMatchObject({ code: 'not_found' })
   })
 
+  it('maps 501 (and other non-2xx) to not_found instead of leaking status', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce({ ok: false, status: 501 })
+    await expect(
+      fetchWiktionaryEntry(
+        'apple human interface guidelines',
+        'en',
+        fetchImpl as unknown as typeof fetch,
+      ),
+    ).rejects.toMatchObject({ code: 'not_found' })
+  })
+
   it('throws network on fetch rejection', async () => {
     const fetchImpl = vi.fn().mockRejectedValueOnce(new Error('offline'))
     await expect(

@@ -3,6 +3,7 @@ import type {
   OllamaSettings,
   ClaudeSettings,
   LibreTranslateSettings,
+  MyMemorySettings,
 } from '@/core/types'
 
 export interface TranslateInput {
@@ -39,7 +40,11 @@ export class MTError extends Error {
   }
 }
 
-export type ProviderSettings = OllamaSettings | ClaudeSettings | LibreTranslateSettings
+export type ProviderSettings =
+  | OllamaSettings
+  | ClaudeSettings
+  | LibreTranslateSettings
+  | MyMemorySettings
 
 export interface MTProvider<S extends ProviderSettings = ProviderSettings> {
   id: MTProviderId

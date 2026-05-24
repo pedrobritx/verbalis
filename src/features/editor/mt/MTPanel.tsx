@@ -68,7 +68,7 @@ export function MTPanel({ focusedSource, sourceLang, targetLang, onApply }: MTPa
           style={{ color: 'var(--color-accent)' }}
           data-testid="mt-go-settings"
         >
-          Open settings to enable Ollama, Claude, or LibreTranslate
+          Open settings to enable MyMemory, Ollama, Claude, or LibreTranslate
         </Link>
       </div>
     )

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ClipboardPaste, Copy, Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
@@ -22,7 +23,9 @@ import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import type { GlossaryEntry, LookupSettings, MTSettings } from '@/core/types'
 
-const SHORT_INPUT_MAX_WORDS = 4
+// Wiktionary only has entries for single words and a handful of fixed
+// expressions, so don't try to look up longer phrases — they always fail.
+const SHORT_INPUT_MAX_WORDS = 2
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -130,7 +133,9 @@ export function TranslateWorkspace({
 
     const mtPromise = (async () => {
       if (!provider) {
-        setMtError('No MT provider enabled. Configure one in Settings.')
+        setMtError(
+          'No MT provider enabled. Open Settings to re-enable MyMemory or add another provider.',
+        )
         return
       }
       setMtLoading(true)
@@ -443,6 +448,18 @@ export function TranslateWorkspace({
       {mtError && (
         <p className="text-footnote" style={{ color: 'var(--color-error)' }}>
           {mtError}
+          {!provider && (
+            <>
+              {' '}
+              <Link
+                to="/settings"
+                className="underline"
+                style={{ color: 'var(--color-error)' }}
+              >
+                Open Settings
+              </Link>
+            </>
+          )}
         </p>
       )}
 

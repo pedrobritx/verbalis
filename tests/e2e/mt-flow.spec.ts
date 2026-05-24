@@ -35,6 +35,11 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
     })
   })
 
+  // MyMemory is enabled by default — turn it off first so we can observe the
+  // empty state and then exercise the LibreTranslate-only path.
+  await page.goto('/#/settings')
+  await page.getByTestId('mt-mymemory-enabled').uncheck()
+
   await importSample(page, 'mt-project')
 
   // Switch to the MT tab — should show empty state.

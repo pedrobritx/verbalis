@@ -59,7 +59,7 @@ export interface GlossaryEntry {
   projectId?: string
 }
 
-export type MTProviderId = 'ollama' | 'claude' | 'libretranslate'
+export type MTProviderId = 'mymemory' | 'ollama' | 'claude' | 'libretranslate'
 
 export interface OllamaSettings {
   enabled: boolean
@@ -79,8 +79,15 @@ export interface LibreTranslateSettings {
   apiKey?: string
 }
 
+export interface MyMemorySettings {
+  enabled: boolean
+  endpoint: string
+  email?: string
+}
+
 export interface MTSettings {
   default?: MTProviderId
+  mymemory: MyMemorySettings
   ollama: OllamaSettings
   claude: ClaudeSettings
   libretranslate: LibreTranslateSettings
