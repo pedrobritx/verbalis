@@ -74,8 +74,18 @@ describe('getMTSettings + getSemanticTMSettings', () => {
   it('return defaults when nothing stored', async () => {
     const mt = await getMTSettings()
     expect(mt.ollama.enabled).toBe(false)
+    expect(mt.mymemory.enabled).toBe(true)
+    expect(mt.default).toBe('mymemory')
     const sem = await getSemanticTMSettings()
     expect(sem.enabled).toBe(false)
+  })
+
+  it('mergeMTSettings keeps mymemory defaults when only other providers stored', () => {
+    const merged = mergeMTSettings({
+      claude: { enabled: true, apiKey: 'sk', model: DEFAULT_MT_SETTINGS.claude.model },
+    })
+    expect(merged.mymemory.enabled).toBe(true)
+    expect(merged.mymemory.endpoint).toBe(DEFAULT_MT_SETTINGS.mymemory.endpoint)
   })
 
   it('read what was set', async () => {

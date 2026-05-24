@@ -2,6 +2,7 @@ import type { MTProviderId, MTSettings } from '@/core/types'
 import { ollamaProvider } from './ollama'
 import { claudeProvider } from './claude'
 import { libreTranslateProvider } from './libretranslate'
+import { myMemoryProvider } from './mymemory'
 import {
   MTError,
   type MTProvider,
@@ -20,6 +21,7 @@ export type {
 } from './types'
 
 export const MT_PROVIDERS: Record<MTProviderId, MTProvider> = {
+  mymemory: myMemoryProvider as MTProvider,
   ollama: ollamaProvider as MTProvider,
   claude: claudeProvider as MTProvider,
   libretranslate: libreTranslateProvider as MTProvider,
@@ -27,6 +29,8 @@ export const MT_PROVIDERS: Record<MTProviderId, MTProvider> = {
 
 export function getProviderSettings(id: MTProviderId, settings: MTSettings): ProviderSettings {
   switch (id) {
+    case 'mymemory':
+      return settings.mymemory
     case 'ollama':
       return settings.ollama
     case 'claude':
@@ -38,6 +42,7 @@ export function getProviderSettings(id: MTProviderId, settings: MTSettings): Pro
 
 export function enabledProviders(settings: MTSettings): MTProviderId[] {
   const ids: MTProviderId[] = []
+  if (settings.mymemory.enabled) ids.push('mymemory')
   if (settings.ollama.enabled) ids.push('ollama')
   if (settings.claude.enabled) ids.push('claude')
   if (settings.libretranslate.enabled) ids.push('libretranslate')

@@ -116,11 +116,13 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
   const [test, setTest] = useState<TestState>({ status: 'idle' })
   const isDefault = settings.default === id
   const enabled =
-    id === 'ollama'
-      ? settings.ollama.enabled
-      : id === 'claude'
-        ? settings.claude.enabled
-        : settings.libretranslate.enabled
+    id === 'mymemory'
+      ? settings.mymemory.enabled
+      : id === 'ollama'
+        ? settings.ollama.enabled
+        : id === 'claude'
+          ? settings.claude.enabled
+          : settings.libretranslate.enabled
 
   async function runTest() {
     setTest({ status: 'pending' })
@@ -130,7 +132,8 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
         setTest({ status: 'idle' })
         return
       }
-      if (id === 'ollama') await fn(settings.ollama)
+      if (id === 'mymemory') await fn(settings.mymemory)
+      else if (id === 'ollama') await fn(settings.ollama)
       else if (id === 'claude') await fn(settings.claude)
       else await fn(settings.libretranslate)
       setTest({ status: 'ok' })
@@ -153,7 +156,10 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             checked={enabled}
             onChange={(e) => {
               const checked = e.target.checked
-              if (id === 'ollama') onPatch({ ollama: { ...settings.ollama, enabled: checked } })
+              if (id === 'mymemory')
+                onPatch({ mymemory: { ...settings.mymemory, enabled: checked } })
+              else if (id === 'ollama')
+                onPatch({ ollama: { ...settings.ollama, enabled: checked } })
               else if (id === 'claude')
                 onPatch({ claude: { ...settings.claude, enabled: checked } })
               else
@@ -180,6 +186,38 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
           default
         </label>
       </div>
+
+      {id === 'mymemory' && (
+        <>
+          <FieldRow label="Endpoint" htmlFor="mymemory-endpoint">
+            <Input
+              id="mymemory-endpoint"
+              value={settings.mymemory.endpoint}
+              onChange={(e) =>
+                onPatch({ mymemory: { ...settings.mymemory, endpoint: e.target.value } })
+              }
+              data-testid="mt-mymemory-endpoint"
+            />
+          </FieldRow>
+          <FieldRow label="Contact email (optional)" htmlFor="mymemory-email">
+            <Input
+              id="mymemory-email"
+              type="email"
+              value={settings.mymemory.email ?? ''}
+              placeholder="you@example.com"
+              onChange={(e) =>
+                onPatch({ mymemory: { ...settings.mymemory, email: e.target.value } })
+              }
+              data-testid="mt-mymemory-email"
+            />
+          </FieldRow>
+          <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
+            Free, no signup. Anonymous quota is ~5,000 characters/day; adding an
+            email raises it to ~50,000/day. Each request is limited to 500
+            characters of source text.
+          </p>
+        </>
+      )}
 
       {id === 'ollama' && (
         <>
@@ -322,6 +360,7 @@ export function MTSettingsSection() {
       // If the new default isn't enabled, drop it.
       if (next.default) {
         const enabled =
+          (next.default === 'mymemory' && next.mymemory.enabled) ||
           (next.default === 'ollama' && next.ollama.enabled) ||
           (next.default === 'claude' && next.claude.enabled) ||
           (next.default === 'libretranslate' && next.libretranslate.enabled)
@@ -336,6 +375,12 @@ export function MTSettingsSection() {
   return (
     <Section title="Machine translation">
       <div className="flex flex-col gap-3">
+        <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
+          Verbalis ships with <strong>MyMemory</strong> enabled — a free
+          translation service that needs no setup. Add another provider below
+          for higher quality or quota.
+        </p>
+        <ProviderCard id="mymemory" settings={draft} onPatch={patch} />
         <ProviderCard id="ollama" settings={draft} onPatch={patch} />
         <ProviderCard id="claude" settings={draft} onPatch={patch} />
         <ProviderCard id="libretranslate" settings={draft} onPatch={patch} />

@@ -10,7 +10,12 @@ export const DEFAULT_LOOKUP_SETTINGS: LookupSettings = {
 }
 
 export const DEFAULT_MT_SETTINGS: MTSettings = {
-  default: undefined,
+  default: 'mymemory',
+  mymemory: {
+    enabled: true,
+    endpoint: 'https://api.mymemory.translated.net/get',
+    email: '',
+  },
   ollama: {
     enabled: false,
     endpoint: 'http://localhost:11434',
@@ -53,6 +58,7 @@ export function mergeMTSettings(stored: Partial<MTSettings> | undefined): MTSett
   if (!stored) return { ...DEFAULT_MT_SETTINGS }
   return {
     default: stored.default ?? DEFAULT_MT_SETTINGS.default,
+    mymemory: { ...DEFAULT_MT_SETTINGS.mymemory, ...(stored.mymemory ?? {}) },
     ollama: { ...DEFAULT_MT_SETTINGS.ollama, ...(stored.ollama ?? {}) },
     claude: { ...DEFAULT_MT_SETTINGS.claude, ...(stored.claude ?? {}) },
     libretranslate: { ...DEFAULT_MT_SETTINGS.libretranslate, ...(stored.libretranslate ?? {}) },
