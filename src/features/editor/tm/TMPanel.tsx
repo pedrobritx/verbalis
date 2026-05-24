@@ -33,15 +33,29 @@ function MatchCard({
       style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
     >
       <div className="flex items-center justify-between">
-        <span
-          className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold tabular-nums"
-          style={{
-            border: `1px solid ${qualityColor(match.score)}`,
-            color: qualityColor(match.score),
-          }}
-        >
-          {pct}%{match.isExact ? ' · exact' : ''}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold tabular-nums"
+            style={{
+              border: `1px solid ${qualityColor(match.score)}`,
+              color: qualityColor(match.score),
+            }}
+          >
+            {pct}%{match.isExact ? ' · exact' : ''}
+          </span>
+          {match.similarityMethod === 'semantic' && (
+            <span
+              data-testid={`tm-method-${index}`}
+              className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide"
+              style={{
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-muted)',
+              }}
+            >
+              semantic
+            </span>
+          )}
+        </div>
         <button
           onClick={() => onApply(match.entry.target)}
           className="text-xs px-2 py-1 rounded transition-colors hover:opacity-80"

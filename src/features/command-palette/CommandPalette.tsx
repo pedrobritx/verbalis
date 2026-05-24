@@ -15,6 +15,7 @@ import {
   Filter,
   ArrowRight,
   FileText,
+  Wand2,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -87,6 +88,21 @@ export function CommandPalette() {
           <CommandItem onSelect={() => run(() => setSidebarTab('glossary'))}>
             <BookA />
             <span>Switch sidebar to Glossary</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => setSidebarTab('mt'))}
+            data-testid="cmd-sidebar-mt"
+          >
+            <Wand2 />
+            <span>Switch sidebar to Machine translation</span>
+          </CommandItem>
+          <CommandItem
+            disabled={!editorActions}
+            onSelect={() => run(() => void editorActions?.translateCurrentWithMT())}
+            data-testid="cmd-translate-mt"
+          >
+            <Wand2 />
+            <span>Translate current segment with MT</span>
           </CommandItem>
           <CommandItem
             onSelect={() => run(() => toggleReviewMode())}

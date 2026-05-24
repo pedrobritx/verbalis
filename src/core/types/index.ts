@@ -47,6 +47,7 @@ export interface TMMatch {
   entry: TMEntry
   score: number
   isExact: boolean
+  similarityMethod?: 'lexical' | 'semantic'
 }
 
 export interface GlossaryEntry {
@@ -56,4 +57,46 @@ export interface GlossaryEntry {
   translations: Record<string, string>
   notes?: string
   projectId?: string
+}
+
+export type MTProviderId = 'ollama' | 'claude' | 'libretranslate'
+
+export interface OllamaSettings {
+  enabled: boolean
+  endpoint: string
+  model: string
+}
+
+export interface ClaudeSettings {
+  enabled: boolean
+  apiKey: string
+  model: string
+}
+
+export interface LibreTranslateSettings {
+  enabled: boolean
+  endpoint: string
+  apiKey?: string
+}
+
+export interface MTSettings {
+  default?: MTProviderId
+  ollama: OllamaSettings
+  claude: ClaudeSettings
+  libretranslate: LibreTranslateSettings
+}
+
+export interface SemanticTMSettings {
+  enabled: boolean
+  model: string
+  threshold: number
+}
+
+export interface EmbeddingRecord {
+  id: string
+  tmId: string
+  model: string
+  dim: number
+  vector: Float32Array
+  createdAt: string
 }

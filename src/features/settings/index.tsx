@@ -1,4 +1,6 @@
 import { APP_VERSION, BUILD_SHA, BUILD_TIME } from '@/lib/version'
+import { MTSettingsSection } from './MTSettingsSection'
+import { SemanticTMSection } from './SemanticTMSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -45,10 +47,15 @@ export default function SettingsPage() {
         <Row label="Built at" value={BUILD_TIME} testId="settings-build-time" />
       </Section>
 
+      <MTSettingsSection />
+
+      <SemanticTMSection />
+
       <Section title="Offline">
         <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
           Translation Memory and Glossary work fully offline. Wiktionary lookups are
-          cached after first fetch.
+          cached after first fetch. Ollama runs locally on your machine; Claude and
+          LibreTranslate require network access.
         </p>
       </Section>
     </div>

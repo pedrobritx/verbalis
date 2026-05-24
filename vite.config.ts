@@ -62,7 +62,20 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // Cache the @xenova/transformers model files so semantic TM works
+            // offline after a one-time download.
+            urlPattern: /^https:\/\/huggingface\.co\/.*\/resolve\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'xenova-models',
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true,
+            },
+          },
         ],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
@@ -71,7 +84,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  worker: {
+    // ES-module workers so @xenova/transformers (used by the embeddings worker)
+    // can be code-split and dynamically imported.
+    format: 'es',
+  },
   optimizeDeps: {
     include: ['sbd'],
+    exclude: ['@xenova/transformers'],
   },
 })

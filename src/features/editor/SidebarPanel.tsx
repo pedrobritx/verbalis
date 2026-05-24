@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TMPanel } from './tm/TMPanel'
 import { GlossaryPanel } from './glossary/GlossaryPanel'
+import { MTPanel } from './mt/MTPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
 
 interface SidebarPanelProps {
@@ -11,11 +12,13 @@ interface SidebarPanelProps {
   targetLang: string
   onApplyTM: (target: string) => void
   onInsertGlossary: (text: string) => void
+  onApplyMT: (target: string) => void
 }
 
 const TABS: Array<{ id: SidebarTab; label: string }> = [
   { id: 'tm', label: 'TM' },
   { id: 'glossary', label: 'Glossary' },
+  { id: 'mt', label: 'MT' },
 ]
 
 export function SidebarPanel({
@@ -25,6 +28,7 @@ export function SidebarPanel({
   targetLang,
   onApplyTM,
   onInsertGlossary,
+  onApplyMT,
 }: SidebarPanelProps) {
   const tab = useSidebarPanelStore((s) => s.tab)
   const setTab = useSidebarPanelStore((s) => s.setTab)
@@ -94,6 +98,16 @@ export function SidebarPanel({
             projectId={projectId}
             targetLang={targetLang}
             onInsert={onInsertGlossary}
+          />
+        </div>
+      )}
+      {tab === 'mt' && (
+        <div data-testid="mt-panel">
+          <MTPanel
+            focusedSource={focusedSource}
+            sourceLang={sourceLang}
+            targetLang={targetLang}
+            onApply={onApplyMT}
           />
         </div>
       )}
