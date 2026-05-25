@@ -4,6 +4,7 @@ import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { detectType, segmentText, segmentDocx } from '@/core/segmentation'
 import type { ParsedSegment } from '@/core/segmentation'
+import { parseXliff12 } from '@/core/bilingual/xliff12'
 import type { Segment } from '@/core/types'
 
 export interface ImportProjectInput {
@@ -24,6 +25,53 @@ export function useImportProject() {
       setError(null)
       try {
         const type = detectType(file.name)
+        const projectId = crypto.randomUUID()
+        const now = new Date().toISOString()
+
+        if (type === 'xliff') {
+          const xml = await file.text()
+          const parsed = parseXliff12(xml)
+          if (parsed.units.length === 0) {
+            throw new Error('XLIFF contains no <trans-unit> entries.')
+          }
+
+          await projectRepo.create({
+            id: projectId,
+            name,
+            sourceLang: parsed.sourceLang,
+            targetLang: parsed.targetLang,
+            createdAt: now,
+            updatedAt: now,
+            bilingualMeta: {
+              format: 'xliff12',
+              originalFile: parsed.originalFile,
+              templateXml: parsed.templateXml,
+              datatype: parsed.datatype,
+            },
+          })
+
+          const segments: Segment[] = parsed.units.map((u, i) => ({
+            id: crypto.randomUUID(),
+            projectId,
+            index: i,
+            source: u.source,
+            target: u.target,
+            status: u.status,
+            note: u.note,
+            bilingualMeta: {
+              transUnitId: u.transUnitId,
+              rawState: u.rawState,
+              inlineTags: u.inlineTags,
+            },
+            createdAt: now,
+            updatedAt: now,
+          }))
+
+          await segmentRepo.bulkCreate(segments)
+          navigate(`/project/${projectId}`)
+          return projectId
+        }
+
         // Segmentation runs on the main thread. TXT/MD files are small; DOCX uses
         // mammoth (also main-thread-only — see workers/parsing.worker.ts).
         let parsed: ParsedSegment[]
@@ -38,9 +86,6 @@ export function useImportProject() {
         if (parsed.length === 0) {
           throw new Error('File produced no translatable segments.')
         }
-
-        const projectId = crypto.randomUUID()
-        const now = new Date().toISOString()
 
         await projectRepo.create({
           id: projectId,

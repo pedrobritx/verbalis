@@ -3,19 +3,37 @@ import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { parseCSV, mergeRows } from '@/core/glossary/csv'
 import { parseTBX } from '@/core/glossary/tbx'
+import { parseTSV } from '@/core/glossary/tsv'
 import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
 import type { GlossaryEntry } from '@/core/types'
 
-function detectFormat(file: File, text: string): 'csv' | 'tbx' {
+type Format = 'csv' | 'tbx' | 'tsv'
+
+function detectFormat(file: File, text: string): Format {
   const name = file.name.toLowerCase()
-  if (name.endsWith('.csv')) return 'csv'
   if (name.endsWith('.tbx')) return 'tbx'
+  if (name.endsWith('.csv')) return 'csv'
+  if (name.endsWith('.tsv') || name.endsWith('.utf8')) return 'tsv'
   const trimmed = text.trimStart()
   if (trimmed.startsWith('<')) return 'tbx'
+  // Heuristic for tab-separated content: first non-blank, non-comment line
+  // contains a tab and no comma.
+  const firstLine = text.split(/\r?\n/).find((l) => l.trim() && !l.startsWith('#')) ?? ''
+  if (firstLine.includes('\t') && !firstLine.includes(',')) return 'tsv'
   return 'csv'
 }
 
-export function GlossaryImportButton() {
+interface GlossaryImportButtonProps {
+  // OmegaT-style TSV glossaries carry no language metadata; the UI supplies
+  // these defaults when present.
+  defaultSourceLang?: string
+  defaultTargetLang?: string
+}
+
+export function GlossaryImportButton({
+  defaultSourceLang = 'en',
+  defaultTargetLang = 'es',
+}: GlossaryImportButtonProps = {}) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -29,6 +47,9 @@ export function GlossaryImportButton() {
       let parsed: Array<Omit<GlossaryEntry, 'id'>> = []
       if (format === 'csv') {
         const rows = parseCSV(text)
+        parsed = mergeRows(rows)
+      } else if (format === 'tsv') {
+        const rows = parseTSV(text, defaultSourceLang, defaultTargetLang)
         parsed = mergeRows(rows)
       } else {
         const tbxEntries = parseTBX(text)
@@ -71,7 +92,7 @@ export function GlossaryImportButton() {
       <input
         ref={inputRef}
         type="file"
-        accept=".csv,.tbx,.xml,text/csv,application/xml,text/xml"
+        accept=".csv,.tbx,.tsv,.utf8,.txt,.xml,text/csv,text/tab-separated-values,application/xml,text/xml"
         className="hidden"
         data-testid="glossary-import-input"
         onChange={(e) => {

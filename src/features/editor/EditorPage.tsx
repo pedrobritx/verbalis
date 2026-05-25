@@ -17,6 +17,7 @@ import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
 import { getMTSettings } from '@/storage/repositories/settingsRepo'
+import { XliffExportButton } from '@/features/bilingual/XliffExportButton'
 import type { Segment, SegmentStatus, MTProviderId } from '@/core/types'
 
 export default function EditorPage() {
@@ -249,6 +250,9 @@ export default function EditorPage() {
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
+              {project.bilingualMeta?.format === 'xliff12' && (
+                <XliffExportButton project={project} segments={segments} />
+              )}
               <button
                 onClick={toggleReviewMode}
                 aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}

@@ -110,7 +110,7 @@ function FirstRunOnboarding({ onImport, onShortcuts }: FirstRunOnboardingProps) 
           icon={<Upload size={18} />}
           number={1}
           title="Import"
-          body="TXT, MD or DOCX. Pick a source and target language (including regional variants like pt-BR or en-GB)."
+          body="TXT, MD, DOCX or XLIFF (memoQ / OmegaT). Pick a source and target language (including regional variants like pt-BR or en-GB)."
         />
         <Step
           icon={<PencilLine size={18} />}
