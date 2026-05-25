@@ -104,7 +104,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
               <Select id="src-lang" value={sourceLang} onChange={(e) => setSourceLang(e.target.value)}>
                 {LANGUAGE_OPTIONS.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.label}
+                    {l.label} ({l.code})
                   </option>
                 ))}
               </Select>
@@ -114,7 +114,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
               <Select id="tgt-lang" value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
                 {LANGUAGE_OPTIONS.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.label}
+                    {l.label} ({l.code})
                   </option>
                 ))}
               </Select>

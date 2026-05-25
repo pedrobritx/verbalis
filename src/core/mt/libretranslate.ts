@@ -1,4 +1,5 @@
 import type { LibreTranslateSettings } from '@/core/types'
+import { baseLanguage } from '@/core/i18n/languages'
 import { MTError, type MTProvider, type TranslateInput, type TranslateResult } from './types'
 
 interface LibreResponse {
@@ -22,8 +23,8 @@ export const libreTranslateProvider: MTProvider<LibreTranslateSettings> = {
 
     const body: Record<string, string> = {
       q: trimmed,
-      source: input.sourceLang,
-      target: input.targetLang,
+      source: baseLanguage(input.sourceLang),
+      target: baseLanguage(input.targetLang),
       format: 'text',
     }
     if (settings.apiKey) body.api_key = settings.apiKey

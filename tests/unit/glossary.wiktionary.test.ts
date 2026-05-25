@@ -108,6 +108,13 @@ describe('fetchWiktionaryEntry', () => {
     await expect(fetchWiktionaryEntry('   ')).rejects.toBeInstanceOf(WiktionaryError)
   })
 
+  it('routes a regional variant tag to the base-language Wiktionary edition', async () => {
+    const fetchImpl = mockFetch()
+    await fetchWiktionaryEntry('hola', 'pt-BR', fetchImpl as unknown as typeof fetch)
+    const firstUrl = fetchImpl.mock.calls[0][0] as string
+    expect(firstUrl.startsWith('https://pt.wiktionary.org/')).toBe(true)
+  })
+
   it('degrades gracefully when translations call fails', async () => {
     const fetchImpl = vi
       .fn()

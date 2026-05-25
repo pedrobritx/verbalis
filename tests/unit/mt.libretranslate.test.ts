@@ -29,6 +29,23 @@ describe('libreTranslateProvider.translate', () => {
     expect(body.api_key).toBeUndefined()
   })
 
+  it('folds regional variants down to base ISO 639-1 codes', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ translatedText: 'Olá' }),
+    })
+    await libreTranslateProvider.translate(
+      { text: 'Hello', sourceLang: 'en-US', targetLang: 'pt-BR' },
+      settings,
+      fetchImpl as unknown as typeof fetch,
+    )
+    const [, init] = fetchImpl.mock.calls[0]
+    const body = JSON.parse(init.body)
+    expect(body.source).toBe('en')
+    expect(body.target).toBe('pt')
+  })
+
   it('includes api_key when provided', async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce({
       ok: true,

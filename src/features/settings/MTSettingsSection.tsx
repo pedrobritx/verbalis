@@ -307,6 +307,12 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
               testId="mt-libre-key"
             />
           </FieldRow>
+          <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
+            Open-source machine translation. Use a public instance (most require
+            an API key — see <code>libretranslate.com</code>) or point this at
+            your own self-hosted server. Base languages only — regional variants
+            like <code>pt-BR</code> are folded to <code>pt</code>.
+          </p>
         </>
       )}
 
