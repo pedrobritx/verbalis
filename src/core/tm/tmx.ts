@@ -1,4 +1,5 @@
 import type { TMEntry } from '@/core/types'
+import { escapeXml, getXmlLang } from '@/core/xml/escape'
 import { TMX_CREATION_TOOL, TMX_CREATION_TOOL_VERSION } from './constants'
 
 export interface ParsedTMXEntry {
@@ -8,29 +9,36 @@ export interface ParsedTMXEntry {
   targetLang: string
 }
 
-const XML_ESCAPE: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&apos;',
+export interface ParseTMXOptions {
+  // When set, multilingual <tu> with more than two <tuv> are reduced to the
+  // pair whose xml:lang prefixes (BCP-47 primary subtag) match these codes.
+  sourceLang?: string
+  targetLang?: string
 }
 
-function escapeXml(s: string): string {
-  // Strip XML 1.0 invalid control chars (except tab, LF, CR).
-  const cleaned = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-  return cleaned.replace(/[&<>"']/g, (c) => XML_ESCAPE[c])
+function langPrimary(tag: string | null | undefined): string {
+  if (!tag) return ''
+  const idx = tag.indexOf('-')
+  return (idx === -1 ? tag : tag.slice(0, idx)).toLowerCase()
 }
 
-function getXmlLang(tuv: Element): string | null {
-  return (
-    tuv.getAttribute('xml:lang') ??
-    tuv.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang') ??
-    tuv.getAttribute('lang')
-  )
+function pickTuvs(
+  tuvs: Element[],
+  source: string | undefined,
+  target: string | undefined,
+): [Element, Element] | null {
+  if (tuvs.length < 2) return null
+  if (tuvs.length === 2) return [tuvs[0], tuvs[1]]
+  if (!source || !target) return null
+  const wantSrc = langPrimary(source)
+  const wantTgt = langPrimary(target)
+  const src = tuvs.find((t) => langPrimary(getXmlLang(t)) === wantSrc)
+  const tgt = tuvs.find((t) => langPrimary(getXmlLang(t)) === wantTgt)
+  if (!src || !tgt || src === tgt) return null
+  return [src, tgt]
 }
 
-export function parseTMX(xml: string): ParsedTMXEntry[] {
+export function parseTMX(xml: string, opts: ParseTMXOptions = {}): ParsedTMXEntry[] {
   const doc = new DOMParser().parseFromString(xml, 'application/xml')
   const parseError = doc.querySelector('parsererror')
   if (parseError) {
@@ -47,14 +55,18 @@ export function parseTMX(xml: string): ParsedTMXEntry[] {
   for (let i = 0; i < tus.length; i++) {
     const tu = tus[i]
     const tuvs = Array.from(tu.children).filter((c) => c.nodeName === 'tuv')
-    if (tuvs.length !== 2) continue
+    const picked = pickTuvs(tuvs, opts.sourceLang, opts.targetLang)
+    if (!picked) continue
 
-    const lang0 = getXmlLang(tuvs[0])
-    const lang1 = getXmlLang(tuvs[1])
+    const lang0 = getXmlLang(picked[0])
+    const lang1 = getXmlLang(picked[1])
     if (!lang0 || !lang1) continue
 
-    const seg0 = tuvs[0].getElementsByTagName('seg')[0]?.textContent ?? ''
-    const seg1 = tuvs[1].getElementsByTagName('seg')[0]?.textContent ?? ''
+    // Level 2 inline tags (<bpt>/<ept>/<ph>/<it>) are stripped by textContent;
+    // text inside them is kept. Acceptable for v1 — full tag preservation is
+    // out of scope for the TM importer.
+    const seg0 = picked[0].getElementsByTagName('seg')[0]?.textContent ?? ''
+    const seg1 = picked[1].getElementsByTagName('seg')[0]?.textContent ?? ''
     if (!seg0 || !seg1) continue
 
     entries.push({

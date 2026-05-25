@@ -1,3 +1,14 @@
+export interface BilingualProjectMeta {
+  format: 'xliff12'
+  originalFile?: string
+  // The full original bilingual document. exportBilingual() re-uses it as a
+  // template so trans-unit-level attributes from the originating CAT tool
+  // (memoQ mq:* namespace, OmegaT-specific notes, skeleton refs, …) survive
+  // round-tripping.
+  templateXml: string
+  datatype?: string
+}
+
 export interface Project {
   id: string
   name: string
@@ -5,6 +16,7 @@ export interface Project {
   targetLang: string
   createdAt: string
   updatedAt: string
+  bilingualMeta?: BilingualProjectMeta
 }
 
 export type SegmentStatus = 'untranslated' | 'draft' | 'translated' | 'reviewed' | 'locked'
@@ -20,6 +32,16 @@ export interface SegmentSourceMeta {
   sentenceIndex: number
 }
 
+export interface BilingualSegmentMeta {
+  transUnitId: string
+  // Preserves the original XLIFF state when it is not one of the values
+  // statusToXliffState would round-trip to (e.g. tool-specific extensions).
+  rawState?: string
+  // Original XML for each inline tag in the source, keyed by the numeric
+  // placeholder id that replaces it in the editable text.
+  inlineTags?: Record<string, string>
+}
+
 export interface Segment {
   id: string
   projectId: string
@@ -28,6 +50,7 @@ export interface Segment {
   target: string
   status: SegmentStatus
   sourceMeta?: SegmentSourceMeta
+  bilingualMeta?: BilingualSegmentMeta
   note?: string
   createdAt: string
   updatedAt: string

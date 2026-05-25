@@ -9,6 +9,9 @@ export function detectType(filename: string): SourceType {
   const lower = filename.toLowerCase()
   if (lower.endsWith('.md') || lower.endsWith('.markdown')) return 'md'
   if (lower.endsWith('.docx')) return 'docx'
+  if (lower.endsWith('.xlf') || lower.endsWith('.xliff') || lower.endsWith('.mqxliff')) {
+    return 'xliff'
+  }
   return 'txt'
 }
 

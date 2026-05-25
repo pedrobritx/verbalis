@@ -24,6 +24,12 @@ function stripExtension(filename: string): string {
   return i > 0 ? filename.slice(0, i) : filename
 }
 
+function isBilingual(file: File | null): boolean {
+  if (!file) return false
+  const n = file.name.toLowerCase()
+  return n.endsWith('.xlf') || n.endsWith('.xliff') || n.endsWith('.mqxliff')
+}
+
 export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const { importProject, isImporting, error } = useImportProject()
   const [name, setName] = useState('')
@@ -44,9 +50,12 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     if (f && !name) setName(stripExtension(f.name))
   }
 
+  const bilingual = isBilingual(file)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!file || !name.trim() || sourceLang === targetLang) return
+    if (!file || !name.trim()) return
+    if (!bilingual && sourceLang === targetLang) return
     try {
       await importProject({ file, name: name.trim(), sourceLang, targetLang })
       reset()
@@ -56,7 +65,11 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     }
   }
 
-  const canSubmit = Boolean(file) && name.trim().length > 0 && sourceLang !== targetLang && !isImporting
+  const canSubmit =
+    Boolean(file) &&
+    name.trim().length > 0 &&
+    (bilingual || sourceLang !== targetLang) &&
+    !isImporting
 
   return (
     <Dialog
@@ -72,7 +85,9 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
       >
         <DialogHeader>
           <DialogTitle style={{ color: 'var(--color-text)' }}>Import file</DialogTitle>
-          <DialogDescription>Create a new project from a TXT, MD, or DOCX file.</DialogDescription>
+          <DialogDescription>
+            Create a new project from a TXT, MD, DOCX, or XLIFF (XLF / mqxliff) file.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
@@ -81,7 +96,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
             <Input
               id="import-file"
               type="file"
-              accept=".txt,.md,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept=".txt,.md,.docx,.xlf,.xliff,.mqxliff,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/xml,text/xml"
               onChange={handleFileChange}
               required
             />
@@ -98,33 +113,49 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="src-lang">Source</Label>
-              <Select id="src-lang" value={sourceLang} onChange={(e) => setSourceLang(e.target.value)}>
-                {LANGUAGE_OPTIONS.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label} ({l.code})
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="tgt-lang">Target</Label>
-              <Select id="tgt-lang" value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
-                {LANGUAGE_OPTIONS.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label} ({l.code})
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-
-          {sourceLang === targetLang && (
-            <p className="text-xs" style={{ color: 'var(--color-warning)' }}>
-              Source and target languages must differ.
+          {bilingual ? (
+            <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+              Source and target languages are read from the XLIFF file.
             </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="src-lang">Source</Label>
+                  <Select
+                    id="src-lang"
+                    value={sourceLang}
+                    onChange={(e) => setSourceLang(e.target.value)}
+                  >
+                    {LANGUAGE_OPTIONS.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.label} ({l.code})
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="tgt-lang">Target</Label>
+                  <Select
+                    id="tgt-lang"
+                    value={targetLang}
+                    onChange={(e) => setTargetLang(e.target.value)}
+                  >
+                    {LANGUAGE_OPTIONS.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.label} ({l.code})
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+
+              {sourceLang === targetLang && (
+                <p className="text-xs" style={{ color: 'var(--color-warning)' }}>
+                  Source and target languages must differ.
+                </p>
+              )}
+            </>
           )}
 
           {error && (
