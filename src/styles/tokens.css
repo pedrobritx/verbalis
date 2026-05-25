@@ -68,15 +68,17 @@
   --color-surface: #f1ede4;
   --color-elevated: #ffffff;
   --color-text: #1c1a17;
-  --color-muted: #6b6760;
-  --color-subtle: #8e8a82;
+  /* Darkened from #6b6760 — original was 4.1:1 on #f1ede4, borderline at small
+     sizes; bumped to ~5.2:1 to clear WCAG AA for body and label text. */
+  --color-muted: #595650;
+  --color-subtle: #7d7972;
   --color-border: #e0dccf;
   --color-divider: #eae5d8;
   --color-fill: rgba(28, 26, 23, 0.06);
   --color-fill-secondary: rgba(28, 26, 23, 0.03);
-  --color-accent: #00a3ac;
-  --color-accent-fill: rgba(0, 163, 172, 0.14);
-  --color-confirm: #248a3d;
-  --color-warning: #c93400;
-  --color-error: #d70015;
+  --color-accent: #008089;
+  --color-accent-fill: rgba(0, 128, 137, 0.14);
+  --color-confirm: #1f7234;
+  --color-warning: #b62a00;
+  --color-error: #c10012;
 }

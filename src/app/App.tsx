@@ -5,6 +5,7 @@ import { CommandPalette } from '@/features/command-palette/CommandPalette'
 import { GlobalShortcuts } from '@/features/command-palette/useGlobalShortcuts'
 import { GlobalImportDialog } from '@/features/import/GlobalImportDialog'
 import { QuickLookupDialog } from '@/features/lookup/QuickLookupDialog'
+import { ShortcutsDialog } from '@/features/shortcuts/ShortcutsDialog'
 import { UpdateBanner } from '@/pwa/UpdateBanner'
 import { OfflineReadyToast } from '@/pwa/OfflineReadyToast'
 
@@ -18,6 +19,7 @@ export default function App() {
       <CommandPalette />
       <GlobalImportDialog />
       <QuickLookupDialog />
+      <ShortcutsDialog />
       <UpdateBanner />
       <OfflineReadyToast />
     </Providers>

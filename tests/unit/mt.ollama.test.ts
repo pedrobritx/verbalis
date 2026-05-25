@@ -42,7 +42,7 @@ describe('ollamaProvider.translate', () => {
     expect(body.stream).toBe(false)
     expect(body.messages).toHaveLength(2)
     expect(body.messages[0].role).toBe('system')
-    expect(body.messages[0].content).toMatch(/from en to fr/)
+    expect(body.messages[0].content).toMatch(/from English \(en\) to French \(fr\)/)
     expect(body.messages[1].content).toBe('Hi')
   })
 

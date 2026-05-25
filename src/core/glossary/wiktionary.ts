@@ -66,7 +66,10 @@ export async function fetchWiktionaryEntry(
   const trimmed = term.trim()
   if (!trimmed) throw new WiktionaryError('invalid', 'Term is empty')
 
-  const defUrl = `https://${lang}.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(
+  // Wiktionary has one wiki per base language (en.wiktionary.org, pt.wiktionary.org),
+  // not per regional variant, so strip any subtag (pt-BR → pt).
+  const wikiLang = lang.split('-')[0].toLowerCase()
+  const defUrl = `https://${wikiLang}.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(
     trimmed,
   )}`
 
@@ -117,7 +120,7 @@ export async function fetchWiktionaryEntry(
   // Best-effort translations via MediaWiki action API.
   let translations: Record<string, string> = {}
   try {
-    const tUrl = `https://${lang}.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(
+    const tUrl = `https://${wikiLang}.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(
       trimmed,
     )}&prop=wikitext&format=json&origin=*`
     const tResp = await fetchImpl(tUrl, { headers: { Accept: 'application/json' } })
@@ -136,7 +139,7 @@ export async function fetchWiktionaryEntry(
 
   return {
     term: trimmed,
-    sourceLang: lang,
+    sourceLang: wikiLang,
     definitions,
     translations,
   }

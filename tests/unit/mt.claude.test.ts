@@ -36,7 +36,7 @@ describe('claudeProvider.translate', () => {
 
     const body = JSON.parse(init.body)
     expect(body.model).toBe('claude-haiku-4-5-20251001')
-    expect(body.system).toMatch(/from en to es/)
+    expect(body.system).toMatch(/from English \(en\) to Spanish \(es\)/)
     expect(body.messages[0].content).toBe('Hello')
   })
 

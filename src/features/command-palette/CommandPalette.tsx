@@ -16,6 +16,7 @@ import {
   ArrowRight,
   FileText,
   Wand2,
+  Keyboard,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -34,6 +35,7 @@ import { useSidebarPanelStore } from '@/features/editor/useSidebarPanelStore'
 import { useEditorModeStore, type StatusFilter } from '@/features/editor/useEditorModeStore'
 import { useEditorActionsStore } from '@/features/editor/useEditorActionsStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
+import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
 
 const STATUS_FILTERS: Array<{ id: StatusFilter; label: string }> = [
   { id: 'all', label: 'All' },
@@ -57,6 +59,7 @@ export function CommandPalette() {
   const setStatusFilter = useEditorModeStore((s) => s.setStatusFilter)
   const editorActions = useEditorActionsStore((s) => s.actions)
   const openImport = useImportDialogStore((s) => s.setOpen)
+  const openShortcuts = useShortcutsStore((s) => s.setOpen)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
 
   const inEditor = Boolean(matchPath('/project/:id', pathname))
@@ -207,6 +210,14 @@ export function CommandPalette() {
           <CommandItem onSelect={() => run(() => toggleTheme())} data-testid="cmd-toggle-theme">
             {theme === 'dark' ? <Sun /> : <Moon />}
             <span>Toggle theme (currently {theme})</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => openShortcuts(true))}
+            data-testid="cmd-shortcuts"
+          >
+            <Keyboard />
+            <span>Show keyboard shortcuts</span>
+            <CommandShortcut>?</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 
