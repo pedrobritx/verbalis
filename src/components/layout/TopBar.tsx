@@ -1,6 +1,7 @@
 import { Moon, Sun, Command as CommandIcon, Languages } from 'lucide-react'
 import { useTheme } from '@/app/providers'
-import { useLocation, matchPath } from 'react-router-dom'
+import { Link, useLocation, matchPath } from 'react-router-dom'
+import { VerbalisMark } from '@/components/brand/VerbalisMark'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
@@ -81,12 +82,19 @@ export function TopBar({ collapsed = false }: TopBarProps) {
         transform: collapsed ? 'translateY(-100%)' : 'translateY(0)',
       }}
     >
-      <span
-        className="text-sm font-semibold tracking-widest"
-        style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}
+      <Link
+        to="/about"
+        className="flex items-center gap-2 rounded transition-opacity hover:opacity-80"
+        aria-label="Verbalis — about, license & credits"
       >
-        VERBALIS
-      </span>
+        <VerbalisMark size={20} />
+        <span
+          className="text-sm font-semibold tracking-widest"
+          style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}
+        >
+          VERBALIS
+        </span>
+      </Link>
 
       <div className="hidden md:flex items-center gap-4">
         <Breadcrumb />

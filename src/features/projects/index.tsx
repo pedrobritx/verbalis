@@ -5,6 +5,7 @@ import { FilePlus, FileText, Upload, PencilLine, Download, Keyboard } from 'luci
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { BrandFooter } from '@/components/layout/BrandFooter'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { ImportDialog } from '@/features/import/ImportDialog'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
@@ -73,6 +74,8 @@ export default function ProjectsPage() {
       )}
 
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      <BrandFooter />
     </div>
   )
 }

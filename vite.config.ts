@@ -27,17 +27,22 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icons/*.png'],
       manifest: {
-        name: 'VERBALIS',
-        short_name: 'VERBALIS',
-        description: 'Local-first CAT tool for professional translators',
+        name: 'Verbalis — local-first CAT tool',
+        short_name: 'Verbalis',
+        description:
+          'Local-first, privacy-first CAT tool for professional translators. Your files, translation memory and glossaries never leave your browser.',
+        categories: ['productivity', 'utilities'],
+        lang: 'en',
         theme_color: '#0d0f10',
         background_color: '#0d0f10',
         display: 'standalone',
         start_url: '.',
         scope: '.',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
