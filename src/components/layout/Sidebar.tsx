@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { PanelLeftClose, PanelLeft } from 'lucide-react'
+import { PanelLeftClose, PanelLeft, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from './navItems'
 
@@ -40,6 +40,18 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <NavLink
+        to="/about"
+        className="flex items-center gap-3 px-2 py-2 mx-2 rounded text-sm transition-colors hover:opacity-80"
+        style={({ isActive }) => ({
+          color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
+          background: isActive ? 'rgba(0,194,204,0.08)' : 'transparent',
+        })}
+      >
+        <Info size={16} className="shrink-0" />
+        {!collapsed && <span className="truncate">About & License</span>}
+      </NavLink>
 
       <button
         onClick={() => setCollapsed(c => !c)}

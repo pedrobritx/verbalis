@@ -5,6 +5,7 @@ import TranslatePage from '@/features/translate'
 import TMPage from '@/features/tm'
 import TerminologyPage from '@/features/terminology'
 import SettingsPage from '@/features/settings'
+import AboutPage from '@/features/about'
 
 export function AppRoutes() {
   return (
@@ -15,6 +16,7 @@ export function AppRoutes() {
       <Route path="/tm" element={<TMPage />} />
       <Route path="/terminology" element={<TerminologyPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/about" element={<AboutPage />} />
     </Routes>
   )
 }
