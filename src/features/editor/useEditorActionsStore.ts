@@ -6,6 +6,10 @@ export interface EditorActions {
   jumpToNextWithStatus: (status: 'untranslated' | 'draft' | 'translated' | 'reviewed') => void
   jumpToSegment: (oneBasedIndex: number) => void
   translateCurrentWithMT: (providerId?: MTProviderId) => Promise<void>
+  /** Fill untranslated segments from TM at the configured threshold. */
+  runPretranslate: () => Promise<void>
+  /** Copy number-only source segments into target, converting numerals. */
+  populateNumbers: () => Promise<void>
 }
 
 interface EditorActionsState {
