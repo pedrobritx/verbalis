@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { MTSettingsSection } from './MTSettingsSection'
 import { SemanticTMSection } from './SemanticTMSection'
 import { LookupSettingsSection } from './LookupSettingsSection'
+import { EditorSettingsSection } from './EditorSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -54,6 +55,10 @@ export default function SettingsPage() {
 
       <Section title="Quick Lookup defaults">
         <LookupSettingsSection />
+      </Section>
+
+      <Section title="Editor &amp; quality assurance">
+        <EditorSettingsSection />
       </Section>
 
       <SemanticTMSection />

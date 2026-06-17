@@ -31,6 +31,25 @@ describe('SidebarPanel', () => {
     expect(screen.getByTestId('sidebar-tab-tm')).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-tab-glossary')).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-tab-mt')).toBeInTheDocument()
+    expect(screen.getByTestId('sidebar-tab-qa')).toBeInTheDocument()
+  })
+
+  it('shows the QA panel with no issues for an empty project', async () => {
+    render(
+      <MemoryRouter>
+        <SidebarPanel
+          focusedSource="hello"
+          projectId="p"
+          sourceLang="en"
+          targetLang="es"
+          onApplyTM={vi.fn()}
+          onInsertGlossary={vi.fn()}
+          onApplyMT={vi.fn()}
+        />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByTestId('sidebar-tab-qa'))
+    expect(await screen.findByTestId('qa-clean')).toBeInTheDocument()
   })
 
   it('switches to MT panel when MT tab clicked', () => {

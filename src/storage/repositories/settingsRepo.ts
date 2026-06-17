@@ -1,9 +1,26 @@
 import { db } from '@/storage/db'
 import type { LookupSettings, MTSettings, SemanticTMSettings } from '@/core/types'
+import { DEFAULT_QA_RULES, type QARuleToggles } from '@/core/qa/types'
 
 export const MT_SETTINGS_KEY = 'mt.providers'
 export const SEMANTIC_TM_KEY = 'tm.semantic'
 export const LOOKUP_SETTINGS_KEY = 'lookup.defaults'
+export const EDITOR_SETTINGS_KEY = 'editor.prefs'
+
+export interface EditorSettings {
+  /** Auto-fill identical untranslated segments when one is confirmed. */
+  autoPropagate: boolean
+  /** Minimum TM match score (0–1) used by batch pre-translation. */
+  pretranslateThreshold: number
+  /** Per-rule enable flags for Quality Assurance. */
+  qaRules: QARuleToggles
+}
+
+export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
+  autoPropagate: true,
+  pretranslateThreshold: 0.75,
+  qaRules: { ...DEFAULT_QA_RULES },
+}
 
 export const DEFAULT_LOOKUP_SETTINGS: LookupSettings = {
   defaultTargetLang: 'en',
@@ -87,4 +104,23 @@ export function mergeLookupSettings(
 export async function getLookupSettings(): Promise<LookupSettings> {
   const stored = await settingsRepo.get<Partial<LookupSettings>>(LOOKUP_SETTINGS_KEY)
   return mergeLookupSettings(stored)
+}
+
+export function mergeEditorSettings(stored: Partial<EditorSettings> | undefined): EditorSettings {
+  if (!stored) return { ...DEFAULT_EDITOR_SETTINGS, qaRules: { ...DEFAULT_QA_RULES } }
+  return {
+    autoPropagate: stored.autoPropagate ?? DEFAULT_EDITOR_SETTINGS.autoPropagate,
+    pretranslateThreshold:
+      stored.pretranslateThreshold ?? DEFAULT_EDITOR_SETTINGS.pretranslateThreshold,
+    qaRules: { ...DEFAULT_QA_RULES, ...(stored.qaRules ?? {}) },
+  }
+}
+
+export async function getEditorSettings(): Promise<EditorSettings> {
+  const stored = await settingsRepo.get<Partial<EditorSettings>>(EDITOR_SETTINGS_KEY)
+  return mergeEditorSettings(stored)
+}
+
+export function setEditorSettings(settings: EditorSettings): Promise<unknown> {
+  return settingsRepo.set(EDITOR_SETTINGS_KEY, settings)
 }

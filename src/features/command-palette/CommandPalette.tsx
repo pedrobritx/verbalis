@@ -17,6 +17,12 @@ import {
   FileText,
   Wand2,
   Keyboard,
+  Sparkles,
+  Hash,
+  Replace,
+  ShieldCheck,
+  BarChart3,
+  BookA as BookAddIcon,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -34,6 +40,10 @@ import { useCommandPaletteStore } from './useCommandPaletteStore'
 import { useSidebarPanelStore } from '@/features/editor/useSidebarPanelStore'
 import { useEditorModeStore, type StatusFilter } from '@/features/editor/useEditorModeStore'
 import { useEditorActionsStore } from '@/features/editor/useEditorActionsStore'
+import { useFindReplaceStore } from '@/features/editor/findReplace/useFindReplaceStore'
+import { useAnalysisStore } from '@/features/editor/analysis/useAnalysisStore'
+import { useAddTermStore } from '@/features/editor/glossary/useAddTermStore'
+import { useConcordanceStore } from '@/features/editor/concordance/useConcordanceStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
 
@@ -54,6 +64,11 @@ export function CommandPalette() {
   const { theme, toggleTheme } = useTheme()
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
   const setSidebarTab = useSidebarPanelStore((s) => s.setTab)
+  const setSidebarOpen = useSidebarPanelStore((s) => s.setOpen)
+  const openFindReplace = useFindReplaceStore((s) => s.setOpen)
+  const openAnalysis = useAnalysisStore((s) => s.setOpen)
+  const openAddTerm = useAddTermStore((s) => s.openWith)
+  const openConcordance = useConcordanceStore((s) => s.openWith)
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
   const setStatusFilter = useEditorModeStore((s) => s.setStatusFilter)
@@ -139,6 +154,64 @@ export function CommandPalette() {
             <span>Jump to next draft</span>
           </CommandItem>
         </CommandGroup>
+        <CommandGroup heading="Tools">
+          <CommandItem
+            disabled={!editorActions}
+            onSelect={() => run(() => void editorActions?.runPretranslate())}
+            data-testid="cmd-pretranslate"
+          >
+            <Sparkles />
+            <span>Pre-translate from TM</span>
+          </CommandItem>
+          <CommandItem
+            disabled={!editorActions}
+            onSelect={() => run(() => void editorActions?.populateNumbers())}
+            data-testid="cmd-populate-numbers"
+          >
+            <Hash />
+            <span>Populate number-only segments</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => openFindReplace(true))}
+            data-testid="cmd-find-replace"
+          >
+            <Replace />
+            <span>Find &amp; replace…</span>
+            <CommandShortcut>⌃H</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              run(() => {
+                setSidebarOpen(true)
+                setSidebarTab('qa')
+              })
+            }
+            data-testid="cmd-run-qa"
+          >
+            <ShieldCheck />
+            <span>Run quality assurance</span>
+          </CommandItem>
+          <CommandItem onSelect={() => run(() => openAnalysis(true))} data-testid="cmd-analysis">
+            <BarChart3 />
+            <span>Show analysis</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => openAddTerm(''))}
+            data-testid="cmd-add-term"
+          >
+            <BookAddIcon />
+            <span>Add glossary term…</span>
+            <CommandShortcut>⌃E</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => openConcordance(''))}
+            data-testid="cmd-concordance"
+          >
+            <Database />
+            <span>Concordance search…</span>
+            <CommandShortcut>⌃⇧K</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
         <CommandGroup heading="Filter by status">
           {STATUS_FILTERS.map((f) => (
             <CommandItem
@@ -159,9 +232,14 @@ export function CommandPalette() {
     reviewMode,
     run,
     setSidebarTab,
+    setSidebarOpen,
     setStatusFilter,
     toggleReviewMode,
     togglePanel,
+    openFindReplace,
+    openAnalysis,
+    openAddTerm,
+    openConcordance,
   ])
 
   return (

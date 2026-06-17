@@ -15,8 +15,18 @@ import { StatusFilterBar } from './StatusFilterBar'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
+import { EditorToolbar } from './tools/EditorToolbar'
+import { FindReplaceDialog } from './findReplace/FindReplaceDialog'
+import { useFindReplaceStore } from './findReplace/useFindReplaceStore'
+import { AnalysisDialog } from './analysis/AnalysisDialog'
+import { useAnalysisStore } from './analysis/useAnalysisStore'
+import { AddTermDialog } from './glossary/AddTermDialog'
+import { ConcordanceDialog } from './concordance/ConcordanceDialog'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
-import { getMTSettings } from '@/storage/repositories/settingsRepo'
+import { getMTSettings, getEditorSettings } from '@/storage/repositories/settingsRepo'
+import { normalize } from '@/core/tm/similarity'
+import { pretranslate } from '@/core/tm/leverage'
+import { convertNumerals, isNumberOnly, numeralScriptForLang } from '@/core/numbers'
 import { XliffExportButton } from '@/features/bilingual/XliffExportButton'
 import type { Segment, SegmentStatus, MTProviderId } from '@/core/types'
 
@@ -41,6 +51,11 @@ export default function EditorPage() {
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
   const setActions = useEditorActionsStore((s) => s.setActions)
+  const setSidebarTab = useSidebarPanelStore((s) => s.setTab)
+  const setPanelOpen = useSidebarPanelStore((s) => s.setOpen)
+  const openFindReplace = useFindReplaceStore((s) => s.setOpen)
+  const openAnalysis = useAnalysisStore((s) => s.setOpen)
+  const [toolMsg, setToolMsg] = useState<string | null>(null)
 
   const registerTextarea = useCallback((index: number, el: HTMLTextAreaElement | null) => {
     textareaRefs.current[index] = el
@@ -101,6 +116,50 @@ export default function EditorPage() {
     [segments, focusIndex, project],
   )
 
+  const runPretranslate = useCallback(async (): Promise<void> => {
+    if (!project || !segments) return
+    const prefs = await getEditorSettings()
+    const memory = await tmRepo.byLangPair(project.sourceLang, project.targetLang)
+    const hits = pretranslate(segments, memory, { minScore: prefs.pretranslateThreshold })
+    await Promise.all(
+      hits.map((h) =>
+        segmentRepo.update(h.segmentId, {
+          target: h.target,
+          status: h.isExact ? 'translated' : 'draft',
+        }),
+      ),
+    )
+    setToolMsg(
+      hits.length
+        ? `Pre-translated ${hits.length} segment${hits.length === 1 ? '' : 's'} from TM.`
+        : 'No TM matches above threshold.',
+    )
+  }, [project, segments])
+
+  const populateNumbers = useCallback(async (): Promise<void> => {
+    if (!project || !segments) return
+    const script = numeralScriptForLang(project.targetLang)
+    const targets = segments.filter((s) => s.status === 'untranslated' && isNumberOnly(s.source))
+    await Promise.all(
+      targets.map((s) =>
+        segmentRepo.update(s.id, {
+          target: convertNumerals(s.source, script),
+          status: 'translated',
+        }),
+      ),
+    )
+    setToolMsg(
+      targets.length
+        ? `Populated ${targets.length} number-only segment${targets.length === 1 ? '' : 's'}.`
+        : 'No number-only segments to populate.',
+    )
+  }, [project, segments])
+
+  const runQA = useCallback(() => {
+    setPanelOpen(true)
+    setSidebarTab('qa')
+  }, [setPanelOpen, setSidebarTab])
+
   useEffect(() => {
     if (!segments || segments.length === 0) {
       setActions(null)
@@ -125,9 +184,19 @@ export default function EditorPage() {
         if (i >= 0 && i < segments.length) setFocusIndex(i)
       },
       translateCurrentWithMT: (providerId) => translateCurrentWithMT(providerId),
+      runPretranslate,
+      populateNumbers,
     })
     return () => setActions(null)
-  }, [segments, focusIndex, toggleReviewed, translateCurrentWithMT, setActions])
+  }, [
+    segments,
+    focusIndex,
+    toggleReviewed,
+    translateCurrentWithMT,
+    runPretranslate,
+    populateNumbers,
+    setActions,
+  ])
 
   if (!id) return null
 
@@ -171,6 +240,22 @@ export default function EditorPage() {
         })
       } catch (err) {
         console.warn('TM upsert failed', err)
+      }
+      // Auto-propagate: fill identical untranslated segments with this target as
+      // drafts, so repeated content is translated once (memoQ-style). Drafts,
+      // not confirmed, so the translator still reviews each one.
+      const prefs = await getEditorSettings()
+      if (prefs.autoPropagate) {
+        const key = normalize(fresh.source)
+        const repeats = segments.filter(
+          (s) => s.id !== fresh.id && s.status === 'untranslated' && normalize(s.source) === key,
+        )
+        if (repeats.length > 0) {
+          await Promise.all(
+            repeats.map((s) => segmentRepo.update(s.id, { target: fresh.target, status: 'draft' })),
+          )
+          setToolMsg(`Filled ${repeats.length} repeated segment${repeats.length === 1 ? '' : 's'}.`)
+        }
       }
     }
     if (i + 1 < segments.length) setFocusIndex(i + 1)
@@ -284,6 +369,29 @@ export default function EditorPage() {
           </div>
         </div>
 
+        <EditorToolbar
+          onPretranslate={() => void runPretranslate()}
+          onPopulateNumbers={() => void populateNumbers()}
+          onFindReplace={() => openFindReplace(true)}
+          onRunQA={runQA}
+          onAnalysis={() => openAnalysis(true)}
+        />
+
+        {toolMsg && (
+          <div
+            className="rounded-md border px-3 py-2 text-footnote"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'var(--color-fill)',
+              color: 'var(--color-muted)',
+            }}
+            data-testid="tool-message"
+            role="status"
+          >
+            {toolMsg}
+          </div>
+        )}
+
         <StatusFilterBar projectId={project.id} />
 
         {segments.length === 0 ? (
@@ -346,6 +454,11 @@ export default function EditorPage() {
           onApplyMT={handleApplyTM}
         />
       </div>
+
+      <FindReplaceDialog projectId={project.id} />
+      <AnalysisDialog project={project} />
+      <AddTermDialog projectId={project.id} targetLang={project.targetLang} />
+      <ConcordanceDialog project={project} />
     </div>
   )
 }
