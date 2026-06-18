@@ -1,29 +1,33 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { FilePlus, FileText, Upload, PencilLine, Download, Keyboard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { BrandFooter } from '@/components/layout/BrandFooter'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { ImportDialog } from '@/features/import/ImportDialog'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
+import { ProjectCard } from './ProjectCard'
 
-function formatRelative(iso: string): string {
-  const then = new Date(iso).getTime()
-  const now = Date.now()
-  const diffSec = Math.round((now - then) / 1000)
-  if (diffSec < 60) return 'just now'
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`
-  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`
-  return new Date(iso).toLocaleDateString()
-}
+type SortKey = 'updated' | 'name'
 
 export default function ProjectsPage() {
   const [importOpen, setImportOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<SortKey>('updated')
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
+
+  const visible = useMemo(() => {
+    if (!projects) return []
+    const q = query.trim().toLowerCase()
+    const rows = q ? projects.filter((p) => p.name.toLowerCase().includes(q)) : [...projects]
+    if (sort === 'name') rows.sort((a, b) => a.name.localeCompare(b.name))
+    // 'updated' order already comes from the repo (updatedAt desc).
+    return rows
+  }, [projects, query, sort])
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto">
@@ -48,29 +52,39 @@ export default function ProjectsPage() {
           onShortcuts={() => openShortcuts(true)}
         />
       ) : (
-        <ul className="flex flex-col gap-2" data-testid="project-list">
-          {projects.map((p) => (
-            <li key={p.id}>
-              <Link
-                to={`/project/${p.id}`}
-                className="flex items-center justify-between rounded-md border px-4 py-3 min-h-hit transition-colors hover:bg-[var(--color-fill)]"
-                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
-              >
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="text-callout font-medium truncate" style={{ color: 'var(--color-text)' }}>
-                    {p.name}
-                  </span>
-                  <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-                    Updated {formatRelative(p.updatedAt)}
-                  </span>
-                </div>
-                <Badge variant="outline" style={{ color: 'var(--color-muted)' }}>
-                  {p.sourceLang} → {p.targetLang}
-                </Badge>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              placeholder="Search projects…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              data-testid="project-search"
+              className="sm:flex-1"
+            />
+            <Select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              data-testid="project-sort"
+              className="sm:w-48"
+              aria-label="Sort projects"
+            >
+              <option value="updated">Recently updated</option>
+              <option value="name">Name (A–Z)</option>
+            </Select>
+          </div>
+
+          {visible.length === 0 ? (
+            <p className="text-callout" style={{ color: 'var(--color-muted)' }} data-testid="project-empty-search">
+              No projects match “{query}”.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2" data-testid="project-list">
+              {visible.map((p) => (
+                <ProjectCard key={p.id} project={p} />
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />

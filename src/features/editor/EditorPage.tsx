@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, Eye, PanelRight, PanelRightClose } from 'lucide-react'
+import { ChevronLeft, Eye, PanelRight, PanelRightClose, Pencil, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { projectRepo } from '@/storage/repositories/projectRepo'
@@ -22,6 +22,7 @@ import { AnalysisDialog } from './analysis/AnalysisDialog'
 import { useAnalysisStore } from './analysis/useAnalysisStore'
 import { AddTermDialog } from './glossary/AddTermDialog'
 import { ConcordanceDialog } from './concordance/ConcordanceDialog'
+import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
 import { getMTSettings, getEditorSettings } from '@/storage/repositories/settingsRepo'
 import { normalize } from '@/core/tm/similarity'
@@ -55,6 +56,7 @@ export default function EditorPage() {
   const setPanelOpen = useSidebarPanelStore((s) => s.setOpen)
   const openFindReplace = useFindReplaceStore((s) => s.setOpen)
   const openAnalysis = useAnalysisStore((s) => s.setOpen)
+  const openProjectDialog = useProjectDialogsStore((s) => s.open)
   const [toolMsg, setToolMsg] = useState<string | null>(null)
 
   const registerTextarea = useCallback((index: number, el: HTMLTextAreaElement | null) => {
@@ -338,6 +340,26 @@ export default function EditorPage() {
               {project.bilingualMeta?.format === 'xliff12' && (
                 <XliffExportButton project={project} segments={segments} />
               )}
+              <button
+                onClick={() => openProjectDialog('edit', project.id)}
+                aria-label="Edit project"
+                title="Edit project"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-[var(--color-fill)]"
+                style={{ color: 'var(--color-muted)' }}
+                data-testid="editor-edit-project"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
+                onClick={() => openProjectDialog('delete', project.id)}
+                aria-label="Delete project"
+                title="Delete project"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-[var(--color-fill)]"
+                style={{ color: 'var(--color-error)' }}
+                data-testid="editor-delete-project"
+              >
+                <Trash2 size={16} />
+              </button>
               <button
                 onClick={toggleReviewMode}
                 aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}
