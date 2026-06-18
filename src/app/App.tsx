@@ -4,6 +4,7 @@ import { AppRoutes } from './routes'
 import { CommandPalette } from '@/features/command-palette/CommandPalette'
 import { GlobalShortcuts } from '@/features/command-palette/useGlobalShortcuts'
 import { GlobalImportDialog } from '@/features/import/GlobalImportDialog'
+import { GlobalProjectDialogs } from '@/features/projects/GlobalProjectDialogs'
 import { QuickLookupDialog } from '@/features/lookup/QuickLookupDialog'
 import { ShortcutsDialog } from '@/features/shortcuts/ShortcutsDialog'
 import { UpdateBanner } from '@/pwa/UpdateBanner'
@@ -18,6 +19,7 @@ export default function App() {
       </AppShell>
       <CommandPalette />
       <GlobalImportDialog />
+      <GlobalProjectDialogs />
       <QuickLookupDialog />
       <ShortcutsDialog />
       <UpdateBanner />

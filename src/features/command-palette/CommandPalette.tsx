@@ -23,6 +23,9 @@ import {
   ShieldCheck,
   BarChart3,
   BookA as BookAddIcon,
+  Pencil,
+  Copy,
+  Trash2,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -44,6 +47,7 @@ import { useFindReplaceStore } from '@/features/editor/findReplace/useFindReplac
 import { useAnalysisStore } from '@/features/editor/analysis/useAnalysisStore'
 import { useAddTermStore } from '@/features/editor/glossary/useAddTermStore'
 import { useConcordanceStore } from '@/features/editor/concordance/useConcordanceStore'
+import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
 
@@ -75,9 +79,12 @@ export function CommandPalette() {
   const editorActions = useEditorActionsStore((s) => s.actions)
   const openImport = useImportDialogStore((s) => s.setOpen)
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
+  const openProjectDialog = useProjectDialogsStore((s) => s.open)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
 
-  const inEditor = Boolean(matchPath('/project/:id', pathname))
+  const projectMatch = matchPath('/project/:id', pathname)
+  const currentProjectId = projectMatch?.params.id
+  const inEditor = Boolean(projectMatch)
 
   const run = useCallback(
     (fn: () => void) => {
@@ -212,6 +219,36 @@ export function CommandPalette() {
             <CommandShortcut>⌃⇧K</CommandShortcut>
           </CommandItem>
         </CommandGroup>
+        <CommandGroup heading="Project">
+          <CommandItem
+            disabled={!currentProjectId}
+            onSelect={() => run(() => currentProjectId && openProjectDialog('edit', currentProjectId))}
+            data-testid="cmd-edit-project"
+          >
+            <Pencil />
+            <span>Edit project (rename / languages)…</span>
+          </CommandItem>
+          <CommandItem
+            disabled={!currentProjectId}
+            onSelect={() =>
+              run(() => currentProjectId && openProjectDialog('duplicate', currentProjectId))
+            }
+            data-testid="cmd-duplicate-project"
+          >
+            <Copy />
+            <span>Duplicate project…</span>
+          </CommandItem>
+          <CommandItem
+            disabled={!currentProjectId}
+            onSelect={() =>
+              run(() => currentProjectId && openProjectDialog('delete', currentProjectId))
+            }
+            data-testid="cmd-delete-project"
+          >
+            <Trash2 />
+            <span>Delete project…</span>
+          </CommandItem>
+        </CommandGroup>
         <CommandGroup heading="Filter by status">
           {STATUS_FILTERS.map((f) => (
             <CommandItem
@@ -240,6 +277,8 @@ export function CommandPalette() {
     openAnalysis,
     openAddTerm,
     openConcordance,
+    openProjectDialog,
+    currentProjectId,
   ])
 
   return (
