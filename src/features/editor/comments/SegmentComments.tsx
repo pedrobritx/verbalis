@@ -116,6 +116,7 @@ export function SegmentComments({ segmentId, comments, author }: SegmentComments
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Add a comment…"
+          autoResize
           rows={2}
           aria-label="New comment"
           data-testid={`comment-input-${segmentId}`}
