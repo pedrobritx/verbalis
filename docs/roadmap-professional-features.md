@@ -53,25 +53,43 @@ these first; the feature list then becomes mostly UI work.
 
 ### F1 — Rich segment editor (Lexical)
 
+**Status: foundation + formatting shipped (Phase 10, opt-in).** The Lexical core,
+formatting marks, case transforms, plain↔rich serialization and the
+editor-handle abstraction are in. Inline tags and tracked changes are the next
+two slices built on this core (see below).
+
 **Why:** bold/italic/underline/sub‑sup/case, inline tags (quotes, footnotes,
 bibliography), tracked changes and comment anchors all need rich text. Today a
 segment's `source`/`target` are plain strings edited in a `<textarea>`
 (`src/features/editor/SegmentRow.tsx`).
 
-**Approach:**
-- Introduce a `RichSegmentEditor` wrapping a Lexical instance per target cell,
-  behind a thin interface so the editor can be swapped/tested in isolation.
-- Define custom Lexical nodes: `FormatMark` (bold/italic/underline/sub/sup),
-  `InlineTagNode` (paired/standalone, carries the XLIFF tag payload), and later
-  `CommentMark` / `TrackedChangeMark` decorations.
-- **Serialization is the contract.** Store target as a structured JSON
-  (`targetRich?`) *plus* a derived plain‑text `target` (kept for TM matching,
-  QA, search, counters — all of which stay string‑based). XLIFF inline tags
-  already round‑trip via `bilingualMeta.inlineTags`
-  (`src/core/bilingual/xliff12.ts`); map `InlineTagNode` ↔ those numeric
-  placeholders so existing exports keep working.
-- Keep the plain `<textarea>` path as a fallback for code/heading segments and
-  for a "plain editing" preference.
+**Approach (what shipped):**
+- `RichSegmentEditor` (`src/features/editor/rich/`) wraps a Lexical instance per
+  target cell, lazy-loaded so Lexical (≈72 KB gzip) stays out of the main bundle
+  until rich mode is on. Both editors implement a thin `SegmentEditorHandle`
+  (`focus` / `insertText`) so `EditorPage` drives focus and glossary insertion
+  without knowing which editor a cell uses.
+- Formatting uses Lexical's **built-in** text formats (bold/italic/underline/
+  subscript/superscript) — no custom mark node needed — surfaced via a focus-time
+  `FormatToolbar` and keyboard shortcuts. Case transforms (UPPER/lower/Title/
+  Sentence) are pure functions in `src/core/text/case.ts` applied to the
+  selection.
+- **Serialization is the contract.** Target is stored as Lexical JSON
+  (`Segment.targetRich`) *plus* the derived plain‑text `target`, which stays the
+  source of truth for TM matching, QA, search and counters. `richStateToPlain`
+  (`src/core/editor/richText.ts`) derives plain text headlessly and is
+  unit-tested, so storage always agrees with what TM/QA see.
+- The plain `<textarea>` remains the default and the fallback for code segments;
+  rich mode is a `richEditing` editor preference. TM/MT apply clears `targetRich`
+  so the rich editor rebuilds cleanly from the applied plain text.
+
+**Next slices on this core:**
+- `InlineTagNode` (paired/standalone) carrying the XLIFF tag payload, mapped ↔
+  the numeric placeholders already round-tripped via `bilingualMeta.inlineTags`
+  (`src/core/bilingual/xliff12.ts`) — for quotes / footnotes / bibliography.
+- `CommentMark` / `TrackedChangeMark` decorations once F2 (CRDT history) lands.
+- Flip rich mode on by default once inline tags + broader (IME/paste/e2e)
+  testing are in.
 
 **Risk:** IME/undo/paste correctness, and keeping `target` (plain) and
 `targetRich` in sync. Mitigate with a single source‑of‑truth (Lexical state) and
@@ -135,7 +153,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 |---|---|---|---|
 | **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
 | **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
-| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms, inline tags (quotes/footnotes/bibliography) | F1 |
+| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅ (opt-in); inline tags next | F1 |
 | **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
@@ -152,15 +170,16 @@ foundation work.
 
 ### A. Editing core & formatting
 
-**Text styling — bold / italic / underline / sub‑sup / case** *(Phase 10)*
+**Text styling — bold / italic / underline / sub‑sup / case** *(shipped, Phase 10, opt-in)*
 - memoQ: ribbon Format group + `Ctrl+B/I/U`, `Ctrl+Shift+=` etc.
-- Verbalis: a minimal floating format bar on selection + the same keystrokes;
-  `FormatMark` Lexical nodes. Case capitalization (UPPER/lower/Title/Sentence)
-  as a command‑palette action and selection menu — pure string transforms, no
-  storage change.
-- Round‑trip: marks map to XLIFF `<bpt>/<ept>` or HTML run styling on export.
+- Verbalis: a focus-time `FormatToolbar` + `Ctrl+B/I/U`, using Lexical's built-in
+  text formats (bold/italic/underline/subscript/superscript). Case
+  (UPPER/lower/Title/Sentence) is a toolbar menu backed by pure transforms in
+  `src/core/text/case.ts` — no storage change. Marks persist in `targetRich`.
+- Round‑trip to XLIFF `<bpt>/<ept>` run styling on export is a follow-up (lands
+  with inline tags).
 
-**Inline tagging — quotes, footnotes, bibliography** *(Phase 10)*
+**Inline tagging — quotes, footnotes, bibliography** *(next slice on F1)*
 - memoQ: numbered inline tags `{1}…{2}` that must be carried to the target.
 - Verbalis: `InlineTagNode` rendered as a compact chip ("¹", "❝", "biblio")
   with hover detail. A "Tags" mini‑panel lists source tags; one key inserts the
@@ -323,7 +342,8 @@ All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
 |---|---|---|
 | v4 | `Segment.comments?: SegmentComment[]` *(Phase 8)* | Inline, no index needed; no migration required |
 | v4 | `Segment.locked?: boolean` *(Phase 9)* | Orthogonal lock flag; not indexed, no migration required |
-| v5 | `Segment.targetRich?` (Lexical JSON), `sourceRich?` | Plain `target` kept as derived field for TM/QA/search |
+| v4 | `Segment.targetRich?` (Lexical JSON) *(Phase 10)* | Plain `target` stays the derived source of truth; not indexed, no migration |
+| v5 | `Segment.sourceRich?` (when source becomes rich) | Future, with inline tags |
 | v6 | `versions` table `{id, projectId, label, snapshot, createdAt}` | Project snapshots; per‑segment history lives in the Yjs doc |
 | v6 | Yjs doc per project via `y-indexeddb` (outside Dexie) | Dexie stays the query layer |
 | v7 | `resources` versioning fields; `peers`/share metadata | Collaboration + resource sync |

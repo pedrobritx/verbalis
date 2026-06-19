@@ -28,12 +28,19 @@ export interface EditorSettings {
   pretranslateThreshold: number
   /** Per-rule enable flags for Quality Assurance. */
   qaRules: QARuleToggles
+  /**
+   * Use the rich-text target editor (bold/italic/underline/sub-sup, case
+   * transforms) instead of the plain textarea. Opt-in while the rich editor
+   * foundation matures; code segments always stay plain.
+   */
+  richEditing: boolean
 }
 
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
   autoPropagate: true,
   pretranslateThreshold: 0.75,
   qaRules: { ...DEFAULT_QA_RULES },
+  richEditing: false,
 }
 
 export const DEFAULT_LOOKUP_SETTINGS: LookupSettings = {
@@ -127,6 +134,7 @@ export function mergeEditorSettings(stored: Partial<EditorSettings> | undefined)
     pretranslateThreshold:
       stored.pretranslateThreshold ?? DEFAULT_EDITOR_SETTINGS.pretranslateThreshold,
     qaRules: { ...DEFAULT_QA_RULES, ...(stored.qaRules ?? {}) },
+    richEditing: stored.richEditing ?? DEFAULT_EDITOR_SETTINGS.richEditing,
   }
 }
 

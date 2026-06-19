@@ -64,6 +64,13 @@ export interface Segment {
   index: number
   source: string
   target: string
+  /**
+   * Serialized Lexical editor state (JSON) when the target was edited in rich
+   * mode. `target` always holds the derived plain text and stays the source of
+   * truth for TM matching, QA, search and counters; `targetRich` is the
+   * formatting/inline-tag layer on top. Absent for plain-text targets.
+   */
+  targetRich?: string
   status: SegmentStatus
   /**
    * Lock flag, orthogonal to `status`: a locked segment keeps its translation

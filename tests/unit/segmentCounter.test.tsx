@@ -18,21 +18,25 @@ function segment(over: Partial<Segment> = {}): Segment {
   }
 }
 
+const rowProps = {
+  isFocused: false,
+  reviewMode: false,
+  isBilingual: false,
+  canJoinNext: false,
+  richEditing: false,
+  onConfirm: () => {},
+  onToggleReviewed: () => {},
+  onJoin: () => {},
+  onMoveFocus: () => {},
+  onFocus: () => {},
+  registerHandle: () => {},
+}
+
 afterEach(cleanup)
 
 describe('SegmentRow counter', () => {
   it('shows source word/char counts even with empty target', () => {
-    render(
-      <SegmentRow
-        segment={segment({ source: 'Hello world' })}
-        isFocused={false}
-        onConfirm={() => {}}
-        onToggleReviewed={() => {}}
-        onMoveFocus={() => {}}
-        onFocus={() => {}}
-        registerTextarea={() => {}}
-      />,
-    )
+    render(<SegmentRow segment={segment({ source: 'Hello world' })} {...rowProps} />)
     expect(screen.getByText(/src 2w · 11c/i)).toBeInTheDocument()
   })
 
@@ -44,12 +48,7 @@ describe('SegmentRow counter', () => {
           target: 'Hello world, this is a much longer translation that pads',
           status: 'draft',
         })}
-        isFocused={false}
-        onConfirm={() => {}}
-        onToggleReviewed={() => {}}
-        onMoveFocus={() => {}}
-        onFocus={() => {}}
-        registerTextarea={() => {}}
+        {...rowProps}
       />,
     )
     const ratio = screen.getByText(/\d\.\d{2}×/)

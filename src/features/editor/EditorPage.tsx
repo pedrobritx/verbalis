@@ -32,6 +32,8 @@ import {
 import { EditorTips } from './EditorTips'
 import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
 import { canJoin } from '@/core/segments/operations'
+import { useEditorSettings } from './useEditorSettings'
+import type { SegmentEditorHandle } from './SegmentEditorHandle'
 import { normalize } from '@/core/tm/similarity'
 import { pretranslate } from '@/core/tm/leverage'
 import { convertNumerals, isNumberOnly, numeralScriptForLang } from '@/core/numbers'
@@ -45,7 +47,8 @@ export default function EditorPage() {
   const profile = useLiveQuery(() => getProfileSettings(), [])
   const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
-  const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([])
+  const editorHandles = useRef<Array<SegmentEditorHandle | null>>([])
+  const { richEditing } = useEditorSettings()
   const panelOpen = useSidebarPanelStore((s) => s.open)
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
@@ -68,13 +71,12 @@ export default function EditorPage() {
   const openProjectDialog = useProjectDialogsStore((s) => s.open)
   const [toolMsg, setToolMsg] = useState<string | null>(null)
 
-  const registerTextarea = useCallback((index: number, el: HTMLTextAreaElement | null) => {
-    textareaRefs.current[index] = el
+  const registerHandle = useCallback((index: number, handle: SegmentEditorHandle | null) => {
+    editorHandles.current[index] = handle
   }, [])
 
   useEffect(() => {
-    const el = textareaRefs.current[focusIndex]
-    if (el && document.activeElement !== el) el.focus()
+    editorHandles.current[focusIndex]?.focus()
   }, [focusIndex])
 
   const visibleSegments = useMemo(() => {
@@ -294,35 +296,16 @@ export default function EditorPage() {
     const seg = segments[focusIndex]
     if (!seg || seg.locked) return
     const nextStatus = seg.status === 'untranslated' ? 'draft' : seg.status
-    await segmentRepo.update(seg.id, { target, status: nextStatus })
-    const el = textareaRefs.current[focusIndex]
-    if (el) el.focus()
+    // Clear any rich state so the (rich) editor rebuilds from this plain text.
+    await segmentRepo.update(seg.id, { target, targetRich: undefined, status: nextStatus })
+    editorHandles.current[focusIndex]?.focus()
   }
 
-  const handleInsertGlossary = async (text: string) => {
+  const handleInsertGlossary = (text: string) => {
     const seg = segments[focusIndex]
-    const el = textareaRefs.current[focusIndex]
-    if (!seg || seg.locked || !el) return
-    const start = el.selectionStart ?? el.value.length
-    const end = el.selectionEnd ?? el.value.length
-    const before = el.value.slice(0, start)
-    const after = el.value.slice(end)
-    const newValue = before + text + after
-    const trimmed = newValue.trim()
-    const nextStatus =
-      seg.status === 'untranslated' && trimmed.length > 0 ? 'draft' : seg.status
-    await segmentRepo.update(seg.id, { target: newValue, status: nextStatus })
-    requestAnimationFrame(() => {
-      const target = textareaRefs.current[focusIndex]
-      if (!target) return
-      target.focus()
-      const caret = start + text.length
-      try {
-        target.setSelectionRange(caret, caret)
-      } catch {
-        // selection range not supported on this element type — ignore.
-      }
-    })
+    if (!seg || seg.locked) return
+    // The per-segment editor (plain or rich) owns caret insertion and autosave.
+    editorHandles.current[focusIndex]?.insertText(text)
   }
 
   const focusedSource = segments[focusIndex]?.source
@@ -474,13 +457,14 @@ export default function EditorPage() {
                   originalIndex + 1 < segments.length &&
                   canJoin(seg, segments[originalIndex + 1])
                 }
+                richEditing={richEditing}
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}
                 onJoin={() => handleJoin(originalIndex)}
                 onMoveFocus={(dir) => moveFocus(originalIndex, dir)}
                 onFocus={() => setFocusIndex(originalIndex)}
-                registerTextarea={(el) => registerTextarea(originalIndex, el)}
+                registerHandle={(h) => registerHandle(originalIndex, h)}
               />
             ))}
           </div>
