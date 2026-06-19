@@ -39,16 +39,20 @@ src/
 └── workers/      — Web Workers via Comlink
 ```
 
-## Storage Schema (v1)
+## Storage Schema (v3)
 
 | Table | Indexes |
 |---|---|
 | projects | id, name, updatedAt |
 | segments | id, projectId, index, status |
-| tm | id, source, sourceLang, targetLang, projectId |
+| tm | id, source, sourceLang, targetLang, projectId, corpusId |
 | glossary | id, term, projectId |
+| settings | &key |
+| embeddings | id, tmId, model, [tmId+model] |
+| corpusTerms | id, corpusId |
+| corpusPacks | id |
 
-Migrations are handled by Dexie's versioning system (`this.version(N).stores(...)`). Always increment, never modify existing version blocks.
+Migrations are handled by Dexie's versioning system (`this.version(N).stores(...)`). Always increment, never modify existing version blocks. v3 adds the bundled-corpora tables and a `corpusId` index on `tm` (so TM entries seeded from a corpus can be removed when the pack is uninstalled).
 
 ## Deployment
 
@@ -100,3 +104,14 @@ Phase 6 introduces three machine translation providers and an opt-in semantic TM
 - **Worker code-splitting**. `vite.config.ts` sets `worker.format: 'es'` because IIFE workers can't dynamically import `@xenova/transformers`. `optimizeDeps.exclude: ['@xenova/transformers']` keeps the library out of the prebundle. The final build splits `transformers-*.js` (~830 KB) into a separate chunk that only loads when the user enables semantic TM.
 - **Model caching**. A new Workbox `runtimeCaching` rule (`CacheFirst`, `^https://huggingface.co/.*/resolve/.*`, 1-year max, `rangeRequests: true`) caches the embedding-model files so subsequent cold starts work offline after the one-time download.
 - **Out of scope**: streaming MT (Ollama supports it; v1 is single-shot for simplicity), batch "translate all empty segments" (possible follow-up), encrypted key storage (not meaningful client-side), auto-translating on segment focus.
+
+## Bundled terminology corpora (PT→EN)
+
+A catalogue of pre-curated Brazilian-Portuguese→British-English terminology that ships with the app and is installed by field/area into the user's working set. Source data is the consolidated CADE / Noronha / TIPS termbase (~35k pairs) from the `pt-en-legal-translation` skill.
+
+- **Build-time data prep (`scripts/build-corpora.mjs`)** reads `scripts/data/master_glossary.csv` (`pt,en,domain,source,note`), classifies each pair into a curated field via priority-ordered keyword rules (competition, tax, IP, labour, corporate, accounting-finance, criminal, civil-procedure, academic, contracts, with `general-legal` as the catch-all), de-duplicates on the pt+en pair, and writes one compact JSON pack per field plus `manifest.json` into `public/corpora/`. Re-run with `pnpm build-corpora` after editing the CSV or the `FIELDS` rules. Packs are disjoint (single primary field assignment) so install counts stay clean. The classification is keyword-heuristic by design — the bulk of the general legal termbase falls through to `general-legal`.
+- **Static assets, not precache.** Pack JSON (one is ~1.7 MB) is fetched on demand, never bundled into JS and excluded from the SW precache (`workbox.globPatterns` only globs js/css/html/ico/png/svg/woff2). A `runtimeCaching` rule (`StaleWhileRevalidate`, `/(corpora|guide)/.*\.(json|md)$`) keeps installed packs and the guide available offline after first use.
+- **Core (`src/core/corpus/`)**: `manifest.ts` fetches the catalogue/packs (resolving URLs against `import.meta.env.BASE_URL`); `match.ts` is an efficient whole-word matcher that scales to tens of thousands of terms — it builds a first-token index once (`buildCorpusIndex`) and, per segment, only tests candidate terms whose first word actually appears (`findCorpusHits`), preferring the longest match per position. `keySideForSourceLang` picks which side of the PT→EN corpus to match against based on the project's source language (PT source → PT side; EN source → EN side, suggesting PT). This avoids the per-entry regex cost of the hand-curated glossary matcher, which is fine for small user glossaries but would not survive 35k rows.
+- **Storage (`corpusRepo`)** keeps corpus terms in their own `corpusTerms` table (separate from the user's editable `glossary`, for performance) and tracks install state in `corpusPacks`. `install()` persists terms, records the pack, and optionally seeds the TM (`db.tm.bulkAdd`, tagged with `corpusId`); `uninstall()` removes the terms, the record, and any TM entries it seeded. Re-install is idempotent (uninstall-then-install).
+- **UI**: `/corpora` (`src/features/corpora/`) is the catalogue — one card per field with term count, provenance, an "Also add to TM" toggle, and install/remove. The editor Glossary panel surfaces corpus hits under a "From corpora" divider alongside hand-curated glossary hits (`useCorpusMatches` is only mounted when the Glossary tab is active, so there is no cost otherwise). The Glossary page shows an install summary banner linking to `/corpora`.
+- **Translation guide (`/guide`, `src/features/guide/`)** renders the skill's workflow, standards/conventions and translation-theory reference docs (shipped as `public/guide/*.md`) via a small mdast→React renderer (`Markdown.tsx`) built on the existing `unified`+`remark-gfm` stack — no new dependency, no `dangerouslySetInnerHTML`.

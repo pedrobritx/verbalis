@@ -64,6 +64,9 @@ export interface TMEntry {
   targetLang: string
   projectId?: string
   date: string
+  // Set when this entry was seeded from a bundled terminology corpus, so the
+  // pack (and only its entries) can be removed cleanly on uninstall.
+  corpusId?: string
 }
 
 export interface TMMatch {

@@ -1,10 +1,13 @@
 import { useEffect } from 'react'
 import type { GlossaryHit } from '@/core/glossary/match'
+import type { CorpusHit } from '@/core/corpus/match'
 import { useGlossaryMatches } from './useGlossaryMatches'
+import { useCorpusMatches } from '../corpus/useCorpusMatches'
 
 interface GlossaryPanelProps {
   focusedSource: string | undefined
   projectId: string | undefined
+  sourceLang?: string
   targetLang: string
   onInsert: (text: string) => void
 }
@@ -111,13 +114,70 @@ function HitCard({
   )
 }
 
+function CorpusHitCard({
+  hit,
+  index,
+  onInsert,
+}: {
+  hit: CorpusHit
+  index: number
+  onInsert: (text: string) => void
+}) {
+  return (
+    <div
+      data-testid={`corpus-hit-${index}`}
+      data-corpus-term={hit.term.source}
+      className="flex flex-col gap-2 rounded-md border p-3 text-sm"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+          {hit.matchedSide === 'source' ? hit.term.source : hit.term.target}
+        </span>
+        <button
+          onClick={() => onInsert(hit.suggestion)}
+          className="shrink-0 text-xs px-2 py-1 rounded transition-colors hover:opacity-80"
+          style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
+          data-testid={`corpus-insert-${index}`}
+        >
+          Insert
+        </button>
+      </div>
+      <div className="text-sm break-words" style={{ color: 'var(--color-text)' }}>
+        {hit.suggestion}
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span
+          className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide"
+          style={{ background: 'var(--color-accent-fill)', color: 'var(--color-accent)' }}
+        >
+          {hit.term.corpusId}
+        </span>
+        <span
+          className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px]"
+          style={{ border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}
+        >
+          {hit.term.origin}
+        </span>
+      </div>
+      {hit.term.note && (
+        <div className="text-xs italic break-words" style={{ color: 'var(--color-muted)' }}>
+          {hit.term.note}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function GlossaryPanel({
   focusedSource,
   projectId,
+  sourceLang,
   targetLang,
   onInsert,
 }: GlossaryPanelProps) {
   const hits = useGlossaryMatches(focusedSource, projectId)
+  const corpusHits = useCorpusMatches(focusedSource, sourceLang)
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -147,7 +207,7 @@ export function GlossaryPanel({
     )
   }
 
-  if (hits.length === 0) {
+  if (hits.length === 0 && corpusHits.length === 0) {
     return (
       <p
         className="text-xs"
@@ -170,6 +230,21 @@ export function GlossaryPanel({
           onInsert={onInsert}
         />
       ))}
+      {corpusHits.length > 0 && (
+        <>
+          <div
+            className="flex items-center gap-2 pt-1 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--color-muted)' }}
+            data-testid="corpus-hits-heading"
+          >
+            <span>From corpora</span>
+            <span className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+          </div>
+          {corpusHits.map((hit, i) => (
+            <CorpusHitCard key={hit.term.id} hit={hit} index={i} onInsert={onInsert} />
+          ))}
+        </>
+      )}
     </div>
   )
 }

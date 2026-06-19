@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "generate-icons": "node scripts/generate-icons.mjs"
+    "generate-icons": "node scripts/generate-icons.mjs",
+    "build-corpora": "node scripts/build-corpora.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

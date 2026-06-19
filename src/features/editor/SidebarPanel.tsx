@@ -98,6 +98,7 @@ export function SidebarPanel({
           <GlossaryPanel
             focusedSource={focusedSource}
             projectId={projectId}
+            sourceLang={sourceLang}
             targetLang={targetLang}
             onInsert={onInsertGlossary}
           />
