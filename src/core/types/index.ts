@@ -42,6 +42,22 @@ export interface BilingualSegmentMeta {
   inlineTags?: Record<string, string>
 }
 
+/**
+ * A threaded note attached to a segment. Stored inline on the segment (not its
+ * own table) because comments are always read and written alongside their
+ * segment and never queried independently. The shape is intentionally close to
+ * what real-time collaboration will need later (author identity, timestamps,
+ * resolve state) so the data layer does not have to change when sync lands.
+ */
+export interface SegmentComment {
+  id: string
+  body: string
+  /** Display name of the author, when a profile identity is set. */
+  author?: string
+  createdAt: string
+  resolved?: boolean
+}
+
 export interface Segment {
   id: string
   projectId: string
@@ -52,6 +68,7 @@ export interface Segment {
   sourceMeta?: SegmentSourceMeta
   bilingualMeta?: BilingualSegmentMeta
   note?: string
+  comments?: SegmentComment[]
   createdAt: string
   updatedAt: string
 }

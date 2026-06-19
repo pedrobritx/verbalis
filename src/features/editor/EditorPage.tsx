@@ -24,7 +24,12 @@ import { AddTermDialog } from './glossary/AddTermDialog'
 import { ConcordanceDialog } from './concordance/ConcordanceDialog'
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
-import { getMTSettings, getEditorSettings } from '@/storage/repositories/settingsRepo'
+import {
+  getMTSettings,
+  getEditorSettings,
+  getProfileSettings,
+} from '@/storage/repositories/settingsRepo'
+import { EditorTips } from './EditorTips'
 import { normalize } from '@/core/tm/similarity'
 import { pretranslate } from '@/core/tm/leverage'
 import { convertNumerals, isNumberOnly, numeralScriptForLang } from '@/core/numbers'
@@ -35,6 +40,8 @@ export default function EditorPage() {
   const { id } = useParams() as { id?: string }
   const project = useLiveQuery(() => (id ? projectRepo.getById(id) : undefined), [id])
   const segments = useProjectSegments(id)
+  const profile = useLiveQuery(() => getProfileSettings(), [])
+  const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
   const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([])
   const panelOpen = useSidebarPanelStore((s) => s.open)
@@ -399,6 +406,8 @@ export default function EditorPage() {
           onAnalysis={() => openAnalysis(true)}
         />
 
+        <EditorTips />
+
         {toolMsg && (
           <div
             className="rounded-md border px-3 py-2 text-footnote"
@@ -438,6 +447,8 @@ export default function EditorPage() {
                 key={seg.id}
                 segment={seg}
                 isFocused={originalIndex === focusIndex}
+                reviewMode={reviewMode}
+                commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}
                 onMoveFocus={(dir) => moveFocus(originalIndex, dir)}

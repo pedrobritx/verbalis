@@ -1,11 +1,29 @@
-import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { PanelLeftClose, PanelLeft, Info, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from './navItems'
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+  const { pathname } = useLocation()
+  // Collapse automatically while inside a project editor so the translation
+  // grid gets the full width; manual toggles override until the next time the
+  // editor is (re)entered. `null` means "follow the auto behaviour".
+  const inEditor = pathname.startsWith('/project/')
+  const [manual, setManual] = useState<boolean | null>(null)
+  const collapsed = manual ?? inEditor
+
+  useEffect(() => {
+    // Re-arm the automatic behaviour each time the editor is entered or left.
+    setManual(null)
+  }, [inEditor])
+
+  const setCollapsed = (next: boolean | ((c: boolean) => boolean)) => {
+    setManual((prev) => {
+      const current = prev ?? inEditor
+      return typeof next === 'function' ? next(current) : next
+    })
+  }
 
   return (
     <aside

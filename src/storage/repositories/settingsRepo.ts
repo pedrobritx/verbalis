@@ -6,6 +6,20 @@ export const MT_SETTINGS_KEY = 'mt.providers'
 export const SEMANTIC_TM_KEY = 'tm.semantic'
 export const LOOKUP_SETTINGS_KEY = 'lookup.defaults'
 export const EDITOR_SETTINGS_KEY = 'editor.prefs'
+export const PROFILE_SETTINGS_KEY = 'profile.identity'
+
+/**
+ * Local identity for authored actions (comments today; tracked changes and
+ * collaboration peers later). Stays on-device like everything else.
+ */
+export interface ProfileSettings {
+  /** Name attached to comments and, later, tracked changes / sync peers. */
+  displayName: string
+}
+
+export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
+  displayName: '',
+}
 
 export interface EditorSettings {
   /** Auto-fill identical untranslated segments when one is confirmed. */
@@ -123,4 +137,16 @@ export async function getEditorSettings(): Promise<EditorSettings> {
 
 export function setEditorSettings(settings: EditorSettings): Promise<unknown> {
   return settingsRepo.set(EDITOR_SETTINGS_KEY, settings)
+}
+
+export function mergeProfileSettings(
+  stored: Partial<ProfileSettings> | undefined,
+): ProfileSettings {
+  if (!stored) return { ...DEFAULT_PROFILE_SETTINGS }
+  return { ...DEFAULT_PROFILE_SETTINGS, ...stored }
+}
+
+export async function getProfileSettings(): Promise<ProfileSettings> {
+  const stored = await settingsRepo.get<Partial<ProfileSettings>>(PROFILE_SETTINGS_KEY)
+  return mergeProfileSettings(stored)
 }

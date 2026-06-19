@@ -1,5 +1,5 @@
 import { db } from '@/storage/db'
-import type { Segment, SegmentStatus } from '@/core/types'
+import type { Segment, SegmentComment, SegmentStatus } from '@/core/types'
 
 export type StatusCounts = Record<SegmentStatus, number>
 
@@ -31,4 +31,33 @@ export const segmentRepo = {
     for (const r of rows) counts[r.status] += 1
     return counts
   },
+
+  // Comments are stored inline on the segment, so every mutation is a
+  // read-modify-write inside a transaction to avoid clobbering a concurrent
+  // edit to the same row.
+  addComment: (id: string, comment: SegmentComment) =>
+    db.transaction('rw', db.segments, async () => {
+      const seg = await db.segments.get(id)
+      if (!seg) return
+      const comments = [...(seg.comments ?? []), comment]
+      await db.segments.update(id, { comments, updatedAt: new Date().toISOString() })
+    }),
+
+  updateComment: (id: string, commentId: string, changes: Partial<SegmentComment>) =>
+    db.transaction('rw', db.segments, async () => {
+      const seg = await db.segments.get(id)
+      if (!seg?.comments) return
+      const comments = seg.comments.map((c) =>
+        c.id === commentId ? { ...c, ...changes } : c,
+      )
+      await db.segments.update(id, { comments, updatedAt: new Date().toISOString() })
+    }),
+
+  deleteComment: (id: string, commentId: string) =>
+    db.transaction('rw', db.segments, async () => {
+      const seg = await db.segments.get(id)
+      if (!seg?.comments) return
+      const comments = seg.comments.filter((c) => c.id !== commentId)
+      await db.segments.update(id, { comments, updatedAt: new Date().toISOString() })
+    }),
 }
