@@ -13,6 +13,7 @@ const TIPS: Tip[] = [
   { label: 'Review', body: 'Ctrl/⌘+Shift+Enter marks a segment reviewed; Ctrl/⌘+Shift+R toggles review mode.' },
   { label: 'Comments', body: 'Use the 💬 button on a row to leave a note for yourself or a reviewer.' },
   { label: 'Edit source', body: 'The “Source” pencil under the source text lets you fix a mis-segmented original.' },
+  { label: 'Segments', body: 'The ⋯ menu on a row splits, joins (Ctrl/⌘+J), or locks a segment.' },
   { label: 'Everything', body: 'Press Ctrl/⌘+K to open the command palette and search every action.' },
 ]
 

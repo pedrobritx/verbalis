@@ -1,11 +1,44 @@
 import sbd from 'sbd'
 
+// sbd's `abbreviations` option *replaces* its built-in English list rather than
+// extending it, so we ship the English defaults verbatim and append a curated
+// set of Portuguese and legal/academic abbreviations. Lookups strip trailing
+// symbols (sbd does `str.replace(/[.…]/, '')` before matching), so entries are
+// listed without their dot: "Art" matches "Art.". This keeps the segmenter from
+// breaking a sentence after e.g. "Art. 5º", "Dr.", "fls.", "p. ex." — common in
+// the Brazilian legal text Verbalis targets.
+
+const ENGLISH_ABBREVIATIONS = [
+  'al', 'adj', 'assn', 'Ave', 'BSc', 'MSc', 'Cell', 'Ch', 'Co', 'cc', 'Corp',
+  'Dem', 'Dept', 'ed', 'eg', 'Eq', 'Eqs', 'est', 'etc', 'Ex', 'ext', 'Fig',
+  'fig', 'Figs', 'figs', 'i.e', 'ie', 'Inc', 'inc', 'Jan', 'Feb', 'Mar', 'Apr',
+  'Jun', 'Jul', 'Aug', 'Sep', 'Sept', 'Oct', 'Nov', 'Dec', 'jr', 'mi', 'Miss',
+  'Mrs', 'Mr', 'Ms', 'Mol', 'mt', 'mts', 'no', 'Nos', 'PhD', 'MD', 'BA', 'MA',
+  'MM', 'pl', 'pop', 'pp', 'Prof', 'Dr', 'pt', 'Ref', 'Refs', 'Rep', 'repr',
+  'rev', 'Sec', 'Secs', 'Sgt', 'Col', 'Gen', 'Sen', 'Gov', 'Lt', 'Maj', 'Capt',
+  'St', 'Sr', 'sr', 'Jr', 'Rev', 'Sun', 'Mon', 'Tu', 'Tue', 'Tues', 'Wed', 'Th',
+  'Thu', 'Thur', 'Thurs', 'Fri', 'Sat', 'trans', 'Univ', 'Viz', 'Vol', 'vs', 'v',
+]
+
+// Portuguese (esp. Brazilian legal / academic) non-breaking abbreviations.
+const PT_LEGAL_ABBREVIATIONS = [
+  'Art', 'art', 'arts', 'Arts', 'inc', 'incs', 'par', 'parágrafo', 'cf', 'cit',
+  'op', 'pág', 'págs', 'pag', 'pags', 'fl', 'fls', 'séc', 'sécs', 'ss', 'segs',
+  'Ltda', 'Cia', 'Dra', 'Sra', 'Srta', 'Profa', 'Exmo', 'Exma', 'Ilmo', 'Ilma',
+  'núm', 'nº', 'art', 'apud', 'ed', 'org', 'orgs', 'coord', 'trad', 'rel',
+  'proc', 'jul', 'min', 'des', 'rel', 'ac', 'súm', 'CF', 'CC', 'CPC', 'CPP',
+  'CLT', 'CTN', 'CDC',
+]
+
+const ABBREVIATIONS = Array.from(new Set([...ENGLISH_ABBREVIATIONS, ...PT_LEGAL_ABBREVIATIONS]))
+
 const SBD_OPTIONS = {
   newline_boundaries: false,
   html_boundaries: false,
   sanitize: false,
   allowed_tags: false,
   preserve_whitespace: false,
+  abbreviations: ABBREVIATIONS,
 } as const
 
 export function splitSentences(text: string): string[] {

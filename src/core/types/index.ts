@@ -65,6 +65,14 @@ export interface Segment {
   source: string
   target: string
   status: SegmentStatus
+  /**
+   * Lock flag, orthogonal to `status`: a locked segment keeps its translation
+   * status but is read-only and excluded from batch operations (pre-translate,
+   * number population, auto-propagation). Kept separate from the `locked`
+   * status value so locking a reviewed segment doesn't discard that it was
+   * reviewed.
+   */
+  locked?: boolean
   sourceMeta?: SegmentSourceMeta
   bilingualMeta?: BilingualSegmentMeta
   note?: string
