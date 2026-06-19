@@ -30,6 +30,8 @@ import {
   getProfileSettings,
 } from '@/storage/repositories/settingsRepo'
 import { EditorTips } from './EditorTips'
+import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
+import { canJoin } from '@/core/segments/operations'
 import { normalize } from '@/core/tm/similarity'
 import { pretranslate } from '@/core/tm/leverage'
 import { convertNumerals, isNumberOnly, numeralScriptForLang } from '@/core/numbers'
@@ -129,7 +131,11 @@ export default function EditorPage() {
     if (!project || !segments) return
     const prefs = await getEditorSettings()
     const memory = await tmRepo.byLangPair(project.sourceLang, project.targetLang)
-    const hits = pretranslate(segments, memory, { minScore: prefs.pretranslateThreshold })
+    const hits = pretranslate(
+      segments.filter((s) => !s.locked),
+      memory,
+      { minScore: prefs.pretranslateThreshold },
+    )
     await Promise.all(
       hits.map((h) =>
         segmentRepo.update(h.segmentId, {
@@ -148,7 +154,9 @@ export default function EditorPage() {
   const populateNumbers = useCallback(async (): Promise<void> => {
     if (!project || !segments) return
     const script = numeralScriptForLang(project.targetLang)
-    const targets = segments.filter((s) => s.status === 'untranslated' && isNumberOnly(s.source))
+    const targets = segments.filter(
+      (s) => s.status === 'untranslated' && !s.locked && isNumberOnly(s.source),
+    )
     await Promise.all(
       targets.map((s) =>
         segmentRepo.update(s.id, {
@@ -228,14 +236,22 @@ export default function EditorPage() {
     )
   }
 
+  const isBilingual = project.bilingualMeta?.format === 'xliff12'
+
   const moveFocus = (from: number, direction: -1 | 1) => {
     const next = from + direction
     if (next >= 0 && next < segments.length) setFocusIndex(next)
   }
 
-  const confirm = async (i: number) => {
+  const handleJoin = async (i: number) => {
     const seg = segments[i]
     if (!seg) return
+    await segmentRepo.joinWithNext(project.id, seg.id)
+  }
+
+  const confirm = async (i: number) => {
+    const seg = segments[i]
+    if (!seg || seg.locked) return
     await segmentRepo.update(seg.id, { status: 'translated' })
     const fresh = await segmentRepo.getById(seg.id)
     if (fresh?.target && fresh.target.trim()) {
@@ -257,7 +273,11 @@ export default function EditorPage() {
       if (prefs.autoPropagate) {
         const key = normalize(fresh.source)
         const repeats = segments.filter(
-          (s) => s.id !== fresh.id && s.status === 'untranslated' && normalize(s.source) === key,
+          (s) =>
+            s.id !== fresh.id &&
+            s.status === 'untranslated' &&
+            !s.locked &&
+            normalize(s.source) === key,
         )
         if (repeats.length > 0) {
           await Promise.all(
@@ -272,7 +292,7 @@ export default function EditorPage() {
 
   const handleApplyTM = async (target: string) => {
     const seg = segments[focusIndex]
-    if (!seg) return
+    if (!seg || seg.locked) return
     const nextStatus = seg.status === 'untranslated' ? 'draft' : seg.status
     await segmentRepo.update(seg.id, { target, status: nextStatus })
     const el = textareaRefs.current[focusIndex]
@@ -282,7 +302,7 @@ export default function EditorPage() {
   const handleInsertGlossary = async (text: string) => {
     const seg = segments[focusIndex]
     const el = textareaRefs.current[focusIndex]
-    if (!seg || !el) return
+    if (!seg || seg.locked || !el) return
     const start = el.selectionStart ?? el.value.length
     const end = el.selectionEnd ?? el.value.length
     const before = el.value.slice(0, start)
@@ -448,9 +468,16 @@ export default function EditorPage() {
                 segment={seg}
                 isFocused={originalIndex === focusIndex}
                 reviewMode={reviewMode}
+                isBilingual={isBilingual}
+                canJoinNext={
+                  !isBilingual &&
+                  originalIndex + 1 < segments.length &&
+                  canJoin(seg, segments[originalIndex + 1])
+                }
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}
+                onJoin={() => handleJoin(originalIndex)}
                 onMoveFocus={(dir) => moveFocus(originalIndex, dir)}
                 onFocus={() => setFocusIndex(originalIndex)}
                 registerTextarea={(el) => registerTextarea(originalIndex, el)}
@@ -489,6 +516,7 @@ export default function EditorPage() {
       </div>
 
       <FindReplaceDialog projectId={project.id} />
+      <SplitSegmentDialog projectId={project.id} />
       <AnalysisDialog project={project} />
       <AddTermDialog projectId={project.id} targetLang={project.targetLang} />
       <ConcordanceDialog project={project} />

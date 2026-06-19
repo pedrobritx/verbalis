@@ -133,8 +133,8 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 
 | Phase | Theme | Headline deliverables | Depends on |
 |---|---|---|---|
-| **8** | **Editor UX wins** *(this PR)* | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
-| **9** | **Segment handling** | Split / merge / join / lock / insert / move, non‑breaking abbreviation list | — |
+| **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
+| **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
 | **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms, inline tags (quotes/footnotes/bibliography) | F1 |
 | **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
@@ -175,17 +175,32 @@ foundation work.
   change* and, for bilingual projects, is flagged because it diverges from the
   imported skeleton.
 
-**Segment handling — split / merge / join / lock / insert / move** *(Phase 9)*
+**Segment handling — lock / split / join** *(shipped, Phase 9)*
 - memoQ: `Ctrl+T` split, `Ctrl+J` join, lock, etc.
-- Verbalis: row context menu + palette actions operating on the ordered segment
-  list. `locked` status already exists in the `SegmentStatus` union and
-  `StatusPill`; wire up lock/unlock and exclude locked rows from edits,
-  pre‑translate and propagation. Split/merge re‑index siblings within a Dexie
-  transaction and update `sourceMeta.sentenceIndex`.
+- Verbalis: a per‑row **⋯ actions menu** (`segments/SegmentActionsMenu.tsx`) plus
+  keyboard parity (`Ctrl/⌘+J` join). **Lock** is an *orthogonal* `Segment.locked`
+  flag — not the `locked` status value — so a locked reviewed segment keeps its
+  reviewed state; locked rows become read‑only and are excluded from confirm,
+  pre‑translate, number population and auto‑propagation (`EditorPage.tsx`).
+  **Split** uses a caret‑position dialog (`segments/SplitSegmentDialog.tsx`);
+  **split/join** re‑index siblings atomically via `bulkPut` inside a Dexie
+  transaction (`segmentRepo.splitSegment` / `joinWithNext`), with pure decision
+  logic in `core/segments/operations.ts` (`splitSourceText`, `canJoin`,
+  `mergeStatus`). Join is restricted to the same source block; the merged status
+  is the *less complete* of the two.
+- **Bilingual guard:** split/join are disabled for XLIFF projects because export
+  maps strictly by `transUnitId` against a stored template — a split/merged
+  segment has no matching trans‑unit and would be dropped. Lock works for both.
+- **Deferred within the phase:** insert‑empty and move/reorder. They share the
+  re‑index machinery but add little value against the same XLIFF round‑trip risk;
+  revisit once rich content (F1) and versioning (F2) land.
 
-**Abbreviations handler** *(Phases 9 & 11)*
+**Abbreviations handler** *(non‑breaking list shipped Phase 9; AutoCorrect Phase 11)*
 - Two distinct needs: (1) a **non‑breaking abbreviation list** so the segmenter
-  doesn't split "Art. 5º" — extends `src/core/segmentation/sbdOptions.ts`;
+  doesn't split "Art. 5º" — extends `src/core/segmentation/sbdOptions.ts` with the
+  English defaults plus a curated PT/legal set (sbd *replaces* rather than extends
+  its list, so both are shipped). ✅ Phase 9.
+  (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
   (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
   on input. Both are editable lists in Settings, seeded with PT/EN defaults.
 
@@ -306,7 +321,8 @@ All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
 
 | Version | Change | Notes |
 |---|---|---|
-| v4 | `Segment.comments?: SegmentComment[]` *(this PR)* | Inline, no index needed; no migration required |
+| v4 | `Segment.comments?: SegmentComment[]` *(Phase 8)* | Inline, no index needed; no migration required |
+| v4 | `Segment.locked?: boolean` *(Phase 9)* | Orthogonal lock flag; not indexed, no migration required |
 | v5 | `Segment.targetRich?` (Lexical JSON), `sourceRich?` | Plain `target` kept as derived field for TM/QA/search |
 | v6 | `versions` table `{id, projectId, label, snapshot, createdAt}` | Project snapshots; per‑segment history lives in the Yjs doc |
 | v6 | Yjs doc per project via `y-indexeddb` (outside Dexie) | Dexie stays the query layer |

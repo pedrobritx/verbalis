@@ -135,4 +135,70 @@ describe('segmentRepo', () => {
     const stored = await db.segments.get(seg.id)
     expect(stored?.comments?.map((c) => c.id)).toEqual(['c2'])
   })
+
+  it('setLocked sets and clears the lock flag', async () => {
+    const seg = makeSeg()
+    await segmentRepo.bulkCreate([seg])
+    await segmentRepo.setLocked(seg.id, true)
+    expect((await db.segments.get(seg.id))?.locked).toBe(true)
+    await segmentRepo.setLocked(seg.id, false)
+    expect((await db.segments.get(seg.id))?.locked).toBeUndefined()
+  })
+
+  it('splitSegment divides the source and re-indexes following segments', async () => {
+    await segmentRepo.bulkCreate([
+      makeSeg({ index: 0, source: 'A' }),
+      makeSeg({ index: 1, source: 'Hello world', target: 'Olá mundo', status: 'translated' }),
+      makeSeg({ index: 2, source: 'C' }),
+    ])
+    const rows = await segmentRepo.byProject('p1')
+    const newId = await segmentRepo.splitSegment('p1', rows[1].id, 5)
+    expect(newId).not.toBeNull()
+
+    const after = await segmentRepo.byProject('p1')
+    expect(after.map((s) => s.source)).toEqual(['A', 'Hello', 'world', 'C'])
+    expect(after.map((s) => s.index)).toEqual([0, 1, 2, 3])
+    // First part keeps its translation; the new part is untranslated and empty.
+    expect(after[1].target).toBe('Olá mundo')
+    expect(after[1].status).toBe('translated')
+    expect(after[2].target).toBe('')
+    expect(after[2].status).toBe('untranslated')
+  })
+
+  it('splitSegment returns null for an offset that cannot split', async () => {
+    const seg = makeSeg({ index: 0, source: 'word' })
+    await segmentRepo.bulkCreate([seg])
+    expect(await segmentRepo.splitSegment('p1', seg.id, 0)).toBeNull()
+    expect(await segmentRepo.byProject('p1')).toHaveLength(1)
+  })
+
+  it('joinWithNext merges sources, targets and re-indexes', async () => {
+    const meta = { kind: 'paragraph' as const, blockIndex: 0, sentenceIndex: 0 }
+    await segmentRepo.bulkCreate([
+      makeSeg({ index: 0, source: 'One.', target: 'Um.', status: 'translated', sourceMeta: { ...meta, sentenceIndex: 0 } }),
+      makeSeg({ index: 1, source: 'Two.', target: '', status: 'untranslated', sourceMeta: { ...meta, sentenceIndex: 1 } }),
+      makeSeg({ index: 2, source: 'Three.', sourceMeta: { ...meta, sentenceIndex: 2 } }),
+    ])
+    const rows = await segmentRepo.byProject('p1')
+    const ok = await segmentRepo.joinWithNext('p1', rows[0].id)
+    expect(ok).toBe(true)
+
+    const after = await segmentRepo.byProject('p1')
+    expect(after).toHaveLength(2)
+    expect(after.map((s) => s.source)).toEqual(['One. Two.', 'Three.'])
+    expect(after.map((s) => s.index)).toEqual([0, 1])
+    expect(after[0].target).toBe('Um.')
+    // Less complete of translated + untranslated wins.
+    expect(after[0].status).toBe('untranslated')
+  })
+
+  it('joinWithNext refuses to join across source blocks', async () => {
+    await segmentRepo.bulkCreate([
+      makeSeg({ index: 0, source: 'Heading', sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 } }),
+      makeSeg({ index: 1, source: 'Body', sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 } }),
+    ])
+    const rows = await segmentRepo.byProject('p1')
+    expect(await segmentRepo.joinWithNext('p1', rows[0].id)).toBe(false)
+    expect(await segmentRepo.byProject('p1')).toHaveLength(2)
+  })
 })

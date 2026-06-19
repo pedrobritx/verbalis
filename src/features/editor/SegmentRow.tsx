@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { Check, Eye, MessageSquare, Pencil } from 'lucide-react'
+import { Check, Eye, Lock, MessageSquare, Pencil } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import type { Segment } from '@/core/types'
 import { StatusPill } from './StatusPill'
 import { SegmentComments } from './comments/SegmentComments'
+import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
+import { useSegmentOpsStore } from './segments/useSegmentOpsStore'
 
 function countWords(text: string): number {
   const trimmed = text.trim()
@@ -17,10 +19,15 @@ interface SegmentRowProps {
   segment: Segment
   isFocused: boolean
   reviewMode: boolean
+  /** XLIFF projects can't split/join without breaking round-trip. */
+  isBilingual: boolean
+  /** Whether the following segment can be joined into this one. */
+  canJoinNext: boolean
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
   onConfirm: () => void
   onToggleReviewed: () => void
+  onJoin: () => void
   onMoveFocus: (direction: -1 | 1) => void
   onFocus: () => void
   registerTextarea: (el: HTMLTextAreaElement | null) => void
@@ -32,9 +39,12 @@ export function SegmentRow({
   segment,
   isFocused,
   reviewMode,
+  isBilingual,
+  canJoinNext,
   commentAuthor,
   onConfirm,
   onToggleReviewed,
+  onJoin,
   onMoveFocus,
   onFocus,
   registerTextarea,
@@ -46,6 +56,8 @@ export function SegmentRow({
   const lastSavedSourceRef = useRef(segment.source)
   const [commentsOpen, setCommentsOpen] = useState(false)
   const commentCount = segment.comments?.length ?? 0
+  const locked = !!segment.locked
+  const openSplit = useSegmentOpsStore((s) => s.openSplit)
 
   useEffect(() => {
     if (segment.target !== lastSavedRef.current) {
@@ -104,8 +116,18 @@ export function SegmentRow({
       onToggleReviewed()
       return
     }
+    // Ctrl/⌘+J joins this segment with the next (memoQ parity), when allowed.
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'j' || e.key === 'J')) {
+      e.preventDefault()
+      if (!isBilingual && canJoinNext) {
+        await flushTarget()
+        onJoin()
+      }
+      return
+    }
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
+      if (locked) return
       // Flush latest text first; await so EditorPage.confirm sees current DB state.
       await flushTarget()
       onConfirm()
@@ -132,6 +154,7 @@ export function SegmentRow({
   }
 
   async function toggleEditSource() {
+    if (locked) return
     if (editingSource && sourceDraft !== lastSavedSourceRef.current) {
       lastSavedSourceRef.current = sourceDraft
       await segmentRepo.update(segment.id, { source: sourceDraft })
@@ -152,10 +175,11 @@ export function SegmentRow({
       data-segment-row
       data-segment-id={segment.id}
       data-segment-index={segment.index}
+      data-locked={locked ? 'true' : undefined}
       className="flex flex-col gap-2 rounded-md border px-3 py-2"
       style={{
         borderColor: isFocused ? 'var(--color-accent)' : 'var(--color-border)',
-        background: 'var(--color-surface)',
+        background: locked ? 'var(--color-fill-secondary)' : 'var(--color-surface)',
       }}
     >
       <div className="grid grid-cols-[2rem_1fr] md:grid-cols-[2.5rem_1fr_1fr_auto] gap-2 md:gap-3">
@@ -189,18 +213,20 @@ export function SegmentRow({
                 {segment.source}
               </div>
             )}
-            <button
-              type="button"
-              onClick={() => void toggleEditSource()}
-              aria-label={editingSource ? 'Done editing source' : 'Edit source'}
-              title={editingSource ? 'Done editing source' : 'Edit source'}
-              data-testid={`edit-source-${segment.index}`}
-              className="inline-flex items-center gap-1 self-start text-[10px] uppercase tracking-wider transition-opacity hover:opacity-100 opacity-60"
-              style={{ color: 'var(--color-muted)' }}
-            >
-              <Pencil size={11} />
-              {editingSource ? 'Done' : 'Source'}
-            </button>
+            {!locked && (
+              <button
+                type="button"
+                onClick={() => void toggleEditSource()}
+                aria-label={editingSource ? 'Done editing source' : 'Edit source'}
+                title={editingSource ? 'Done editing source' : 'Edit source'}
+                data-testid={`edit-source-${segment.index}`}
+                className="inline-flex items-center gap-1 self-start text-[10px] uppercase tracking-wider transition-opacity hover:opacity-100 opacity-60"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                <Pencil size={11} />
+                {editingSource ? 'Done' : 'Source'}
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-1 min-w-0">
@@ -210,10 +236,12 @@ export function SegmentRow({
               onChange={(e) => setTarget(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={onFocus}
-              placeholder="Translation…"
+              readOnly={locked}
+              placeholder={locked ? 'Locked' : 'Translation…'}
               rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
               data-testid={`target-${segment.index}`}
               aria-describedby={`seg-${segment.index}-counter`}
+              style={locked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
             />
             <SegmentCounter
               id={`seg-${segment.index}-counter`}
@@ -223,19 +251,35 @@ export function SegmentRow({
           </div>
 
           <div className="flex flex-row md:flex-col items-center md:items-start gap-2 md:pt-2">
-            <StatusPill status={segment.status} />
+            <div className="flex items-center gap-1.5">
+              <StatusPill status={segment.status} />
+              {locked && (
+                <span
+                  className="inline-flex items-center"
+                  style={{ color: 'var(--color-muted)' }}
+                  title="Locked"
+                  aria-label="Locked"
+                  data-testid={`lock-indicator-${segment.index}`}
+                >
+                  <Lock size={12} />
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => void handleConfirmClick()}
+                disabled={locked}
                 aria-label={reviewMode ? 'Mark reviewed' : 'Confirm segment'}
                 title={
-                  reviewMode
+                  locked
+                    ? 'Segment is locked'
+                    : reviewMode
                     ? 'Mark reviewed (Ctrl+Shift+Enter)'
                     : 'Confirm segment (Ctrl+Enter)'
                 }
                 data-testid={`confirm-${segment.index}`}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-md border transition-colors hover:bg-[var(--color-fill)]"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-md border transition-colors hover:bg-[var(--color-fill)] disabled:opacity-40 disabled:pointer-events-none"
                 style={{
                   borderColor: 'var(--color-border)',
                   color: reviewMode ? 'var(--color-accent)' : 'var(--color-confirm)',
@@ -267,6 +311,14 @@ export function SegmentRow({
                   </span>
                 )}
               </button>
+              <SegmentActionsMenu
+                locked={locked}
+                isBilingual={isBilingual}
+                canJoinNext={canJoinNext}
+                onToggleLock={() => void segmentRepo.setLocked(segment.id, !locked)}
+                onSplit={() => openSplit(segment.id)}
+                onJoin={onJoin}
+              />
             </div>
           </div>
         </div>
