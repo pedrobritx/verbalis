@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { Check, Eye, Lock, MessageSquare, Pencil } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,6 +8,13 @@ import { StatusPill } from './StatusPill'
 import { SegmentComments } from './comments/SegmentComments'
 import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
 import { useSegmentOpsStore } from './segments/useSegmentOpsStore'
+import type { SegmentEditorHandle } from './SegmentEditorHandle'
+
+// Lexical only loads when rich editing is actually used, keeping it out of the
+// main bundle for the default (plain-text) path.
+const RichSegmentEditor = lazy(() =>
+  import('./rich/RichSegmentEditor').then((m) => ({ default: m.RichSegmentEditor })),
+)
 
 function countWords(text: string): number {
   const trimmed = text.trim()
@@ -23,6 +30,8 @@ interface SegmentRowProps {
   isBilingual: boolean
   /** Whether the following segment can be joined into this one. */
   canJoinNext: boolean
+  /** Use the Lexical rich-text target editor (code segments stay plain). */
+  richEditing: boolean
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
   onConfirm: () => void
@@ -30,7 +39,7 @@ interface SegmentRowProps {
   onJoin: () => void
   onMoveFocus: (direction: -1 | 1) => void
   onFocus: () => void
-  registerTextarea: (el: HTMLTextAreaElement | null) => void
+  registerHandle: (handle: SegmentEditorHandle | null) => void
 }
 
 const AUTOSAVE_DELAY_MS = 300
@@ -41,13 +50,14 @@ export function SegmentRow({
   reviewMode,
   isBilingual,
   canJoinNext,
+  richEditing,
   commentAuthor,
   onConfirm,
   onToggleReviewed,
   onJoin,
   onMoveFocus,
   onFocus,
-  registerTextarea,
+  registerHandle,
 }: SegmentRowProps) {
   const [target, setTarget] = useState(segment.target)
   const lastSavedRef = useRef(segment.target)
@@ -58,6 +68,34 @@ export function SegmentRow({
   const commentCount = segment.comments?.length ?? 0
   const locked = !!segment.locked
   const openSplit = useSegmentOpsStore((s) => s.openSplit)
+  const isCode = segment.sourceMeta?.kind === 'code'
+  const useRich = richEditing && !isCode
+
+  // Plain-path focusable handle: wraps the textarea so the page can drive focus
+  // and glossary insertion uniformly across plain and rich editors.
+  const taElRef = useRef<HTMLTextAreaElement | null>(null)
+  const plainHandleRef = useRef<SegmentEditorHandle>({
+    focus: () => taElRef.current?.focus(),
+    insertText: (text) => {
+      const el = taElRef.current
+      if (!el) return
+      const start = el.selectionStart ?? el.value.length
+      const end = el.selectionEnd ?? el.value.length
+      const next = el.value.slice(0, start) + text + el.value.slice(end)
+      setTarget(next)
+      requestAnimationFrame(() => {
+        const node = taElRef.current
+        if (!node) return
+        node.focus()
+        const caret = start + text.length
+        try {
+          node.setSelectionRange(caret, caret)
+        } catch {
+          // selection range not supported — ignore.
+        }
+      })
+    },
+  })
 
   useEffect(() => {
     if (segment.target !== lastSavedRef.current) {
@@ -162,7 +200,6 @@ export function SegmentRow({
     setEditingSource((v) => !v)
   }
 
-  const isCode = segment.sourceMeta?.kind === 'code'
   const isHeading = segment.sourceMeta?.kind === 'heading'
   const sourceTextClass = isCode
     ? 'whitespace-pre-wrap break-words text-sm'
@@ -230,23 +267,59 @@ export function SegmentRow({
           </div>
 
           <div className="flex flex-col gap-1 min-w-0">
-            <Textarea
-              ref={registerTextarea}
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={onFocus}
-              readOnly={locked}
-              placeholder={locked ? 'Locked' : 'Translation…'}
-              rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
-              data-testid={`target-${segment.index}`}
-              aria-describedby={`seg-${segment.index}-counter`}
-              style={locked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
-            />
+            {useRich ? (
+              <Suspense
+                fallback={
+                  <div
+                    className="min-h-[2.5rem] rounded-md border px-3 py-2 text-sm"
+                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
+                  >
+                    {segment.target || 'Translation…'}
+                  </div>
+                }
+              >
+                <RichSegmentEditor
+                  key={segment.id}
+                  segmentId={segment.id}
+                  index={segment.index}
+                  initialPlain={segment.target}
+                  initialRich={segment.targetRich}
+                  externalPlain={segment.target}
+                  externalRich={segment.targetRich}
+                  status={segment.status}
+                  locked={locked}
+                  isBilingual={isBilingual}
+                  canJoinNext={canJoinNext}
+                  registerHandle={registerHandle}
+                  onFocus={onFocus}
+                  onConfirm={onConfirm}
+                  onToggleReviewed={onToggleReviewed}
+                  onJoin={onJoin}
+                  onMoveFocus={onMoveFocus}
+                />
+              </Suspense>
+            ) : (
+              <Textarea
+                ref={(el) => {
+                  taElRef.current = el
+                  registerHandle(el ? plainHandleRef.current : null)
+                }}
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={onFocus}
+                readOnly={locked}
+                placeholder={locked ? 'Locked' : 'Translation…'}
+                rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
+                data-testid={`target-${segment.index}`}
+                aria-describedby={`seg-${segment.index}-counter`}
+                style={locked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
+              />
+            )}
             <SegmentCounter
               id={`seg-${segment.index}-counter`}
               source={segment.source}
-              target={target}
+              target={useRich ? segment.target : target}
             />
           </div>
 

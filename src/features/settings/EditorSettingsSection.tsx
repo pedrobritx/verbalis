@@ -53,6 +53,25 @@ export function EditorSettingsSection() {
         />
       </label>
 
+      <label
+        className="flex items-center justify-between gap-3 text-callout"
+        style={{ color: 'var(--color-text)' }}
+      >
+        <span className="flex flex-col">
+          Rich text editing
+          <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
+            Edit targets with bold/italic/underline, sub-/superscript and case
+            transforms. Code segments stay plain.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          checked={draft.richEditing}
+          onChange={(e) => void save({ ...draft, richEditing: e.target.checked })}
+          data-testid="settings-rich-editing"
+        />
+      </label>
+
       <label className="flex flex-col gap-1 text-footnote" style={{ color: 'var(--color-muted)' }}>
         Pre-translate threshold: {thresholdPct}%
         <input

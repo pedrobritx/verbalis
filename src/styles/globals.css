@@ -143,3 +143,27 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Rich segment editor (Lexical) text-format marks. Class names map from
+   RICH_THEME in src/core/editor/richText.ts. */
+.rsg-bold {
+  font-weight: 700;
+}
+.rsg-italic {
+  font-style: italic;
+}
+.rsg-underline {
+  text-decoration: underline;
+}
+.rsg-subscript {
+  font-size: 0.75em;
+  vertical-align: sub;
+}
+.rsg-superscript {
+  font-size: 0.75em;
+  vertical-align: super;
+}
+/* Allow soft line breaks inside a single-paragraph segment cell. */
+.rsg-editor p {
+  margin: 0;
+}
