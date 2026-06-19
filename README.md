@@ -41,6 +41,11 @@ isn't a setting you toggle — it's the architecture.
   MultiTerm, so it drops into existing CAT pipelines.
 - 🧠 **Smart assist** — translation memory, glossary matching and optional
   on-device semantic search to reuse past work.
+- 📚 **Bundled corpora** — install pre-curated PT→EN legal, competition
+  (CADE/antitrust), economic and technical terminology by field; it feeds
+  glossary matching and quick lookup, and can optionally seed your TM. A
+  built-in translation guide covers the workflow and British-English/ABNT
+  conventions.
 
 ## Tech
 

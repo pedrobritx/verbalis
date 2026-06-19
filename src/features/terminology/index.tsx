@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Plus, Trash2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, Trash2, Library } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
+import { corpusRepo } from '@/storage/repositories/corpusRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import type { GlossaryEntry, Project } from '@/core/types'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -39,9 +41,44 @@ const EMPTY_DRAFT: GlossaryEditDraft = {
   notes: '',
 }
 
+function CorporaBanner({
+  packs,
+}: {
+  packs: Array<{ id: string; count: number }> | undefined
+}) {
+  const installedCount = packs?.length ?? 0
+  const termTotal = (packs ?? []).reduce((sum, p) => sum + p.count, 0)
+  return (
+    <Link
+      to="/corpora"
+      className="flex items-center justify-between gap-3 rounded-md border px-4 py-3 transition-colors hover:bg-[var(--color-fill)]"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      data-testid="corpora-banner"
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <Library size={18} style={{ color: 'var(--color-accent)' }} className="shrink-0" />
+        <div className="min-w-0">
+          <p className="text-callout font-medium" style={{ color: 'var(--color-text)' }}>
+            PT→EN legal &amp; economic corpora
+          </p>
+          <p className="text-footnote truncate" style={{ color: 'var(--color-muted)' }}>
+            {installedCount === 0
+              ? 'Install pre-curated terminology by field to power glossary hits.'
+              : `${installedCount} pack${installedCount === 1 ? '' : 's'} · ${termTotal.toLocaleString()} terms feeding glossary & lookup.`}
+          </p>
+        </div>
+      </div>
+      <span className="text-footnote shrink-0" style={{ color: 'var(--color-accent)' }}>
+        Manage →
+      </span>
+    </Link>
+  )
+}
+
 export default function TerminologyPage() {
   const entries = useLiveQuery(() => glossaryRepo.getAll(), [])
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
+  const corpusPacks = useLiveQuery(() => corpusRepo.getAllPacks(), [])
   const [query, setQuery] = useState('')
   const [projectFilter, setProjectFilter] = useState<string>(ALL_PROJECTS)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -144,6 +181,8 @@ export default function TerminologyPage() {
           </>
         }
       />
+
+      <CorporaBanner packs={corpusPacks} />
 
       <WiktionaryLookup onAddToGlossary={handleAddFromWiktionary} />
 

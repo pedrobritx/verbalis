@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "generatedAt": "2026-06-19T12:21:38.478Z",
+  "langSource": "pt",
+  "langTarget": "en",
+  "total": 34777,
+  "packs": [
+    {
+      "id": "competition",
+      "label": "Competition & Antitrust",
+      "description": "CADE competition law: cartels, merger control, leniency, abuse of dominance, antitrust enforcement.",
+      "count": 2760,
+      "sources": {
+        "Noronha": 119,
+        "CADE": 2562,
+        "CADE+TIPS": 9,
+        "CADE+Noronha": 62,
+        "TIPS": 3,
+        "CADE+Noronha+TIPS": 4,
+        "Noronha+TIPS": 1
+      },
+      "file": "competition.json"
+    },
+    {
+      "id": "tax",
+      "label": "Tax",
+      "description": "Tax and fiscal terminology: direct and indirect taxes, withholding, tax procedure.",
+      "count": 483,
+      "sources": {
+        "Noronha": 476,
+        "TIPS": 6,
+        "Noronha+TIPS": 1
+      },
+      "file": "tax.json"
+    },
+    {
+      "id": "ip",
+      "label": "Intellectual Property",
+      "description": "Trademarks, patents, copyright, industrial and intellectual property.",
+      "count": 111,
+      "sources": {
+        "Noronha": 111
+      },
+      "file": "ip.json"
+    },
+    {
+      "id": "labour",
+      "label": "Labour & Employment",
+      "description": "Employment law, labour courts, CLT, social security and workplace terminology.",
+      "count": 331,
+      "sources": {
+        "Noronha": 325,
+        "TIPS": 5,
+        "Noronha+TIPS": 1
+      },
+      "file": "labour.json"
+    },
+    {
+      "id": "corporate",
+      "label": "Corporate & M&A",
+      "description": "Company law, shareholders, corporate governance, mergers, acquisitions and restructuring.",
+      "count": 425,
+      "sources": {
+        "Noronha": 390,
+        "TIPS": 34,
+        "Noronha+TIPS": 1
+      },
+      "file": "corporate.json"
+    },
+    {
+      "id": "accounting-finance",
+      "label": "Accounting & Finance",
+      "description": "Accounting, auditing, financial statements, banking and capital-markets terminology.",
+      "count": 288,
+      "sources": {
+        "Noronha": 279,
+        "TIPS": 6,
+        "Noronha+TIPS": 3
+      },
+      "file": "accounting-finance.json"
+    },
+    {
+      "id": "criminal",
+      "label": "Criminal Law",
+      "description": "Criminal law and procedure: offences, penalties, prosecution and the penal code.",
+      "count": 383,
+      "sources": {
+        "Noronha": 378,
+        "TIPS": 4,
+        "Noronha+TIPS": 1
+      },
+      "file": "criminal.json"
+    },
+    {
+      "id": "civil-procedure",
+      "label": "Civil Procedure & Litigation",
+      "description": "Court procedure, pleadings, appeals, injunctions, judgments and enforcement.",
+      "count": 996,
+      "sources": {
+        "Noronha": 969,
+        "TIPS": 27
+      },
+      "file": "civil-procedure.json"
+    },
+    {
+      "id": "academic",
+      "label": "Academic & Scholarly",
+      "description": "Academic writing, citation (ABNT/NBR), theses and scholarly apparatus.",
+      "count": 30,
+      "sources": {
+        "Noronha": 30
+      },
+      "file": "academic.json"
+    },
+    {
+      "id": "contracts",
+      "label": "Contracts & Obligations",
+      "description": "Contract drafting and the law of obligations: clauses, leases, guarantees, performance.",
+      "count": 1151,
+      "sources": {
+        "Noronha": 1124,
+        "TIPS": 27
+      },
+      "file": "contracts.json"
+    },
+    {
+      "id": "general-legal",
+      "label": "General Legal",
+      "description": "Broad Brazilian legal terminology not specific to a single field — the catch-all corpus.",
+      "count": 27819,
+      "sources": {
+        "Noronha": 27280,
+        "TIPS": 515,
+        "Noronha+TIPS": 24
+      },
+      "file": "general-legal.json"
+    }
+  ]
+}

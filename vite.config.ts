@@ -50,6 +50,17 @@ export default defineConfig({
         navigateFallback: '/verbalis/index.html',
         runtimeCaching: [
           {
+            // Bundled terminology corpora and the translation guide — fetched on
+            // demand, cached so they remain available offline after first use.
+            urlPattern: /\/(corpora|guide)\/.*\.(json|md)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'verbalis-corpora',
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/[a-z]{2,3}\.wiktionary\.org\/api\/rest_v1\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
