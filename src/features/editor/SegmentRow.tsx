@@ -236,7 +236,8 @@ export function SegmentRow({
                 onBlur={() => void toggleEditSource()}
                 aria-label={`Edit source ${segment.index + 1}`}
                 data-testid={`source-edit-${segment.index}`}
-                rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
+                autoResize
+                rows={1}
                 autoFocus
               />
             ) : (
@@ -309,8 +310,9 @@ export function SegmentRow({
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
                 readOnly={locked}
+                autoResize
                 placeholder={locked ? 'Locked' : 'Translation…'}
-                rows={Math.max(1, Math.min(8, segment.source.split('\n').length))}
+                rows={1}
                 data-testid={`target-${segment.index}`}
                 aria-describedby={`seg-${segment.index}-counter`}
                 style={locked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
