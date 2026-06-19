@@ -83,4 +83,56 @@ describe('segmentRepo', () => {
     expect(left).toHaveLength(1)
     expect(left[0].projectId).toBe('p2')
   })
+
+  it('addComment appends to an empty thread and refreshes updatedAt', async () => {
+    const created = '2020-01-01T00:00:00.000Z'
+    const seg = makeSeg({ createdAt: created, updatedAt: created })
+    await segmentRepo.bulkCreate([seg])
+    await segmentRepo.addComment(seg.id, {
+      id: 'c1',
+      body: 'Check this term',
+      author: 'Pedro',
+      createdAt: created,
+    })
+    const stored = await db.segments.get(seg.id)
+    expect(stored?.comments).toHaveLength(1)
+    expect(stored?.comments?.[0].body).toBe('Check this term')
+    expect(stored?.updatedAt).not.toBe(created)
+  })
+
+  it('addComment preserves earlier comments', async () => {
+    const seg = makeSeg()
+    await segmentRepo.bulkCreate([seg])
+    await segmentRepo.addComment(seg.id, { id: 'c1', body: 'first', createdAt: 'x' })
+    await segmentRepo.addComment(seg.id, { id: 'c2', body: 'second', createdAt: 'y' })
+    const stored = await db.segments.get(seg.id)
+    expect(stored?.comments?.map((c) => c.id)).toEqual(['c1', 'c2'])
+  })
+
+  it('updateComment toggles resolve state on the right comment only', async () => {
+    const seg = makeSeg({
+      comments: [
+        { id: 'c1', body: 'a', createdAt: 'x' },
+        { id: 'c2', body: 'b', createdAt: 'y' },
+      ],
+    })
+    await segmentRepo.bulkCreate([seg])
+    await segmentRepo.updateComment(seg.id, 'c2', { resolved: true })
+    const stored = await db.segments.get(seg.id)
+    expect(stored?.comments?.find((c) => c.id === 'c1')?.resolved).toBeUndefined()
+    expect(stored?.comments?.find((c) => c.id === 'c2')?.resolved).toBe(true)
+  })
+
+  it('deleteComment removes only the targeted comment', async () => {
+    const seg = makeSeg({
+      comments: [
+        { id: 'c1', body: 'a', createdAt: 'x' },
+        { id: 'c2', body: 'b', createdAt: 'y' },
+      ],
+    })
+    await segmentRepo.bulkCreate([seg])
+    await segmentRepo.deleteComment(seg.id, 'c1')
+    const stored = await db.segments.get(seg.id)
+    expect(stored?.comments?.map((c) => c.id)).toEqual(['c2'])
+  })
 })

@@ -4,6 +4,7 @@ import { MTSettingsSection } from './MTSettingsSection'
 import { SemanticTMSection } from './SemanticTMSection'
 import { LookupSettingsSection } from './LookupSettingsSection'
 import { EditorSettingsSection } from './EditorSettingsSection'
+import { ProfileSettingsSection } from './ProfileSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -49,6 +50,10 @@ export default function SettingsPage() {
         <Row label="Version" value={APP_VERSION} testId="settings-version" />
         <Row label="Build" value={BUILD_SHA} testId="settings-build-sha" />
         <Row label="Built at" value={BUILD_TIME} testId="settings-build-time" />
+      </Section>
+
+      <Section title="Identity">
+        <ProfileSettingsSection />
       </Section>
 
       <MTSettingsSection />

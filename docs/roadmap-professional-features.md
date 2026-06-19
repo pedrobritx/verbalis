@@ -1,0 +1,403 @@
+# VERBALIS — Roadmap to a Professional CAT Tool
+
+> A phased plan for adding memoQ‑class capability to Verbalis **without losing the
+> two things that make it different: it is local‑first and it is intuitive.**
+> Inspired by memoQ; deliberately not a clone of it.
+
+Status: planning document. The first slice of low‑risk UX wins ships alongside
+this doc (see [§10](#10-what-ships-in-this-pr)). Everything else is sequenced
+below.
+
+---
+
+## 1. How to read this
+
+memoQ is powerful and dense — a ribbon with ~120 commands, modal resource
+consoles, and a learning curve measured in weeks. Verbalis copies memoQ's
+*capabilities*, not its *surface*. Every feature below is restated as "what
+memoQ does" → "the Verbalis‑native, simpler treatment" → "where it plugs into
+the current code".
+
+The plan is built on three decisions already made with the maintainer:
+
+| Decision | Choice |
+|---|---|
+| LAN collaboration | **Tauri desktop peers** with mDNS auto‑discovery + CRDT sync — every install is a real peer, no cloud, no central server |
+| Rich editor core | **Lexical** (Meta) replaces the plain `<textarea>` segments |
+| Document standards (ABNT/ISO/BSI/ANSI) | **Export/preview profiles**, built after the editor and collaboration land |
+
+---
+
+## 2. Guiding principles — the Verbalis difference
+
+1. **Local‑first is the architecture, not a setting.** Nothing leaves the
+   device unless the user initiates it. Collaboration is peer‑to‑peer on the
+   LAN; spell‑checking, dictionaries and standards run on‑device.
+2. **Progressive disclosure over a ribbon.** Power lives behind the command
+   palette (`Ctrl/⌘+K`), contextual panels and keyboard flow — not 8 ribbon
+   tabs. A first‑time translator should be productive in minutes.
+3. **One obvious way to do the common thing.** memoQ offers five ways to
+   confirm a segment; Verbalis offers one keystroke and one button, both
+   discoverable.
+4. **Round‑trip fidelity is sacred.** Formatting, inline tags and tracked
+   changes must survive XLIFF/TMX/TBX import → edit → export.
+5. **Offline‑complete.** Every feature must degrade gracefully or work fully
+   offline, consistent with the PWA promise.
+
+---
+
+## 3. The three enabling foundations
+
+Most requested features are blocked on one of three platform changes. Build
+these first; the feature list then becomes mostly UI work.
+
+### F1 — Rich segment editor (Lexical)
+
+**Why:** bold/italic/underline/sub‑sup/case, inline tags (quotes, footnotes,
+bibliography), tracked changes and comment anchors all need rich text. Today a
+segment's `source`/`target` are plain strings edited in a `<textarea>`
+(`src/features/editor/SegmentRow.tsx`).
+
+**Approach:**
+- Introduce a `RichSegmentEditor` wrapping a Lexical instance per target cell,
+  behind a thin interface so the editor can be swapped/tested in isolation.
+- Define custom Lexical nodes: `FormatMark` (bold/italic/underline/sub/sup),
+  `InlineTagNode` (paired/standalone, carries the XLIFF tag payload), and later
+  `CommentMark` / `TrackedChangeMark` decorations.
+- **Serialization is the contract.** Store target as a structured JSON
+  (`targetRich?`) *plus* a derived plain‑text `target` (kept for TM matching,
+  QA, search, counters — all of which stay string‑based). XLIFF inline tags
+  already round‑trip via `bilingualMeta.inlineTags`
+  (`src/core/bilingual/xliff12.ts`); map `InlineTagNode` ↔ those numeric
+  placeholders so existing exports keep working.
+- Keep the plain `<textarea>` path as a fallback for code/heading segments and
+  for a "plain editing" preference.
+
+**Risk:** IME/undo/paste correctness, and keeping `target` (plain) and
+`targetRich` in sync. Mitigate with a single source‑of‑truth (Lexical state) and
+a pure `richToPlain()` serializer covered by unit tests.
+
+**Effort:** L (the largest single item).
+
+### F2 — Sync‑ready data layer + version history (CRDT)
+
+**Why:** "versioning history" and "all computers syncing automatically" are the
+same problem viewed at two scales. Solve once with a conflict‑free replicated
+data type (CRDT), and single‑user undo‑history and multi‑peer merge both fall
+out.
+
+**Approach:**
+- Model each project's segment set as a **Yjs document** (or Automerge). Segment
+  target text, status, comments and tracked changes become CRDT types.
+- Persist the Yjs doc in IndexedDB (`y-indexeddb`) next to the existing Dexie
+  tables; Dexie remains the query/index layer, the Yjs doc is the merge layer.
+- **Version history** = periodic + on‑confirm snapshots of the Yjs state vector,
+  with a timeline UI to diff/restore. memoQ's "row history" becomes a per‑segment
+  timeline; project snapshots become named versions.
+- This layer is built **before** collaboration so single‑user versioning ships
+  first and the network layer (F3) is purely additive.
+
+**Effort:** L. **Sequence:** versioning first (single‑user), sync second.
+
+### F3 — LAN collaboration via desktop peers (Tauri + mDNS)
+
+**Why:** "all computers work as servers, syncing automatically on the same
+network." Browsers can't bind sockets or do mDNS; a Tauri desktop shell can,
+while reusing 100% of the existing React app.
+
+**Approach:**
+- Wrap the existing SPA in **Tauri**. The PWA stays the zero‑install entry
+  point; the desktop build adds peer capabilities.
+- A small Rust sidecar does **mDNS/zeroconf discovery** (`_verbalis._tcp.local`)
+  so peers find each other with no configuration — the "server URL" box from
+  memoQ's resource console becomes "peers found on your network".
+- Peers exchange Yjs updates over an authenticated, **end‑to‑end‑encrypted**
+  channel (libp2p or a thin WebSocket‑over‑LAN transport). Every peer holds the
+  full project, so any machine going offline is a non‑event.
+- Project sharing is opt‑in per project; a project stays private until shared.
+
+**Effort:** XL. **Sequence:** last of the three foundations.
+
+```
+F1 Lexical editor ─┐
+                   ├─► unlocks: formatting, tags, tracked changes, comments anchoring,
+F2 CRDT + history ─┤            edit-source-as-change, segment handling
+                   └─► unlocks: version history → LAN sync (F3) → live collaboration
+```
+
+---
+
+## 4. Phased roadmap
+
+Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned).
+
+| Phase | Theme | Headline deliverables | Depends on |
+|---|---|---|---|
+| **8** | **Editor UX wins** *(this PR)* | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
+| **9** | **Segment handling** | Split / merge / join / lock / insert / move, non‑breaking abbreviation list | — |
+| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms, inline tags (quotes/footnotes/bibliography) | F1 |
+| **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
+| **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
+| **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
+| **14** | **Collaboration (F3)** | Tauri desktop build, mDNS peer discovery, encrypted LAN sync, presence | F2, F3 |
+| **15** | **Resources sync** | Update/download glossaries, TMs, corpora; shared project resources over LAN | F3 |
+| **16** | **Document standards** | ABNT/ISO/BSI/ANSI export/preview profiles: citations, references, numbering, indentation, index | F1 |
+
+Phases are independently shippable; 9, 11 and 13 can interleave with the heavier
+foundation work.
+
+---
+
+## 5. Per‑feature design notes
+
+### A. Editing core & formatting
+
+**Text styling — bold / italic / underline / sub‑sup / case** *(Phase 10)*
+- memoQ: ribbon Format group + `Ctrl+B/I/U`, `Ctrl+Shift+=` etc.
+- Verbalis: a minimal floating format bar on selection + the same keystrokes;
+  `FormatMark` Lexical nodes. Case capitalization (UPPER/lower/Title/Sentence)
+  as a command‑palette action and selection menu — pure string transforms, no
+  storage change.
+- Round‑trip: marks map to XLIFF `<bpt>/<ept>` or HTML run styling on export.
+
+**Inline tagging — quotes, footnotes, bibliography** *(Phase 10)*
+- memoQ: numbered inline tags `{1}…{2}` that must be carried to the target.
+- Verbalis: `InlineTagNode` rendered as a compact chip ("¹", "❝", "biblio")
+  with hover detail. A "Tags" mini‑panel lists source tags; one key inserts the
+  next missing tag into the target (memoQ's `F9`). QA gains a *tag mismatch*
+  rule (extends `src/core/qa/checks.ts`). Footnote/citation tags reference
+  entries managed by the standards engine (Phase 16).
+
+**Edit source** *(shipped, Phase 8)*
+- memoQ: "Edit source" toggles the source cell editable.
+- Verbalis: per‑row "Source" pencil makes the original editable with debounced
+  autosave (`SegmentRow.tsx`). In Phase 12 a source edit becomes a *tracked
+  change* and, for bilingual projects, is flagged because it diverges from the
+  imported skeleton.
+
+**Segment handling — split / merge / join / lock / insert / move** *(Phase 9)*
+- memoQ: `Ctrl+T` split, `Ctrl+J` join, lock, etc.
+- Verbalis: row context menu + palette actions operating on the ordered segment
+  list. `locked` status already exists in the `SegmentStatus` union and
+  `StatusPill`; wire up lock/unlock and exclude locked rows from edits,
+  pre‑translate and propagation. Split/merge re‑index siblings within a Dexie
+  transaction and update `sourceMeta.sentenceIndex`.
+
+**Abbreviations handler** *(Phases 9 & 11)*
+- Two distinct needs: (1) a **non‑breaking abbreviation list** so the segmenter
+  doesn't split "Art. 5º" — extends `src/core/segmentation/sbdOptions.ts`;
+  (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
+  on input. Both are editable lists in Settings, seeded with PT/EN defaults.
+
+### B. Language quality
+
+**Spelling & grammar** *(Phase 11)*
+- memoQ: Hunspell or MS Word; squiggly underlines; download dictionaries.
+- Verbalis: **Hunspell compiled to WASM**, dictionaries fetched on demand and
+  cached by the service worker (same pattern as the embedding model in
+  `vite.config.ts`). Runs in a Web Worker; misspellings shown as Lexical
+  decorations with a suggestion popover. Grammar starts as rule‑based hints
+  (double spaces, spacing before punctuation, false‑friend/term‑consistency
+  via the glossary) — privacy‑safe and offline. No text leaves the device.
+
+**Dictionary lookup** *(Phase 11)*
+- Already present: Wiktionary adapter + Quick Lookup (`src/features/lookup`,
+  `src/core/glossary/wiktionary.ts`). Extend to a unified lookup popover
+  triggered on a selected word in the editor, with configurable providers and an
+  offline‑cache‑first policy (reuse the Workbox runtime cache already wired for
+  Wiktionary).
+
+**Web search** *(Phase 11)*
+- memoQ: configurable web‑search providers in the resource console.
+- Verbalis: a Settings list of providers (`{name, urlTemplate}` with `{q}` and
+  `{src}`/`{tgt}` placeholders), launched from the selection menu / palette.
+  Opens the user's browser to the provider directly (no proxy → nothing about the
+  query is logged by Verbalis). Ships with Linguee, IATE, Google, DeepL‑web as
+  optional, all disabled until enabled.
+
+### C. Review & collaboration
+
+**Confirmation button** *(shipped, Phase 8)*
+- Per‑row ✓ button mirroring `Ctrl/⌘+Enter`; in review mode it becomes the
+  reviewed toggle (`SegmentRow.tsx`).
+
+**Comments** *(shipped, Phase 8; threaded in Phase 12)*
+- Inline per‑segment thread with author, relative time, resolve and delete
+  (`src/features/editor/comments/`). Author comes from the new local identity.
+  Phase 12 anchors comments to a text range via a `CommentMark` and adds a
+  project‑wide comments view.
+
+**Changes tracking + show/hide** *(Phase 12)*
+- memoQ: per‑author insertion/deletion colors, mark insertions underlined /
+  deletions struck through, toggle visibility (see the Appearance → Tracked
+  changes screenshot).
+- Verbalis: tracked changes are a natural read of the CRDT history — each edit
+  carries its author (the local identity) and timestamp. Render as
+  `TrackedChangeMark` decorations with per‑author colors; a single toolbar
+  toggle shows/hides them; accept/reject per change or in bulk. No separate
+  "track changes on/off" mode to forget — history is always recorded, *display*
+  is the toggle.
+
+**Versioning history** *(Phase 12)*
+- Per‑segment timeline (who/when/what) and named project snapshots with
+  diff‑and‑restore, both derived from F2. Auto‑snapshot on confirm + manual
+  "Save version" with a label.
+
+**Collaborative projects on the LAN** *(Phase 14)*
+- Tauri peers + mDNS + encrypted Yjs sync (F3). Presence avatars show who's in a
+  project and which segment they're on; edits merge conflict‑free. memoQ's
+  server URL / "share on server" becomes "Share with peers on this network".
+
+### D. Workflow & layout
+
+**Auto‑collapse sidebar** *(shipped, Phase 8)*
+- The nav sidebar auto‑collapses inside `/project/:id` for a wider grid, with a
+  manual override that re‑arms on re‑entry (`src/components/layout/Sidebar.tsx`).
+
+**Three workflow‑stage layouts** *(Phase 13)*
+- **Source preparation:** source‑forward, segmentation/tag/abbreviation tools,
+  target hidden or narrow.
+- **Translation:** the current balanced grid + TM/Glossary/MT panels.
+- **Revision:** tracked changes and comments visible, QA panel pinned, compare
+  view of versions.
+- Implemented as **layout presets** that set panel visibility, column ratios and
+  which side tabs are open — a single switcher in the editor header, persisted
+  per project. Builds on the existing `useSidebarPanelStore` / `useEditorModeStore`.
+
+**Layout customization** *(Phase 13)*
+- Resizable columns (drag the source/target divider), font size for source vs
+  target (memoQ Appearance → font size), density (comfortable/compact), and
+  reorderable side panels. Persisted in Settings.
+
+**Help guiding tips** *(shipped basic, Phase 8; expanded Phase 13)*
+- A dismissible, recallable tips strip in the editor (`EditorTips.tsx`). Expand
+  to context‑aware coach‑marks on first use of each new surface, plus a "What's
+  this?" affordance, all gated by `localStorage` so they never nag.
+
+### E. Resources
+
+**Update & download glossaries, memories, corpora** *(Phase 15)*
+- Today corpora install from bundled packs (`/corpora`, `src/core/corpus`).
+  Generalize to a **catalogue with versions**: each resource pack has a version;
+  Settings shows "update available" and downloads deltas (Workbox‑cached, like
+  today). Over the LAN (F3), a peer can offer its TM/glossary/corpus as a shared
+  resource — the memoQ "Translation memories / Term bases / LiveDocs on server"
+  model, but peer‑to‑peer.
+
+### F. Document standards — ABNT / ISO / BSI / ANSI *(Phase 16)*
+
+- memoQ leans on the source document's own formatting; Verbalis goes further with
+  **standard‑aware export/preview profiles**.
+- A profile is a declarative spec: heading/numbering scheme, indentation,
+  citation style, reference list format, index generation, page/section rules.
+- Pipeline: structured document (segments + `sourceMeta` block kinds + inline
+  tags) → profile transform → preview / export (DOCX via a writer, PDF, or
+  HTML). Citations/footnotes/bibliography tags from Phase 10 feed the
+  reference engine.
+- Sequence within the phase: **ABNT first** (matches the PT→EN focus and the
+  bundled translation guide), then ISO, then BSI/ANSI. Start with
+  citations + references, then numbering/indentation, then index/layout.
+
+---
+
+## 6. Data model evolution
+
+All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
+
+| Version | Change | Notes |
+|---|---|---|
+| v4 | `Segment.comments?: SegmentComment[]` *(this PR)* | Inline, no index needed; no migration required |
+| v5 | `Segment.targetRich?` (Lexical JSON), `sourceRich?` | Plain `target` kept as derived field for TM/QA/search |
+| v6 | `versions` table `{id, projectId, label, snapshot, createdAt}` | Project snapshots; per‑segment history lives in the Yjs doc |
+| v6 | Yjs doc per project via `y-indexeddb` (outside Dexie) | Dexie stays the query layer |
+| v7 | `resources` versioning fields; `peers`/share metadata | Collaboration + resource sync |
+| — | Settings keys: `profile.identity` *(this PR)*, `abbreviations`, `autocorrect`, `webSearch.providers`, `layout.presets`, `spell.dicts` | Key/value `settings` table |
+
+---
+
+## 7. Capacity & sequencing (effort sizing)
+
+T‑shirt sizes; a "slice" ≈ a few focused days.
+
+| Item | Size | Parallelizable? |
+|---|---|---|
+| Phase 8 UX wins | S | ✅ (shipped) |
+| Segment handling | M | ✅ independent |
+| Lexical core (F1) | L | ⛔ blocks 10/12/13 |
+| Formatting + tags | M | after F1 |
+| Spell/grammar/dict/web | M | mostly independent |
+| CRDT + versioning (F2) | L | ⛔ blocks 12/14 |
+| Tracked changes | M | after F1+F2 |
+| Workflow layouts | M | after F1 |
+| Tauri + mDNS sync (F3) | XL | ⛔ blocks 14/15 |
+| Resource sync | M | after F3 |
+| Standards profiles | L | after F1 |
+
+**Critical path:** F1 → F2 → F3. Everything else clusters around these.
+Recommended order: ship Phase 8 (done) → Phase 9 (quick, independent) →
+Phase 10 (F1) → Phase 11 (independent, fills time) → Phase 12 (F2) →
+Phase 13 → Phase 14/15 (F3) → Phase 16.
+
+---
+
+## 8. UX & design‑system guidelines
+
+- **Reuse the token system.** All new surfaces use `src/styles/tokens.css`
+  variables (`--color-accent`, `--color-confirm`, …) and the owned `ui/`
+  primitives — never raw hex. New components match the existing quiet,
+  high‑contrast aesthetic.
+- **Discoverability without clutter.** Every new action is reachable from the
+  command palette *and* has a visible affordance with a tooltip. No feature is
+  keyboard‑only.
+- **Don't reintroduce a ribbon.** Group by task (translate / review / prepare)
+  via layout presets, not by a permanent multi‑tab toolbar.
+- **Accessibility.** Rich editor must preserve keyboard navigation, ARIA roles
+  on tags/comments/changes, and IME support. Keep the `data-testid` contract so
+  the Playwright suite keeps passing.
+- **Mobile.** The PWA stays usable on touch; new panels extend the existing
+  `MobileSidebarSheet` pattern rather than assuming a desktop layout.
+
+---
+
+## 9. Risks & open questions
+
+1. **Plain ↔ rich sync.** TM, QA, search and counters assume plain strings.
+   Keep Lexical the source of truth and derive plain text deterministically;
+   never let the two drift. *(Decided.)*
+2. **XLIFF fidelity with rich content.** Validate round‑trip against real memoQ
+   `.mqxliff` and Trados files in the e2e fixtures before shipping Phase 10.
+3. **Desktop build maintenance.** Tauri adds a Rust toolchain and a second
+   release pipeline. Keep all product logic in the shared React app; the desktop
+   shell stays thin (discovery + transport only).
+4. **CRDT history growth.** Snapshot/compaction strategy needed so the Yjs doc
+   and version table don't grow unbounded on long projects.
+5. **Spell/grammar scope.** Hunspell covers spelling well; full grammar is large.
+   Ship rule‑based hints first; treat deep grammar as a later, optional,
+   still‑on‑device addition.
+6. **Open:** Should shared LAN projects support a "lighter" browser peer (WebRTC)
+   for machines that can't install the desktop app, as a fallback to F3? Revisit
+   after Phase 14.
+
+---
+
+## 10. What ships in this PR
+
+The low‑risk, high‑value Phase 8 slice — no foundation work, fully tested:
+
+- **Auto‑collapsing sidebar** while inside a project, with a manual override that
+  re‑arms on re‑entry — `src/components/layout/Sidebar.tsx`.
+- **Per‑segment confirm button** (✓) mirroring `Ctrl/⌘+Enter`; doubles as the
+  reviewed toggle in review mode — `src/features/editor/SegmentRow.tsx`.
+- **Comments** — inline per‑segment threads with author, relative time, resolve
+  and delete — `src/features/editor/comments/SegmentComments.tsx`, repo ops in
+  `src/storage/repositories/segmentRepo.ts`, type in `src/core/types`.
+- **Edit source** — per‑row toggle to fix a mis‑segmented original with debounced
+  autosave — `src/features/editor/SegmentRow.tsx`.
+- **Guided help tips** — dismissible, recallable tips strip in the editor —
+  `src/features/editor/EditorTips.tsx`.
+- **Local identity** — a "Display name" used for comment authorship and, later,
+  collaboration peers — `src/features/settings/ProfileSettingsSection.tsx`,
+  `profile.identity` setting.
+
+Tests: new `segmentRepo` comment‑operation cases; full suite green
+(`tsc -b`, `vitest`, `vite build`).

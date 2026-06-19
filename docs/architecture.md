@@ -81,6 +81,7 @@ DOCX import uses `mammoth.convertToHtml`, then a small DOM walker (`src/core/seg
 | 5 | PWA hardening, offline edge cases, update notification ✅ |
 | 6 | AI integrations (Ollama, Claude, LibreTranslate), semantic TM ✅ |
 | 7+ | Project-level exports, terminology extraction, collaborative TM |
+| 8+ | Professional CAT features — rich editor, segment handling, versioning, LAN collaboration, document standards. See [`roadmap-professional-features.md`](roadmap-professional-features.md) |
 
 ## Phase 5 — PWA Layer
 
