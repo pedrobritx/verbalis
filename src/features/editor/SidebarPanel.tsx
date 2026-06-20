@@ -5,6 +5,7 @@ import { GlossaryPanel } from './glossary/GlossaryPanel'
 import { MTPanel } from './mt/MTPanel'
 import { QAPanel } from './qa/QAPanel'
 import { VersionHistoryPanel } from './history/VersionHistoryPanel'
+import { PeersPanel } from './peers/PeersPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
 
 interface SidebarPanelProps {
@@ -23,6 +24,7 @@ const TABS: Array<{ id: SidebarTab; label: string }> = [
   { id: 'mt', label: 'MT' },
   { id: 'qa', label: 'QA' },
   { id: 'history', label: 'History' },
+  { id: 'peers', label: 'Peers' },
 ]
 
 export function SidebarPanel({
@@ -126,6 +128,7 @@ export function SidebarPanel({
           <VersionHistoryPanel projectId={projectId} />
         </div>
       )}
+      {tab === 'peers' && <PeersPanel projectId={projectId} />}
     </aside>
   )
 }

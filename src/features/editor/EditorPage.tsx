@@ -33,6 +33,7 @@ import { EditorTips } from './EditorTips'
 import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
 import { SegmentHistoryDialog } from './history/SegmentHistoryDialog'
 import { useProjectCrdt } from './useProjectCrdt'
+import { useProjectSync } from './peers/useProjectSync'
 import { canJoin } from '@/core/segments/operations'
 import { useEditorSettings } from './useEditorSettings'
 import type { SegmentEditorHandle } from './SegmentEditorHandle'
@@ -49,6 +50,9 @@ export default function EditorPage() {
   // Loads the project's Yjs doc (sync-ready merge layer + version history) for
   // the lifetime of the editor and drives the throttled auto-snapshot net.
   useProjectCrdt(id)
+  // Live LAN collaboration (Foundation F3): runs a peer sync session whenever the
+  // project is shared, and lets presence follow the focused segment.
+  const { setActiveSegment } = useProjectSync(id)
   const profile = useLiveQuery(() => getProfileSettings(), [])
   const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
@@ -321,6 +325,12 @@ export default function EditorPage() {
   }
 
   const focusedSource = segments[focusIndex]?.source
+  const focusedId = segments[focusIndex]?.id
+
+  // Broadcast which segment the local user is on, so peers' presence follows.
+  useEffect(() => {
+    setActiveSegment(focusedId)
+  }, [focusedId, setActiveSegment])
 
   return (
     <div
