@@ -129,6 +129,15 @@ out.
 
 ### F3 — LAN collaboration via desktop peers (Tauri + mDNS)
 
+**Status: sync core shipped; desktop networking scaffolded.** The
+platform-agnostic TypeScript half of F3 is in and tested in the PWA: the
+bidirectional CRDT (reverse Yjs→Dexie observer), a `SyncTransport` seam with a
+working same-machine BroadcastChannel transport, presence, an AES-GCM payload
+codec, and opt-in per-project sharing with a **Peers** sidebar tab. The Tauri
+shell + Rust mDNS sidecar (`src-tauri/`) are scaffolded behind an `isTauri()`
+seam; building the desktop release pipeline and the real cross-machine mDNS/LAN
+networking is the remaining slice. See `docs/architecture.md` → "Phase 14".
+
 **Why:** "all computers work as servers, syncing automatically on the same
 network." Browsers can't bind sockets or do mDNS; a Tauri desktop shell can,
 while reusing 100% of the existing React app.
@@ -167,7 +176,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 | **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
-| **14** | **Collaboration (F3)** | Tauri desktop build, mDNS peer discovery, encrypted LAN sync, presence | F2, F3 |
+| **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next | F2, F3 |
 | **15** | **Resources sync** | Update/download glossaries, TMs, corpora; shared project resources over LAN | F3 |
 | **16** | **Document standards** | ABNT/ISO/BSI/ANSI export/preview profiles: citations, references, numbering, indentation, index | F1 |
 

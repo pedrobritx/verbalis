@@ -10,7 +10,10 @@
     "test": "vitest",
     "test:e2e": "playwright test",
     "generate-icons": "node scripts/generate-icons.mjs",
-    "build-corpora": "node scripts/build-corpora.mjs"
+    "build-corpora": "node scripts/build-corpora.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@lexical/react": "^0.45.0",

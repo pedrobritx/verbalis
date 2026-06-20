@@ -27,6 +27,13 @@ import type { Segment, SegmentComment } from '@/core/types'
 /** Transaction origin tag for every Dexie→Yjs mirror write. */
 export const ORIGIN_DEXIE = 'dexie-mirror'
 
+/**
+ * Transaction origin tag for updates received from a remote peer (Foundation
+ * F3). The reverse observer reconciles these into Dexie, and the sync session
+ * skips re-broadcasting them, so a remote update never echoes back to its sender.
+ */
+export const ORIGIN_REMOTE = 'remote-peer'
+
 /** Bumped if the doc layout changes in a non-backward-compatible way. */
 export const SCHEMA_VERSION = 1
 

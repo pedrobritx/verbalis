@@ -15,3 +15,7 @@ dist-ssr
 pnpm-lock.yaml.bak
 playwright-report
 test-results
+
+# Tauri desktop shell (Foundation F3) — Rust build output
+src-tauri/target
+src-tauri/gen

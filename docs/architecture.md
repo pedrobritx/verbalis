@@ -106,6 +106,61 @@ Phase 6 introduces three machine translation providers and an opt-in semantic TM
 - **Model caching**. A new Workbox `runtimeCaching` rule (`CacheFirst`, `^https://huggingface.co/.*/resolve/.*`, 1-year max, `rangeRequests: true`) caches the embedding-model files so subsequent cold starts work offline after the one-time download.
 - **Out of scope**: streaming MT (Ollama supports it; v1 is single-shot for simplicity), batch "translate all empty segments" (possible follow-up), encrypted key storage (not meaningful client-side), auto-translating on segment focus.
 
+## Phase 14 — LAN collaboration (Foundation F3)
+
+F3 turns the single-user CRDT layer (F2) into peer collaboration. F2 mirrored
+each project's segments into a per-project Yjs doc one way (Dexie→Yjs,
+`src/storage/sync/bridge.ts`). F3 closes the loop and adds a peer transport.
+Decided architecture: **Tauri desktop peers + mDNS auto-discovery + encrypted
+Yjs sync**, with the desktop shell staying thin (discovery + transport only) and
+all product logic remaining in the shared React app.
+
+This phase ships the **platform-agnostic TypeScript sync core** (fully tested in
+the PWA) plus a **documented Tauri/Rust scaffold**; the cross-machine mDNS/LAN
+networking under Tauri is the follow-up.
+
+- **Reverse observer (Yjs→Dexie)** — `src/storage/sync/reverseBridge.ts` makes
+  sync bidirectional. Remote updates are applied to the doc tagged
+  `ORIGIN_REMOTE`; an `observeDeep` on the segments map reconciles the changed
+  rows back into Dexie (the source of truth) via `readSegment` → `db.segments.put`,
+  so `useLiveQuery`, TM, QA and version history see merged peer edits with no new
+  read paths. Loop safety: our own mirror writes (`ORIGIN_DEXIE`) are ignored
+  here, and the reverse Dexie write runs inside `withMirrorSuppressed` (a
+  ref-counted guard in `bridge.ts`) so it never bounces back into the doc — which
+  also stops an `updatedAt`-only ping-pong between peers (the reverse write keeps
+  the doc's own LWW `updatedAt`).
+- **Transport seam** — `src/storage/sync/transport/` defines `SyncTransport`
+  (`start/send/onMessage/destroy`) and a `SyncMessage` union (`hello`, `bye`,
+  `state-request`, `state`, `update`, `presence`). `BroadcastChannelTransport`
+  is a zero-dependency same-machine, cross-tab implementation that works in the
+  PWA today; `TauriLanTransport` is the desktop bridge (lazily imports
+  `@tauri-apps/api` through a computed specifier so the PWA build neither bundles
+  nor requires it). `createTransport()` picks one via `isTauri()` (`platform.ts`).
+- **Sync session** — `src/storage/sync/syncSession.ts` binds a Yjs doc to a
+  transport: local doc updates (origin ≠ `ORIGIN_REMOTE`) are broadcast; inbound
+  `update`/`state` are applied with `ORIGIN_REMOTE` (driving the reverse bridge);
+  a joining peer is answered with `Y.encodeStateAsUpdate` for initial
+  convergence. `syncManager.ts` ref-counts one session per shared project and
+  resolves identity (`profile.identity`), transport and encryption codec.
+- **Presence** — `src/storage/sync/presence.ts` is a lightweight, dependency-free
+  roster (peer id → name / colour / active segment) broadcast on a heartbeat with
+  TTL expiry — ephemeral UI data, deliberately not a CRDT.
+- **Encryption** — `src/storage/sync/crypto.ts` is a WebCrypto AES-GCM payload
+  codec with a PBKDF2-derived key from a project share passphrase (deterministic
+  salt from the project id so peers converge without a handshake). Identity codec
+  for same-machine BroadcastChannel; real encryption for the LAN transport.
+- **Opt-in sharing + UI** — sharing is per-project and off by default
+  (`shareRepo`, stored in the `settings` table; no Dexie migration). `EditorPage`
+  mounts `useProjectSync` (`src/features/editor/peers/`), which starts/stops the
+  session on the share flag and publishes peers into `usePresenceStore`. A new
+  **Peers** sidebar tab (`PeersPanel.tsx`) carries the share toggle and the live
+  peer list; presence follows the focused segment.
+- **Desktop scaffold** — `src-tauri/` (Cargo manifest, `tauri.conf.json`, `mdns.rs`
+  advertising/browsing `_verbalis._tcp.local`, `transport.rs`, `commands.rs`
+  exposing `start_sharing`/`stop_sharing`/`broadcast_sync_message`). Built by a
+  separate Rust pipeline, intentionally **outside** the PWA CI — see
+  `src-tauri/README.md`.
+
 ## Bundled terminology corpora (PT→EN)
 
 A catalogue of pre-curated Brazilian-Portuguese→British-English terminology that ships with the app and is installed by field/area into the user's working set. Source data is the consolidated CADE / Noronha / TIPS termbase (~35k pairs) from the `pt-en-legal-translation` skill.

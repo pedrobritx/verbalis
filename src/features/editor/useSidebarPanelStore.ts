@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type SidebarTab = 'tm' | 'glossary' | 'mt' | 'qa' | 'history'
+export type SidebarTab = 'tm' | 'glossary' | 'mt' | 'qa' | 'history' | 'peers'
 
 interface SidebarPanelState {
   open: boolean

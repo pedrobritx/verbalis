@@ -1,0 +1,29 @@
+[package]
+name = "verbalis"
+version = "0.0.1"
+description = "Verbalis desktop peer — local-first CAT tool with LAN collaboration"
+authors = ["Pedro Brito"]
+edition = "2021"
+rust-version = "1.77"
+
+# The desktop shell stays thin: it only adds mDNS discovery and the encrypted
+# LAN transport. All product logic lives in the shared React app (../dist).
+[lib]
+name = "verbalis_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# mDNS / zeroconf discovery of `_verbalis._tcp.local` peers, no external daemon.
+mdns-sd = "0.11"
+# Async LAN transport carrying Yjs updates between discovered peers.
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "macros"] }
+
+[features]
+# Tauri's custom protocol / production asset embedding is gated by this in v2.
+custom-protocol = ["tauri/custom-protocol"]
