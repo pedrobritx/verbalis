@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/storage/db'
-import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import { segmentRepo, tallyStatus } from '@/storage/repositories/segmentRepo'
 import type { Segment } from '@/core/types'
 
 function makeSeg(overrides: Partial<Segment> = {}): Segment {
@@ -68,6 +68,62 @@ describe('segmentRepo', () => {
       draft: 1,
       translated: 1,
       reviewed: 0,
+      locked: 0,
+    })
+  })
+
+  it('countByStatus scopes to the project', async () => {
+    await segmentRepo.bulkCreate([
+      makeSeg({ index: 0, projectId: 'p1', status: 'draft' }),
+      makeSeg({ index: 0, projectId: 'p2', status: 'draft' }),
+      makeSeg({ index: 1, projectId: 'p2', status: 'reviewed' }),
+    ])
+    expect(await segmentRepo.countByStatus('p1')).toEqual({
+      untranslated: 0,
+      draft: 1,
+      translated: 0,
+      reviewed: 0,
+      locked: 0,
+    })
+  })
+
+  it('countByStatusAll returns per-project counts in one pass', async () => {
+    await segmentRepo.bulkCreate([
+      makeSeg({ index: 0, projectId: 'p1', status: 'untranslated' }),
+      makeSeg({ index: 1, projectId: 'p1', status: 'translated' }),
+      makeSeg({ index: 0, projectId: 'p2', status: 'reviewed' }),
+      makeSeg({ index: 1, projectId: 'p2', status: 'reviewed' }),
+      makeSeg({ index: 2, projectId: 'p2', status: 'locked' }),
+    ])
+    const all = await segmentRepo.countByStatusAll()
+    expect(all.get('p1')).toEqual({
+      untranslated: 1,
+      draft: 0,
+      translated: 1,
+      reviewed: 0,
+      locked: 0,
+    })
+    expect(all.get('p2')).toEqual({
+      untranslated: 0,
+      draft: 0,
+      translated: 0,
+      reviewed: 2,
+      locked: 1,
+    })
+    expect(all.has('p3')).toBe(false)
+  })
+
+  it('tallyStatus counts an in-memory segment array', () => {
+    const counts = tallyStatus([
+      makeSeg({ status: 'draft' }),
+      makeSeg({ status: 'draft' }),
+      makeSeg({ status: 'reviewed' }),
+    ])
+    expect(counts).toEqual({
+      untranslated: 0,
+      draft: 2,
+      translated: 0,
+      reviewed: 1,
       locked: 0,
     })
   })

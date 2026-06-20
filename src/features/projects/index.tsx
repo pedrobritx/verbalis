@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { BrandFooter } from '@/components/layout/BrandFooter'
 import { projectRepo } from '@/storage/repositories/projectRepo'
+import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { ImportDialog } from '@/features/import/ImportDialog'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
 import { ProjectCard } from './ProjectCard'
@@ -19,6 +20,9 @@ export default function ProjectsPage() {
   const [sort, setSort] = useState<SortKey>('updated')
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
+  // One index-only query yields every project's status counts, instead of each
+  // card scanning its segments independently.
+  const counts = useLiveQuery(() => segmentRepo.countByStatusAll(), [])
 
   const visible = useMemo(() => {
     if (!projects) return []
@@ -80,7 +84,7 @@ export default function ProjectsPage() {
           ) : (
             <ul className="flex flex-col gap-2" data-testid="project-list">
               {visible.map((p) => (
-                <ProjectCard key={p.id} project={p} />
+                <ProjectCard key={p.id} project={p} counts={counts?.get(p.id)} />
               ))}
             </ul>
           )}

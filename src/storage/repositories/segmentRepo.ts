@@ -4,17 +4,31 @@ import { canJoin, mergeStatus, splitSourceText } from '@/core/segments/operation
 
 export type StatusCounts = Record<SegmentStatus, number>
 
-const ZERO_COUNTS: StatusCounts = {
+const STATUSES: SegmentStatus[] = ['untranslated', 'draft', 'translated', 'reviewed', 'locked']
+
+const zeroCounts = (): StatusCounts => ({
   untranslated: 0,
   draft: 0,
   translated: 0,
   reviewed: 0,
   locked: 0,
+})
+
+/** Tally status counts from an in-memory segment array (no DB access). */
+export function tallyStatus(segments: Pick<Segment, 'status'>[]): StatusCounts {
+  const counts = zeroCounts()
+  for (const s of segments) counts[s.status] += 1
+  return counts
 }
 
 export const segmentRepo = {
+  // Ordered straight from the [projectId+index] index — no in-memory sort and,
+  // for status-only consumers, the index keeps reads cheap.
   byProject: (projectId: string) =>
-    db.segments.where('projectId').equals(projectId).sortBy('index'),
+    db.segments
+      .where('[projectId+index]')
+      .between([projectId, -Infinity], [projectId, Infinity], true, true)
+      .toArray(),
 
   getById: (id: string) => db.segments.get(id),
 
@@ -26,11 +40,41 @@ export const segmentRepo = {
   removeByProject: (projectId: string) =>
     db.segments.where('projectId').equals(projectId).delete(),
 
+  // Counts come from the [projectId+status] index — IndexedDB tallies them
+  // without ever loading a segment row (source/target/rich text/comments), so a
+  // project's progress can be shown without pulling its whole corpus into memory.
   countByStatus: async (projectId: string): Promise<StatusCounts> => {
-    const rows = await db.segments.where('projectId').equals(projectId).toArray()
-    const counts = { ...ZERO_COUNTS }
-    for (const r of rows) counts[r.status] += 1
+    const counts = zeroCounts()
+    await Promise.all(
+      STATUSES.map(async (status) => {
+        counts[status] = await db.segments
+          .where('[projectId+status]')
+          .equals([projectId, status])
+          .count()
+      }),
+    )
     return counts
+  },
+
+  /**
+   * Status counts for every project in a single index pass. Reads only the
+   * [projectId+status] index keys (never row bodies), so the projects list can
+   * render N progress bars from one cheap query instead of N row-loading ones.
+   */
+  countByStatusAll: async (): Promise<Map<string, StatusCounts>> => {
+    const byProject = new Map<string, StatusCounts>()
+    const keys = (await db.segments.orderBy('[projectId+status]').keys()) as unknown as Array<
+      [string, SegmentStatus]
+    >
+    for (const [projectId, status] of keys) {
+      let counts = byProject.get(projectId)
+      if (!counts) {
+        counts = zeroCounts()
+        byProject.set(projectId, counts)
+      }
+      counts[status] += 1
+    }
+    return byProject
   },
 
   // Comments are stored inline on the segment, so every mutation is a

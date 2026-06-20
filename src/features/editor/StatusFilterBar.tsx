@@ -1,11 +1,11 @@
-import { useLiveQuery } from 'dexie-react-hooks'
-import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { cn } from '@/lib/utils'
+import type { StatusCounts } from '@/storage/repositories/segmentRepo'
 import type { SegmentStatus } from '@/core/types'
 import { useEditorModeStore, type StatusFilter } from './useEditorModeStore'
 
 interface StatusFilterBarProps {
-  projectId: string
+  /** Status counts derived from the editor's already-loaded segments. */
+  counts: StatusCounts | undefined
 }
 
 const FILTERS: Array<{ id: StatusFilter; label: string }> = [
@@ -17,8 +17,7 @@ const FILTERS: Array<{ id: StatusFilter; label: string }> = [
   { id: 'locked', label: 'Locked' },
 ]
 
-export function StatusFilterBar({ projectId }: StatusFilterBarProps) {
-  const counts = useLiveQuery(() => segmentRepo.countByStatus(projectId), [projectId])
+export function StatusFilterBar({ counts }: StatusFilterBarProps) {
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
   const setStatusFilter = useEditorModeStore((s) => s.setStatusFilter)
 

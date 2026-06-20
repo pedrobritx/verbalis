@@ -1,5 +1,12 @@
-import Dexie, { type Table } from 'dexie'
-import type { Project, Segment, TMEntry, GlossaryEntry, EmbeddingRecord } from '@/core/types'
+import Dexie, { type Table, type Transaction } from 'dexie'
+import type {
+  Project,
+  ProjectTemplate,
+  Segment,
+  TMEntry,
+  GlossaryEntry,
+  EmbeddingRecord,
+} from '@/core/types'
 import type { CorpusTerm, InstalledCorpusPack } from '@/core/corpus/types'
 
 export interface SettingsRow<T = unknown> {
@@ -7,8 +14,31 @@ export interface SettingsRow<T = unknown> {
   value: T
 }
 
+/**
+ * v4 upgrade: relocate each XLIFF project's inline `bilingualMeta.templateXml`
+ * into the dedicated `projectTemplates` table and strip it from the project row.
+ * Exported so the migration can be exercised directly in tests.
+ */
+export async function migrateTemplatesToOwnTable(tx: Transaction): Promise<void> {
+  const projects = tx.table('projects')
+  const templates = tx.table('projectTemplates')
+  const rows = (await projects.toArray()) as Array<
+    Project & { bilingualMeta?: { templateXml?: string } & Record<string, unknown> }
+  >
+  for (const project of rows) {
+    const meta = project.bilingualMeta
+    const templateXml = meta?.templateXml
+    if (meta && typeof templateXml === 'string') {
+      await templates.put({ projectId: project.id, templateXml })
+      delete meta.templateXml
+      await projects.put(project)
+    }
+  }
+}
+
 class VerbalisDB extends Dexie {
   projects!: Table<Project>
+  projectTemplates!: Table<ProjectTemplate>
   segments!: Table<Segment>
   tm!: Table<TMEntry>
   glossary!: Table<GlossaryEntry>
@@ -47,6 +77,25 @@ class VerbalisDB extends Dexie {
       corpusTerms: 'id, corpusId',
       corpusPacks: 'id',
     })
+    // v4: performance. Compound segment indexes let the projects list count
+    // statuses (and the editor load segments in order) straight from the index
+    // without materializing full segment rows. The bilingual XLIFF template —
+    // potentially the entire original document — moves out of the project row
+    // into its own table so listing projects no longer drags those blobs into
+    // memory; it is only read when exporting.
+    this.version(4)
+      .stores({
+        projects: 'id, name, updatedAt',
+        projectTemplates: 'projectId',
+        segments: 'id, projectId, index, status, [projectId+status], [projectId+index]',
+        tm: 'id, source, sourceLang, targetLang, projectId, corpusId',
+        glossary: 'id, term, projectId',
+        settings: '&key',
+        embeddings: 'id, tmId, model, [tmId+model]',
+        corpusTerms: 'id, corpusId',
+        corpusPacks: 'id',
+      })
+      .upgrade(migrateTemplatesToOwnTable)
   }
 }
 

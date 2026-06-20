@@ -38,16 +38,21 @@ export const projectRepo = {
    * beyond a single project.
    */
   removeCascade: async (id: string, opts: { deleteResources?: boolean } = {}): Promise<void> => {
-    await db.transaction('rw', [db.projects, db.segments, db.tm, db.glossary, db.embeddings], async () => {
-      await db.segments.where('projectId').equals(id).delete()
-      if (opts.deleteResources) {
-        const tmIds = (await db.tm.where('projectId').equals(id).primaryKeys()) as string[]
-        if (tmIds.length > 0) await db.embeddings.where('tmId').anyOf(tmIds).delete()
-        await db.tm.where('projectId').equals(id).delete()
-        await db.glossary.where('projectId').equals(id).delete()
-      }
-      await db.projects.delete(id)
-    })
+    await db.transaction(
+      'rw',
+      [db.projects, db.projectTemplates, db.segments, db.tm, db.glossary, db.embeddings],
+      async () => {
+        await db.segments.where('projectId').equals(id).delete()
+        await db.projectTemplates.delete(id)
+        if (opts.deleteResources) {
+          const tmIds = (await db.tm.where('projectId').equals(id).primaryKeys()) as string[]
+          if (tmIds.length > 0) await db.embeddings.where('tmId').anyOf(tmIds).delete()
+          await db.tm.where('projectId').equals(id).delete()
+          await db.glossary.where('projectId').equals(id).delete()
+        }
+        await db.projects.delete(id)
+      },
+    )
   },
 
   /**
@@ -72,9 +77,11 @@ export const projectRepo = {
       id: crypto.randomUUID(),
       projectId: newId,
     }))
-    await db.transaction('rw', [db.projects, db.segments], async () => {
+    const template = await db.projectTemplates.get(id)
+    await db.transaction('rw', [db.projects, db.projectTemplates, db.segments], async () => {
       await db.projects.add(clone)
       if (clonedSegments.length > 0) await db.segments.bulkAdd(clonedSegments)
+      if (template) await db.projectTemplates.put({ projectId: newId, templateXml: template.templateXml })
     })
     return newId
   },

@@ -1,11 +1,6 @@
 export interface BilingualProjectMeta {
   format: 'xliff12'
   originalFile?: string
-  // The full original bilingual document. exportBilingual() re-uses it as a
-  // template so trans-unit-level attributes from the originating CAT tool
-  // (memoQ mq:* namespace, OmegaT-specific notes, skeleton refs, …) survive
-  // round-tripping.
-  templateXml: string
   datatype?: string
 }
 
@@ -17,6 +12,20 @@ export interface Project {
   createdAt: string
   updatedAt: string
   bilingualMeta?: BilingualProjectMeta
+}
+
+/**
+ * The full original bilingual document for an XLIFF project, kept in its own
+ * table (keyed by project id) rather than inline on the project row. It can be
+ * the entire source file, so storing it separately keeps the projects list and
+ * command palette — which only need the lightweight project metadata — fast.
+ * exportBilingual() re-uses it as a template so trans-unit-level attributes from
+ * the originating CAT tool (memoQ mq:* namespace, OmegaT notes, skeleton refs,
+ * …) survive round-tripping.
+ */
+export interface ProjectTemplate {
+  projectId: string
+  templateXml: string
 }
 
 export type SegmentStatus = 'untranslated' | 'draft' | 'translated' | 'reviewed' | 'locked'
