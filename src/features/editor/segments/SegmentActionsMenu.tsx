@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Lock, Unlock, MoreVertical, SplitSquareHorizontal, Combine } from 'lucide-react'
+import { Lock, Unlock, MoreVertical, SplitSquareHorizontal, Combine, History } from 'lucide-react'
 
 interface SegmentActionsMenuProps {
   locked: boolean
@@ -10,6 +10,7 @@ interface SegmentActionsMenuProps {
   onToggleLock: () => void
   onSplit: () => void
   onJoin: () => void
+  onShowHistory: () => void
 }
 
 interface MenuItem {
@@ -28,6 +29,7 @@ export function SegmentActionsMenu({
   onToggleLock,
   onSplit,
   onJoin,
+  onShowHistory,
 }: SegmentActionsMenuProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -79,6 +81,12 @@ export function SegmentActionsMenu({
       onSelect: onJoin,
       disabled: isBilingual || !canJoinNext,
       title: joinTitle,
+    },
+    {
+      key: 'history',
+      label: 'Row history…',
+      icon: <History size={14} />,
+      onSelect: onShowHistory,
     },
   ]
 

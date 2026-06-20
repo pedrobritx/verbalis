@@ -8,6 +8,7 @@ import { StatusPill } from './StatusPill'
 import { SegmentComments } from './comments/SegmentComments'
 import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
 import { useSegmentOpsStore } from './segments/useSegmentOpsStore'
+import { useSegmentHistoryStore } from './history/useSegmentHistoryStore'
 import type { SegmentEditorHandle } from './SegmentEditorHandle'
 
 // Lexical only loads when rich editing is actually used, keeping it out of the
@@ -68,6 +69,7 @@ export function SegmentRow({
   const commentCount = segment.comments?.length ?? 0
   const locked = !!segment.locked
   const openSplit = useSegmentOpsStore((s) => s.openSplit)
+  const openHistory = useSegmentHistoryStore((s) => s.open)
   const isCode = segment.sourceMeta?.kind === 'code'
   const useRich = richEditing && !isCode
 
@@ -393,6 +395,7 @@ export function SegmentRow({
                 onToggleLock={() => void segmentRepo.setLocked(segment.id, !locked)}
                 onSplit={() => openSplit(segment.id)}
                 onJoin={onJoin}
+                onShowHistory={() => openHistory(segment.projectId, segment.id)}
               />
             </div>
           </div>

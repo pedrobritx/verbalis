@@ -99,21 +99,31 @@ a pure `richToPlain()` serializer covered by unit tests.
 
 ### F2 — Sync‑ready data layer + version history (CRDT)
 
+**Status:** Shipped (single‑user). The Yjs data layer and version history are in;
+only the F3 network transport remains.
+
 **Why:** "versioning history" and "all computers syncing automatically" are the
 same problem viewed at two scales. Solve once with a conflict‑free replicated
 data type (CRDT), and single‑user undo‑history and multi‑peer merge both fall
 out.
 
-**Approach:**
-- Model each project's segment set as a **Yjs document** (or Automerge). Segment
-  target text, status, comments and tracked changes become CRDT types.
-- Persist the Yjs doc in IndexedDB (`y-indexeddb`) next to the existing Dexie
-  tables; Dexie remains the query/index layer, the Yjs doc is the merge layer.
-- **Version history** = periodic + on‑confirm snapshots of the Yjs state vector,
-  with a timeline UI to diff/restore. memoQ's "row history" becomes a per‑segment
-  timeline; project snapshots become named versions.
-- This layer is built **before** collaboration so single‑user versioning ships
-  first and the network layer (F3) is purely additive.
+**Approach (what shipped):**
+- Each project's segment set is mirrored into a **Yjs document**
+  (`src/storage/sync/segmentCrdt.ts`): `target` is a `Y.Text`, comments a
+  `Y.Array<Y.Map>`, everything else plain LWW values. The doc persists in
+  IndexedDB via **`y-indexeddb`** (`docManager.ts`), separate from Dexie.
+- **Dexie stays the source of truth**; the doc is a derived mirror fed by Dexie
+  hooks (`bridge.ts`), so all existing segment write paths and `useLiveQuery`
+  reads are untouched. Data flows one way (Dexie→Yjs) tagged `ORIGIN_DEXIE`, so
+  F3's reverse observer is purely additive and loop‑free.
+- **Version history** = `Y.encodeStateAsUpdateV2` snapshots in a `versions` Dexie
+  table (`versionRepo.ts`): a "Save version" beat plus a throttled auto safety
+  net. The editor's **History** sidebar tab restores whole‑project versions;
+  each row's **Row history…** action shows a per‑segment timeline (word diffs,
+  who/when) and restores a single segment. Restores route back through Dexie and
+  snapshot first, so they are reversible.
+- Built **before** collaboration so single‑user versioning ships first and the
+  network layer (F3) is purely additive.
 
 **Effort:** L. **Sequence:** versioning first (single‑user), sync second.
 
@@ -344,8 +354,8 @@ All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
 | v4 | `Segment.locked?: boolean` *(Phase 9)* | Orthogonal lock flag; not indexed, no migration required |
 | v4 | `Segment.targetRich?` (Lexical JSON) *(Phase 10)* | Plain `target` stays the derived source of truth; not indexed, no migration |
 | v5 | `Segment.sourceRich?` (when source becomes rich) | Future, with inline tags |
-| v6 | `versions` table `{id, projectId, label, snapshot, createdAt}` | Project snapshots; per‑segment history lives in the Yjs doc |
-| v6 | Yjs doc per project via `y-indexeddb` (outside Dexie) | Dexie stays the query layer |
+| v5 | `versions` table `{id, projectId, label, kind, snapshot, segmentCount, author, createdAt}` *(Phase 12, shipped)* | Project snapshots; per‑segment history derived from the blobs |
+| v5 | Yjs doc per project via `y-indexeddb` (outside Dexie) *(shipped)* | Dexie stays the query layer; doc is a derived mirror |
 | v7 | `resources` versioning fields; `peers`/share metadata | Collaboration + resource sync |
 | — | Settings keys: `profile.identity` *(this PR)*, `abbreviations`, `autocorrect`, `webSearch.providers`, `layout.presets`, `spell.dicts` | Key/value `settings` table |
 

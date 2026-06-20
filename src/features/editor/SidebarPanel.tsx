@@ -4,6 +4,7 @@ import { TMPanel } from './tm/TMPanel'
 import { GlossaryPanel } from './glossary/GlossaryPanel'
 import { MTPanel } from './mt/MTPanel'
 import { QAPanel } from './qa/QAPanel'
+import { VersionHistoryPanel } from './history/VersionHistoryPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
 
 interface SidebarPanelProps {
@@ -21,6 +22,7 @@ const TABS: Array<{ id: SidebarTab; label: string }> = [
   { id: 'glossary', label: 'Glossary' },
   { id: 'mt', label: 'MT' },
   { id: 'qa', label: 'QA' },
+  { id: 'history', label: 'History' },
 ]
 
 export function SidebarPanel({
@@ -117,6 +119,11 @@ export function SidebarPanel({
       {tab === 'qa' && (
         <div data-testid="qa-panel">
           <QAPanel projectId={projectId} targetLang={targetLang} />
+        </div>
+      )}
+      {tab === 'history' && (
+        <div data-testid="history-panel">
+          <VersionHistoryPanel projectId={projectId} />
         </div>
       )}
     </aside>
