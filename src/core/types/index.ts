@@ -97,6 +97,30 @@ export interface Segment {
   updatedAt: string
 }
 
+/**
+ * A point-in-time snapshot of a project's segment set, captured from its Yjs
+ * document. `snapshot` is a self-contained `Y.encodeStateAsUpdateV2` blob: a
+ * version can be restored by applying it into a fresh doc, and two versions
+ * diffed by loading both. `named` versions are the user's explicit "Save
+ * version" beats (and milestone confirms); `auto` versions are the throttled
+ * safety net and are pruned to a cap. Per-segment "row history" is derived by
+ * decoding these blobs — no separate per-segment store is kept.
+ */
+export interface ProjectVersion {
+  id: string
+  projectId: string
+  /** User-facing label; set for `named` versions, absent for `auto`. */
+  label?: string
+  kind: 'named' | 'auto'
+  /** `Y.encodeStateAsUpdateV2(doc)` at capture time. */
+  snapshot: Uint8Array
+  /** Number of segments in the snapshot, for display without decoding. */
+  segmentCount: number
+  /** Display name of the local identity that captured the version, if set. */
+  author?: string
+  createdAt: string
+}
+
 export interface TMEntry {
   id: string
   source: string

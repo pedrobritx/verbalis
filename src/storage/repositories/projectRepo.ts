@@ -40,10 +40,11 @@ export const projectRepo = {
   removeCascade: async (id: string, opts: { deleteResources?: boolean } = {}): Promise<void> => {
     await db.transaction(
       'rw',
-      [db.projects, db.projectTemplates, db.segments, db.tm, db.glossary, db.embeddings],
+      [db.projects, db.projectTemplates, db.segments, db.tm, db.glossary, db.embeddings, db.versions],
       async () => {
         await db.segments.where('projectId').equals(id).delete()
         await db.projectTemplates.delete(id)
+        await db.versions.where('projectId').equals(id).delete()
         if (opts.deleteResources) {
           const tmIds = (await db.tm.where('projectId').equals(id).primaryKeys()) as string[]
           if (tmIds.length > 0) await db.embeddings.where('tmId').anyOf(tmIds).delete()

@@ -31,6 +31,8 @@ import {
 } from '@/storage/repositories/settingsRepo'
 import { EditorTips } from './EditorTips'
 import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
+import { SegmentHistoryDialog } from './history/SegmentHistoryDialog'
+import { useProjectCrdt } from './useProjectCrdt'
 import { canJoin } from '@/core/segments/operations'
 import { useEditorSettings } from './useEditorSettings'
 import type { SegmentEditorHandle } from './SegmentEditorHandle'
@@ -44,6 +46,9 @@ export default function EditorPage() {
   const { id } = useParams() as { id?: string }
   const project = useLiveQuery(() => (id ? projectRepo.getById(id) : undefined), [id])
   const segments = useProjectSegments(id)
+  // Loads the project's Yjs doc (sync-ready merge layer + version history) for
+  // the lifetime of the editor and drives the throttled auto-snapshot net.
+  useProjectCrdt(id)
   const profile = useLiveQuery(() => getProfileSettings(), [])
   const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
@@ -508,6 +513,7 @@ export default function EditorPage() {
 
       <FindReplaceDialog projectId={project.id} />
       <SplitSegmentDialog projectId={project.id} />
+      <SegmentHistoryDialog />
       <AnalysisDialog project={project} />
       <AddTermDialog projectId={project.id} targetLang={project.targetLang} />
       <ConcordanceDialog project={project} />

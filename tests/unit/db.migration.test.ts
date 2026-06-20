@@ -51,6 +51,23 @@ function openV4(): Dexie {
   return db
 }
 
+function openV5(): Dexie {
+  const db = openV4()
+  db.version(5).stores({
+    projects: 'id, name, updatedAt',
+    projectTemplates: 'projectId',
+    segments: 'id, projectId, index, status, [projectId+status], [projectId+index]',
+    tm: 'id, source, sourceLang, targetLang, projectId, corpusId',
+    glossary: 'id, term, projectId',
+    settings: '&key',
+    embeddings: 'id, tmId, model, [tmId+model]',
+    corpusTerms: 'id, corpusId',
+    corpusPacks: 'id',
+    versions: 'id, projectId, createdAt, [projectId+createdAt]',
+  })
+  return db
+}
+
 afterEach(async () => {
   await Dexie.delete(DB_NAME)
 })
@@ -97,5 +114,49 @@ describe('v4 template migration', () => {
     // Non-XLIFF projects are untouched and gain no template row.
     expect(await v4.table('projectTemplates').get('plain')).toBeUndefined()
     v4.close()
+  })
+})
+
+describe('v5 versions table', () => {
+  it('adds the versions table and preserves existing data', async () => {
+    const v4 = openV4()
+    await v4.table('projects').add({
+      id: 'p1',
+      name: 'Keep me',
+      sourceLang: 'pt-BR',
+      targetLang: 'en',
+      createdAt: 'now',
+      updatedAt: 'now',
+    })
+    await v4.table('segments').add({
+      id: 's1',
+      projectId: 'p1',
+      index: 0,
+      source: 'oi',
+      target: 'hi',
+      status: 'translated',
+      createdAt: 'now',
+      updatedAt: 'now',
+    })
+    v4.close()
+
+    const v5 = openV5()
+    // New table exists and is writable/queryable via its compound index.
+    await v5.table('versions').add({
+      id: 'v1',
+      projectId: 'p1',
+      kind: 'named',
+      label: 'first',
+      snapshot: new Uint8Array([1, 2, 3]),
+      segmentCount: 1,
+      createdAt: '2020-01-01T00:00:00.000Z',
+    })
+    const got = await v5.table('versions').get('v1')
+    expect(got.label).toBe('first')
+
+    // Pre-existing data survived the upgrade untouched.
+    expect((await v5.table('projects').get('p1')).name).toBe('Keep me')
+    expect((await v5.table('segments').get('s1')).target).toBe('hi')
+    v5.close()
   })
 })

@@ -2,6 +2,7 @@ import Dexie, { type Table, type Transaction } from 'dexie'
 import type {
   Project,
   ProjectTemplate,
+  ProjectVersion,
   Segment,
   TMEntry,
   GlossaryEntry,
@@ -46,6 +47,7 @@ class VerbalisDB extends Dexie {
   embeddings!: Table<EmbeddingRecord>
   corpusTerms!: Table<CorpusTerm>
   corpusPacks!: Table<InstalledCorpusPack>
+  versions!: Table<ProjectVersion>
 
   constructor() {
     super('verbalis')
@@ -96,6 +98,23 @@ class VerbalisDB extends Dexie {
         corpusPacks: 'id',
       })
       .upgrade(migrateTemplatesToOwnTable)
+    // v5: version history (Foundation F2). Project snapshots are captured from
+    // the per-project Yjs document (persisted outside Dexie via y-indexeddb) and
+    // stored here as self-contained update blobs. Purely additive — a new table,
+    // no upgrade callback, existing data untouched. The [projectId+createdAt]
+    // index drives the timeline list and auto-snapshot pruning.
+    this.version(5).stores({
+      projects: 'id, name, updatedAt',
+      projectTemplates: 'projectId',
+      segments: 'id, projectId, index, status, [projectId+status], [projectId+index]',
+      tm: 'id, source, sourceLang, targetLang, projectId, corpusId',
+      glossary: 'id, term, projectId',
+      settings: '&key',
+      embeddings: 'id, tmId, model, [tmId+model]',
+      corpusTerms: 'id, corpusId',
+      corpusPacks: 'id',
+      versions: 'id, projectId, createdAt, [projectId+createdAt]',
+    })
   }
 }
 
