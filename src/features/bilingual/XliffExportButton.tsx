@@ -2,6 +2,7 @@ import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { exportXliff12 } from '@/core/bilingual/xliff12'
 import type { ExportXliffUnit } from '@/core/bilingual/xliff12'
+import { projectTemplateRepo } from '@/storage/repositories/projectTemplateRepo'
 import type { Project, Segment } from '@/core/types'
 
 interface XliffExportButtonProps {
@@ -23,8 +24,10 @@ export function XliffExportButton({ project, segments }: XliffExportButtonProps)
   const meta = project.bilingualMeta
   if (!meta || meta.format !== 'xliff12') return null
 
-  function handleExport() {
+  async function handleExport() {
     if (!meta || meta.format !== 'xliff12') return
+    const templateXml = await projectTemplateRepo.get(project.id)
+    if (!templateXml) return
     const units: ExportXliffUnit[] = []
     for (const seg of segments) {
       const id = seg.bilingualMeta?.transUnitId
@@ -36,7 +39,7 @@ export function XliffExportButton({ project, segments }: XliffExportButtonProps)
         inlineTags: seg.bilingualMeta?.inlineTags,
       })
     }
-    const xml = exportXliff12(meta.templateXml, units)
+    const xml = exportXliff12(templateXml, units)
     const blob = new Blob([xml], { type: 'application/xml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -51,7 +54,7 @@ export function XliffExportButton({ project, segments }: XliffExportButtonProps)
   return (
     <Button
       variant="bordered"
-      onClick={handleExport}
+      onClick={() => void handleExport()}
       disabled={segments.length === 0}
       data-testid="xliff-export-button"
     >

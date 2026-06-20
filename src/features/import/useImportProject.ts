@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { projectRepo } from '@/storage/repositories/projectRepo'
+import { projectTemplateRepo } from '@/storage/repositories/projectTemplateRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { detectType, segmentText, segmentDocx } from '@/core/segmentation'
 import type { ParsedSegment } from '@/core/segmentation'
@@ -45,10 +46,12 @@ export function useImportProject() {
             bilingualMeta: {
               format: 'xliff12',
               originalFile: parsed.originalFile,
-              templateXml: parsed.templateXml,
               datatype: parsed.datatype,
             },
           })
+          // The template can be the entire source document; keep it out of the
+          // project row so the projects list stays light.
+          await projectTemplateRepo.put(projectId, parsed.templateXml)
 
           const segments: Segment[] = parsed.units.map((u, i) => ({
             id: crypto.randomUUID(),

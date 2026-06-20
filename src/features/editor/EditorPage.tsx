@@ -5,7 +5,7 @@ import { ChevronLeft, Eye, PanelRight, PanelRightClose, Pencil, Trash2 } from 'l
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { projectRepo } from '@/storage/repositories/projectRepo'
-import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import { segmentRepo, tallyStatus } from '@/storage/repositories/segmentRepo'
 import { tmRepo } from '@/storage/repositories/tmRepo'
 import { SegmentRow } from './SegmentRow'
 import { useProjectSegments } from './useProjectSegments'
@@ -78,6 +78,13 @@ export default function EditorPage() {
   useEffect(() => {
     editorHandles.current[focusIndex]?.focus()
   }, [focusIndex])
+
+  // Derive status counts from the segments already in memory so the filter bar
+  // doesn't re-scan the same rows from the database.
+  const statusCounts = useMemo(
+    () => (segments ? tallyStatus(segments) : undefined),
+    [segments],
+  )
 
   const visibleSegments = useMemo(() => {
     if (!segments) return [] as Array<{ seg: Segment; originalIndex: number }>
@@ -426,7 +433,7 @@ export default function EditorPage() {
           </div>
         )}
 
-        <StatusFilterBar projectId={project.id} />
+        <StatusFilterBar counts={statusCounts} />
 
         {segments.length === 0 ? (
           <div

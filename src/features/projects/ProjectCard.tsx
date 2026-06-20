@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { Pencil, Copy, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import type { StatusCounts } from '@/storage/repositories/segmentRepo'
 import type { Project } from '@/core/types'
 import { useProjectDialogsStore, type ProjectDialogKind } from './useProjectDialogsStore'
 
@@ -17,7 +16,7 @@ export function formatRelative(iso: string): string {
 }
 
 export function projectProgress(
-  counts: { untranslated: number; draft: number; translated: number; reviewed: number; locked: number } | undefined,
+  counts: StatusCounts | undefined,
 ): { total: number; done: number; pct: number } {
   if (!counts) return { total: 0, done: 0, pct: 0 }
   const total =
@@ -52,8 +51,7 @@ function ActionButton({
   )
 }
 
-export function ProjectCard({ project }: { project: Project }) {
-  const counts = useLiveQuery(() => segmentRepo.countByStatus(project.id), [project.id])
+export function ProjectCard({ project, counts }: { project: Project; counts?: StatusCounts }) {
   const { total, done, pct } = projectProgress(counts)
   const openDialog = useProjectDialogsStore((s) => s.open)
   const act = (kind: ProjectDialogKind) => openDialog(kind, project.id)
