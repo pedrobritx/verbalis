@@ -10,6 +10,12 @@ import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
 import { useSegmentOpsStore } from './segments/useSegmentOpsStore'
 import { useSegmentHistoryStore } from './history/useSegmentHistoryStore'
 import type { SegmentEditorHandle } from './SegmentEditorHandle'
+import { InlineTagChip } from './rich/InlineTagChip'
+import {
+  classifyInlineTagKind,
+  nextMissingTagId,
+  splitTextWithTags,
+} from '@/core/bilingual/inlineTags'
 
 // Lexical only loads when rich editing is actually used, keeping it out of the
 // main bundle for the default (plain-text) path.
@@ -21,6 +27,17 @@ function countWords(text: string): number {
   const trimmed = text.trim()
   if (!trimmed) return 0
   return trimmed.split(/\s+/).length
+}
+
+/** Render source text with `{id}` placeholders shown as read-only inline-tag chips. */
+function renderSourceWithTags(source: string, inlineTags: Record<string, string>) {
+  return splitTextWithTags(source).map((part, i) =>
+    part.type === 'text' ? (
+      <span key={i}>{part.value}</span>
+    ) : (
+      <InlineTagChip key={i} id={part.id} kind={classifyInlineTagKind(inlineTags[part.id])} />
+    ),
+  )
 }
 
 interface SegmentRowProps {
@@ -72,31 +89,35 @@ export function SegmentRow({
   const openHistory = useSegmentHistoryStore((s) => s.open)
   const isCode = segment.sourceMeta?.kind === 'code'
   const useRich = richEditing && !isCode
+  const inlineTags = segment.bilingualMeta?.inlineTags
 
   // Plain-path focusable handle: wraps the textarea so the page can drive focus
   // and glossary insertion uniformly across plain and rich editors.
   const taElRef = useRef<HTMLTextAreaElement | null>(null)
+  const insertIntoTextarea = (text: string) => {
+    const el = taElRef.current
+    if (!el) return
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? el.value.length
+    const next = el.value.slice(0, start) + text + el.value.slice(end)
+    setTarget(next)
+    requestAnimationFrame(() => {
+      const node = taElRef.current
+      if (!node) return
+      node.focus()
+      const caret = start + text.length
+      try {
+        node.setSelectionRange(caret, caret)
+      } catch {
+        // selection range not supported — ignore.
+      }
+    })
+  }
   const plainHandleRef = useRef<SegmentEditorHandle>({
     focus: () => taElRef.current?.focus(),
-    insertText: (text) => {
-      const el = taElRef.current
-      if (!el) return
-      const start = el.selectionStart ?? el.value.length
-      const end = el.selectionEnd ?? el.value.length
-      const next = el.value.slice(0, start) + text + el.value.slice(end)
-      setTarget(next)
-      requestAnimationFrame(() => {
-        const node = taElRef.current
-        if (!node) return
-        node.focus()
-        const caret = start + text.length
-        try {
-          node.setSelectionRange(caret, caret)
-        } catch {
-          // selection range not supported — ignore.
-        }
-      })
-    },
+    insertText: insertIntoTextarea,
+    // In plain mode an inline tag is just its literal `{id}` placeholder.
+    insertTag: (tagId) => insertIntoTextarea(`{${tagId}}`),
   })
 
   useEffect(() => {
@@ -171,6 +192,14 @@ export function SegmentRow({
       // Flush latest text first; await so EditorPage.confirm sees current DB state.
       await flushTarget()
       onConfirm()
+      return
+    }
+    // F9 — insert the next inline tag still missing from the target (memoQ parity).
+    if (e.key === 'F9') {
+      e.preventDefault()
+      if (locked) return
+      const id = nextMissingTagId(segment.source, target)
+      if (id) insertIntoTextarea(`{${id}}`)
       return
     }
     if (e.key === 'ArrowDown' && !e.shiftKey) {
@@ -249,8 +278,9 @@ export function SegmentRow({
                   color: 'var(--color-text)',
                   fontFamily: isCode ? 'var(--font-mono)' : undefined,
                 }}
+                data-testid={`source-${segment.index}`}
               >
-                {segment.source}
+                {inlineTags ? renderSourceWithTags(segment.source, inlineTags) : segment.source}
               </div>
             )}
             {!locked && (
@@ -293,6 +323,8 @@ export function SegmentRow({
                   locked={locked}
                   isBilingual={isBilingual}
                   canJoinNext={canJoinNext}
+                  source={segment.source}
+                  inlineTags={inlineTags}
                   registerHandle={registerHandle}
                   onFocus={onFocus}
                   onConfirm={onConfirm}

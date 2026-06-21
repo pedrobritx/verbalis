@@ -167,3 +167,36 @@
 .rsg-editor p {
   margin: 0;
 }
+
+/* Inline-tag chips: atomic XLIFF placeholders shown in the editor (decorator
+   node), the source cell (read-only) and the focus-time tag strip (buttons). */
+.rsg-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  margin: 0 0.1em;
+  padding: 0 0.35em;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-fill);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  line-height: 1.5;
+  vertical-align: baseline;
+  user-select: none;
+  white-space: nowrap;
+}
+.rsg-tag-glyph {
+  font-size: 0.9em;
+}
+.rsg-tag-id {
+  font-weight: 600;
+}
+.rsg-tag-button {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.rsg-tag-button:hover {
+  background: var(--color-accent-fill);
+}
