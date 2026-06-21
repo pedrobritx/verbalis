@@ -1,12 +1,21 @@
 import { db } from '@/storage/db'
 import type { LookupSettings, MTSettings, SemanticTMSettings } from '@/core/types'
 import { DEFAULT_QA_RULES, type QARuleToggles } from '@/core/qa/types'
+import {
+  DEFAULT_AUTOCORRECT_SETTINGS,
+  type AutocorrectSettings,
+} from '@/core/text/autocorrect'
+import {
+  DEFAULT_WEB_SEARCH_SETTINGS,
+  type WebSearchSettings,
+} from '@/core/websearch/providers'
 
 export const MT_SETTINGS_KEY = 'mt.providers'
 export const SEMANTIC_TM_KEY = 'tm.semantic'
 export const LOOKUP_SETTINGS_KEY = 'lookup.defaults'
 export const EDITOR_SETTINGS_KEY = 'editor.prefs'
 export const PROFILE_SETTINGS_KEY = 'profile.identity'
+export const WEB_SEARCH_SETTINGS_KEY = 'websearch.providers'
 
 /**
  * Local identity for authored actions (comments today; tracked changes and
@@ -34,6 +43,8 @@ export interface EditorSettings {
    * foundation matures; code segments always stay plain.
    */
   richEditing: boolean
+  /** AutoCorrect / abbreviation expansion applied as the translator types. */
+  autocorrect: AutocorrectSettings
 }
 
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
@@ -41,6 +52,7 @@ export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
   pretranslateThreshold: 0.75,
   qaRules: { ...DEFAULT_QA_RULES },
   richEditing: false,
+  autocorrect: DEFAULT_AUTOCORRECT_SETTINGS,
 }
 
 export const DEFAULT_LOOKUP_SETTINGS: LookupSettings = {
@@ -128,13 +140,22 @@ export async function getLookupSettings(): Promise<LookupSettings> {
 }
 
 export function mergeEditorSettings(stored: Partial<EditorSettings> | undefined): EditorSettings {
-  if (!stored) return { ...DEFAULT_EDITOR_SETTINGS, qaRules: { ...DEFAULT_QA_RULES } }
+  if (!stored)
+    return {
+      ...DEFAULT_EDITOR_SETTINGS,
+      qaRules: { ...DEFAULT_QA_RULES },
+      autocorrect: { ...DEFAULT_AUTOCORRECT_SETTINGS },
+    }
   return {
     autoPropagate: stored.autoPropagate ?? DEFAULT_EDITOR_SETTINGS.autoPropagate,
     pretranslateThreshold:
       stored.pretranslateThreshold ?? DEFAULT_EDITOR_SETTINGS.pretranslateThreshold,
     qaRules: { ...DEFAULT_QA_RULES, ...(stored.qaRules ?? {}) },
     richEditing: stored.richEditing ?? DEFAULT_EDITOR_SETTINGS.richEditing,
+    autocorrect: {
+      enabled: stored.autocorrect?.enabled ?? DEFAULT_AUTOCORRECT_SETTINGS.enabled,
+      rules: stored.autocorrect?.rules ?? DEFAULT_AUTOCORRECT_SETTINGS.rules,
+    },
   }
 }
 
@@ -157,4 +178,16 @@ export function mergeProfileSettings(
 export async function getProfileSettings(): Promise<ProfileSettings> {
   const stored = await settingsRepo.get<Partial<ProfileSettings>>(PROFILE_SETTINGS_KEY)
   return mergeProfileSettings(stored)
+}
+
+export function mergeWebSearchSettings(
+  stored: Partial<WebSearchSettings> | undefined,
+): WebSearchSettings {
+  if (!stored?.providers) return { ...DEFAULT_WEB_SEARCH_SETTINGS }
+  return { providers: stored.providers }
+}
+
+export async function getWebSearchSettings(): Promise<WebSearchSettings> {
+  const stored = await settingsRepo.get<Partial<WebSearchSettings>>(WEB_SEARCH_SETTINGS_KEY)
+  return mergeWebSearchSettings(stored)
 }
