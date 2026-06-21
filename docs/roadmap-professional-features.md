@@ -84,12 +84,22 @@ segment's `source`/`target` are plain strings edited in a `<textarea>`
   so the rich editor rebuilds cleanly from the applied plain text.
 
 **Next slices on this core:**
-- `InlineTagNode` (paired/standalone) carrying the XLIFF tag payload, mapped ↔
-  the numeric placeholders already round-tripped via `bilingualMeta.inlineTags`
+- `InlineTagNode` (decorator chip) carrying the XLIFF tag payload, mapped ↔ the
+  numeric placeholders round-tripped via `bilingualMeta.inlineTags`
   (`src/core/bilingual/xliff12.ts`) — for quotes / footnotes / bibliography.
+  **Shipped (Phase 10).** Chips render in the rich editor and read-only in the
+  source cell; F9 / a focus-time tag strip insert the next missing tag; the node's
+  `getTextContent()` returns `{id}` so plain `target`, TM, QA and XLIFF export are
+  unchanged. Pure helpers in `src/core/bilingual/inlineTags.ts`; node in
+  `src/features/editor/rich/InlineTagNode.tsx`; chip (Lexical-free, reused by the
+  source cell) in `InlineTagChip.tsx`; headless parser made tag-aware via a node
+  registry in `src/core/editor/richText.ts`.
 - `CommentMark` / `TrackedChangeMark` decorations once F2 (CRDT history) lands.
 - Flip rich mode on by default once inline tags + broader (IME/paste/e2e)
-  testing are in.
+  testing are in. **Deferred:** the flip needs the Playwright suite migrated off
+  the textarea `.fill()` path first; it is a reversible one-line default change.
+- XLIFF `<bpt>/<ept>` run styling on export (formatting marks → tags) is a
+  follow-up; formatting currently round-trips only inside `targetRich`.
 
 **Risk:** IME/undo/paste correctness, and keeping `target` (plain) and
 `targetRich` in sync. Mitigate with a single source‑of‑truth (Lexical state) and
@@ -172,7 +182,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 |---|---|---|---|
 | **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
 | **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
-| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅ (opt-in); inline tags next | F1 |
+| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1 |
 | **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
@@ -198,13 +208,18 @@ foundation work.
 - Round‑trip to XLIFF `<bpt>/<ept>` run styling on export is a follow-up (lands
   with inline tags).
 
-**Inline tagging — quotes, footnotes, bibliography** *(next slice on F1)*
+**Inline tagging — quotes, footnotes, bibliography** *(shipped, Phase 10, opt-in)*
 - memoQ: numbered inline tags `{1}…{2}` that must be carried to the target.
-- Verbalis: `InlineTagNode` rendered as a compact chip ("¹", "❝", "biblio")
-  with hover detail. A "Tags" mini‑panel lists source tags; one key inserts the
-  next missing tag into the target (memoQ's `F9`). QA gains a *tag mismatch*
-  rule (extends `src/core/qa/checks.ts`). Footnote/citation tags reference
-  entries managed by the standards engine (Phase 16).
+- Verbalis: `InlineTagNode` renders each placeholder as a compact chip (glyph by
+  kind — "¹" footnote, "❝" quote, "※" biblio — plus the id) with hover detail,
+  classified from the stored tag XML by `classifyInlineTag`
+  (`src/core/bilingual/inlineTags.ts`). The source cell shows the same chips
+  read‑only; a focus‑time **tag strip** lists the source tags and `F9` inserts the
+  next one still missing from the target (`nextMissingTagId`). The QA *tag
+  mismatch* rule (`src/core/qa/checks.ts`) already compares the placeholder
+  multiset and is unaffected, because the chip's `getTextContent()` returns
+  `{id}` — plain `target` stays the contract for TM/QA/search/export. Footnote/
+  citation tags will reference entries managed by the standards engine (Phase 16).
 
 **Edit source** *(shipped, Phase 8)*
 - memoQ: "Edit source" toggles the source cell editable.

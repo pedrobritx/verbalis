@@ -19,11 +19,52 @@ import {
   type LexicalEditor,
 } from 'lexical'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
-import { RICH_NAMESPACE, RICH_THEME, prepopulatePlain } from '@/core/editor/richText'
+import { RICH_NAMESPACE, RICH_THEME, getRichNodes } from '@/core/editor/richText'
+import {
+  classifyInlineTagKind,
+  listTagIds,
+  nextMissingTagId,
+  splitTextWithTags,
+  type InlineTagKind,
+} from '@/core/bilingual/inlineTags'
 import type { SegmentStatus } from '@/core/types'
 import type { SegmentEditorHandle } from '../SegmentEditorHandle'
 import { autosaveStatus } from '../segmentAutosave'
 import { FormatToolbar } from './FormatToolbar'
+import { $createInlineTagNode } from './InlineTagNode'
+import { InlineTagChip } from './InlineTagChip'
+
+/** Initial-state builder: seed a paragraph from plain text, turning `{id}`
+ *  placeholders into atomic InlineTagNodes (chips). */
+function seedFromPlain(text: string, inlineTags?: Record<string, string>): () => void {
+  return () => {
+    const root = $getRoot()
+    if (root.getFirstChild()) return
+    const paragraph = $createParagraphNode()
+    for (const part of splitTextWithTags(text)) {
+      if (part.type === 'text') {
+        if (part.value) paragraph.append($createTextNode(part.value))
+      } else {
+        paragraph.append(
+          $createInlineTagNode(part.id, classifyInlineTagKind(inlineTags?.[part.id])),
+        )
+      }
+    }
+    root.append(paragraph)
+  }
+}
+
+/** Insert an inline-tag chip at the current selection (or document end). */
+function insertInlineTag(editor: LexicalEditor, tagId: string, kind: InlineTagKind): void {
+  editor.update(() => {
+    let sel = $getSelection()
+    if (!$isRangeSelection(sel)) {
+      $getRoot().selectEnd()
+      sel = $getSelection()
+    }
+    if ($isRangeSelection(sel)) sel.insertNodes([$createInlineTagNode(tagId, kind)])
+  })
+}
 
 const SAVE_DELAY_MS = 300
 
@@ -39,6 +80,10 @@ export interface RichSegmentEditorProps {
   locked: boolean
   isBilingual: boolean
   canJoinNext: boolean
+  /** Source text, so F9 / the tag strip can offer the next inline tag to insert. */
+  source: string
+  /** Original XML for each inline tag, keyed by placeholder id (XLIFF projects). */
+  inlineTags?: Record<string, string>
   registerHandle: (handle: SegmentEditorHandle | null) => void
   onFocus: () => void
   onConfirm: () => void
@@ -48,21 +93,27 @@ export interface RichSegmentEditorProps {
 }
 
 export function RichSegmentEditor(props: RichSegmentEditorProps) {
-  const { index, initialPlain, initialRich, locked } = props
+  const { index, initialPlain, initialRich, locked, source, inlineTags } = props
   const [focused, setFocused] = useState(false)
 
   const initialConfig = {
     namespace: RICH_NAMESPACE,
     theme: RICH_THEME,
+    nodes: getRichNodes(),
     editable: !locked,
     onError: (error: Error) => console.warn('Lexical error', error),
-    editorState: initialRich ?? prepopulatePlain(initialPlain),
+    editorState: initialRich ?? seedFromPlain(initialPlain, inlineTags),
   }
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="flex flex-col gap-1">
-        {focused && !locked && <FormatToolbar />}
+        {focused && !locked && (
+          <div className="flex flex-wrap items-center gap-1">
+            <FormatToolbar />
+            <TagStrip source={source} inlineTags={inlineTags} />
+          </div>
+        )}
         <div className="relative">
           <RichTextPlugin
             contentEditable={
@@ -226,6 +277,15 @@ function EditorLogic(props: RichSegmentEditorProps) {
           flushSave()
           p.onJoin()
         }
+        return
+      }
+      // F9 — insert the next inline tag still missing from the target (memoQ parity).
+      if (e.key === 'F9') {
+        e.preventDefault()
+        const p = propsRef.current
+        if (p.locked) return
+        const id = nextMissingTagId(p.source, computePlain())
+        if (id) insertInlineTag(editor, id, classifyInlineTagKind(p.inlineTags?.[id]))
       }
     }
 
@@ -240,6 +300,10 @@ function EditorLogic(props: RichSegmentEditorProps) {
           }
           if ($isRangeSelection(sel)) sel.insertText(text)
         })
+      },
+      insertTag: (tagId) => {
+        if (propsRef.current.locked) return
+        insertInlineTag(editor, tagId, classifyInlineTagKind(propsRef.current.inlineTags?.[tagId]))
       },
     }
     propsRef.current.registerHandle(handle)
@@ -265,10 +329,10 @@ function EditorLogic(props: RichSegmentEditorProps) {
       try {
         editor.setEditorState(editor.parseEditorState(props.externalRich))
       } catch {
-        rebuildFromPlain(editor, props.externalPlain)
+        rebuildFromPlain(editor, props.externalPlain, props.inlineTags)
       }
     } else {
-      rebuildFromPlain(editor, props.externalPlain)
+      rebuildFromPlain(editor, props.externalPlain, props.inlineTags)
     }
     lastSavedPlainRef.current = props.externalPlain
     lastSavedRichRef.current =
@@ -279,12 +343,62 @@ function EditorLogic(props: RichSegmentEditorProps) {
   return null
 }
 
-function rebuildFromPlain(editor: LexicalEditor, text: string) {
+function rebuildFromPlain(
+  editor: LexicalEditor,
+  text: string,
+  inlineTags?: Record<string, string>,
+) {
   editor.update(() => {
     const root = $getRoot()
     root.clear()
     const paragraph = $createParagraphNode()
-    if (text) paragraph.append($createTextNode(text))
+    for (const part of splitTextWithTags(text)) {
+      if (part.type === 'text') {
+        if (part.value) paragraph.append($createTextNode(part.value))
+      } else {
+        paragraph.append(
+          $createInlineTagNode(part.id, classifyInlineTagKind(inlineTags?.[part.id])),
+        )
+      }
+    }
     root.append(paragraph)
   })
+}
+
+/**
+ * A focus-time strip of the source's inline tags. Clicking one inserts it into
+ * the target at the caret; F9 inserts the next missing tag without leaving the
+ * keyboard. Shown only when the segment actually has source tags.
+ */
+function TagStrip({
+  source,
+  inlineTags,
+}: {
+  source: string
+  inlineTags?: Record<string, string>
+}) {
+  const [editor] = useLexicalComposerContext()
+  // Distinct source tag ids, in first-appearance order.
+  const ids = Array.from(new Set(listTagIds(source)))
+  if (ids.length === 0) return null
+  return (
+    <div
+      className="flex items-center gap-0.5 rounded-md border p-0.5 w-fit"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      data-testid="tag-strip"
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      {ids.map((id) => (
+        <InlineTagChip
+          key={id}
+          id={id}
+          kind={classifyInlineTagKind(inlineTags?.[id])}
+          title={`Insert tag ${id} (F9 for next)`}
+          onClick={() =>
+            insertInlineTag(editor, id, classifyInlineTagKind(inlineTags?.[id]))
+          }
+        />
+      ))}
+    </div>
+  )
 }
