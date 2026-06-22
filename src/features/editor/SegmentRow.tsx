@@ -53,6 +53,10 @@ interface SegmentRowProps {
   richEditing: boolean
   /** AutoCorrect rules applied while typing in the plain editor. */
   autocorrect?: AutocorrectSettings
+  /** Project target language, for rich-editor spell-check underlines. */
+  targetLang: string
+  /** Whether on-device spell-check underlines are enabled. */
+  spellEnabled: boolean
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
   onConfirm: () => void
@@ -73,6 +77,8 @@ export function SegmentRow({
   canJoinNext,
   richEditing,
   autocorrect,
+  targetLang,
+  spellEnabled,
   commentAuthor,
   onConfirm,
   onToggleReviewed,
@@ -329,6 +335,8 @@ export function SegmentRow({
                   canJoinNext={canJoinNext}
                   source={segment.source}
                   inlineTags={inlineTags}
+                  targetLang={targetLang}
+                  spellEnabled={spellEnabled}
                   registerHandle={registerHandle}
                   onFocus={onFocus}
                   onConfirm={onConfirm}

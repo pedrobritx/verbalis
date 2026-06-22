@@ -33,6 +33,7 @@ import { autosaveStatus } from '../segmentAutosave'
 import { FormatToolbar } from './FormatToolbar'
 import { $createInlineTagNode } from './InlineTagNode'
 import { InlineTagChip } from './InlineTagChip'
+import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 
 /** Initial-state builder: seed a paragraph from plain text, turning `{id}`
  *  placeholders into atomic InlineTagNodes (chips). */
@@ -84,6 +85,10 @@ export interface RichSegmentEditorProps {
   source: string
   /** Original XML for each inline tag, keyed by placeholder id (XLIFF projects). */
   inlineTags?: Record<string, string>
+  /** Project target language, for spell-check underlines. */
+  targetLang: string
+  /** Whether on-device spell-check underlines are enabled. */
+  spellEnabled: boolean
   registerHandle: (handle: SegmentEditorHandle | null) => void
   onFocus: () => void
   onConfirm: () => void
@@ -93,8 +98,10 @@ export interface RichSegmentEditorProps {
 }
 
 export function RichSegmentEditor(props: RichSegmentEditorProps) {
-  const { index, initialPlain, initialRich, locked, source, inlineTags } = props
+  const { index, initialPlain, initialRich, locked, source, inlineTags, targetLang, spellEnabled } =
+    props
   const [focused, setFocused] = useState(false)
+  const editorBoxRef = useRef<HTMLDivElement | null>(null)
 
   const initialConfig = {
     namespace: RICH_NAMESPACE,
@@ -114,7 +121,7 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
             <TagStrip source={source} inlineTags={inlineTags} />
           </div>
         )}
-        <div className="relative">
+        <div className="relative" ref={editorBoxRef}>
           <RichTextPlugin
             contentEditable={
               <ContentEditable
@@ -144,6 +151,9 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
             }
             ErrorBoundary={LexicalErrorBoundary}
           />
+          {spellEnabled && !locked && (
+            <SpellUnderlinePlugin targetLang={targetLang} containerRef={editorBoxRef} />
+          )}
         </div>
       </div>
       <HistoryPlugin />

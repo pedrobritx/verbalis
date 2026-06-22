@@ -28,6 +28,7 @@ import {
   getMTSettings,
   getEditorSettings,
   getProfileSettings,
+  getSpellSettings,
 } from '@/storage/repositories/settingsRepo'
 import { EditorTips } from './EditorTips'
 import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
@@ -59,6 +60,7 @@ export default function EditorPage() {
   const [focusIndex, setFocusIndex] = useState(0)
   const editorHandles = useRef<Array<SegmentEditorHandle | null>>([])
   const { richEditing, autocorrect } = useEditorSettings()
+  const spellEnabled = useLiveQuery(() => getSpellSettings().then((s) => s.enabled), []) ?? false
   const panelOpen = useSidebarPanelStore((s) => s.open)
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
@@ -496,6 +498,8 @@ export default function EditorPage() {
                 }
                 richEditing={richEditing}
                 autocorrect={autocorrect}
+                targetLang={project.targetLang}
+                spellEnabled={spellEnabled}
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}

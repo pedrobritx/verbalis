@@ -183,7 +183,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 | **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
 | **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
 | **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1 |
-| **11** | **Language quality** | Web search + AutoCorrect ✅; grammar/style QA hints + selection lookup ✅; on‑device Hunspell spell‑check (panel) ✅, rich‑editor squiggles next | — (F1 for inline marks) |
+| **11** | **Language quality** ✅ | Web search + AutoCorrect ✅; grammar/style QA hints + selection lookup ✅; on‑device Hunspell spell‑check — panel + rich‑editor squiggles ✅ | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
 | **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next | F2, F3 |
@@ -272,7 +272,7 @@ foundation work.
   the pre‑existing double‑space / whitespace / terminology‑consistency checks —
   privacy‑safe and fully offline.
 
-**Spelling (Hunspell)** *(panel shipped, Phase 11; rich-editor squiggles next)*
+**Spelling (Hunspell)** *(shipped, Phase 11 — panel + rich-editor squiggles)*
 - memoQ: Hunspell or MS Word; squiggly underlines; download dictionaries.
 - Verbalis: **nspell** (pure-JS, Hunspell-compatible — same wooorm ecosystem as
   remark; chosen over a WASM build for far less complexity, same offline result)
@@ -285,7 +285,12 @@ foundation work.
   "Add to dictionary" (a personal word list in `settings`/`spell.dicts`) and
   "Ignore" — working in **both** the plain textarea and the rich editor. Pure
   core in `src/core/spell/` (`tokenizeWords`, `createChecker`). No text leaves the
-  device. **Next:** rich-editor squiggle decorations + inline suggestion popover.
+  device. The **rich editor** adds a non-mutating squiggle overlay
+  (`rich/SpellUnderlinePlugin.tsx`) — a dashed underline painted over misspellings
+  without wrapping nodes (so typing/IME/undo and the `{id}` contract are untouched),
+  with a click-to-fix suggestion popover; the plain-offset→DOM-range mapping is the
+  pure, tested `src/core/spell/offsets.ts`, and one shared loader
+  (`src/core/spell/loader.ts`) fetches each dictionary once across panel + overlay.
 
 **Dictionary lookup** *(shipped, Phase 11)*
 - Already present: Wiktionary adapter + Quick Lookup dialog (`src/features/lookup`,
