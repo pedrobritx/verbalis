@@ -28,6 +28,7 @@ import {
   Trash2,
   Globe,
   Languages,
+  SpellCheck,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -130,6 +131,13 @@ export function CommandPalette() {
           >
             <Wand2 />
             <span>Switch sidebar to Machine translation</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => setSidebarTab('spell'))}
+            data-testid="cmd-sidebar-spell"
+          >
+            <SpellCheck />
+            <span>Switch sidebar to Spelling</span>
           </CommandItem>
           <CommandItem
             disabled={!editorActions}

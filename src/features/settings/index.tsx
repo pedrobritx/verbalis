@@ -5,6 +5,7 @@ import { SemanticTMSection } from './SemanticTMSection'
 import { LookupSettingsSection } from './LookupSettingsSection'
 import { EditorSettingsSection } from './EditorSettingsSection'
 import { WebSearchSettingsSection } from './WebSearchSettingsSection'
+import { SpellSettingsSection } from './SpellSettingsSection'
 import { ProfileSettingsSection } from './ProfileSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
@@ -65,6 +66,10 @@ export default function SettingsPage() {
 
       <Section title="Editor &amp; quality assurance">
         <EditorSettingsSection />
+      </Section>
+
+      <Section title="Spell-check">
+        <SpellSettingsSection />
       </Section>
 
       <Section title="Web search providers">

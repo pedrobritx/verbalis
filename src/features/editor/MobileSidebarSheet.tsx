@@ -6,6 +6,8 @@ interface MobileSidebarSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   focusedSource: string | undefined
+  focusedTarget: string | undefined
+  focusedSegmentId: string | undefined
   projectId: string
   sourceLang: string
   targetLang: string
@@ -18,6 +20,8 @@ export function MobileSidebarSheet({
   open,
   onOpenChange,
   focusedSource,
+  focusedTarget,
+  focusedSegmentId,
   projectId,
   sourceLang,
   targetLang,
@@ -54,6 +58,8 @@ export function MobileSidebarSheet({
           <div className="flex-1 overflow-auto p-3">
             <SidebarPanel
               focusedSource={focusedSource}
+              focusedTarget={focusedTarget}
+              focusedSegmentId={focusedSegmentId}
               projectId={projectId}
               sourceLang={sourceLang}
               targetLang={targetLang}

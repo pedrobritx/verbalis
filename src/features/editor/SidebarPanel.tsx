@@ -4,12 +4,15 @@ import { TMPanel } from './tm/TMPanel'
 import { GlossaryPanel } from './glossary/GlossaryPanel'
 import { MTPanel } from './mt/MTPanel'
 import { QAPanel } from './qa/QAPanel'
+import { SpellPanel } from './spell/SpellPanel'
 import { VersionHistoryPanel } from './history/VersionHistoryPanel'
 import { PeersPanel } from './peers/PeersPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
 
 interface SidebarPanelProps {
   focusedSource: string | undefined
+  focusedTarget: string | undefined
+  focusedSegmentId: string | undefined
   projectId: string
   sourceLang: string
   targetLang: string
@@ -23,12 +26,15 @@ const TABS: Array<{ id: SidebarTab; label: string }> = [
   { id: 'glossary', label: 'Glossary' },
   { id: 'mt', label: 'MT' },
   { id: 'qa', label: 'QA' },
+  { id: 'spell', label: 'Spell' },
   { id: 'history', label: 'History' },
   { id: 'peers', label: 'Peers' },
 ]
 
 export function SidebarPanel({
   focusedSource,
+  focusedTarget,
+  focusedSegmentId,
   projectId,
   sourceLang,
   targetLang,
@@ -121,6 +127,15 @@ export function SidebarPanel({
       {tab === 'qa' && (
         <div data-testid="qa-panel">
           <QAPanel projectId={projectId} targetLang={targetLang} />
+        </div>
+      )}
+      {tab === 'spell' && (
+        <div data-testid="spell-panel">
+          <SpellPanel
+            targetLang={targetLang}
+            focusedTarget={focusedTarget}
+            focusedSegmentId={focusedSegmentId}
+          />
         </div>
       )}
       {tab === 'history' && (
