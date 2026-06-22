@@ -61,6 +61,17 @@ export default defineConfig({
             },
           },
           {
+            // Bundled Hunspell dictionaries — large static assets fetched on
+            // demand (never precached); cached so spell-check works offline.
+            urlPattern: /\/dictionaries\/.*\.(aff|dic)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'verbalis-dictionaries',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/[a-z]{2,3}\.wiktionary\.org\/api\/rest_v1\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {

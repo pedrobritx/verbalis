@@ -16,6 +16,19 @@ export const LOOKUP_SETTINGS_KEY = 'lookup.defaults'
 export const EDITOR_SETTINGS_KEY = 'editor.prefs'
 export const PROFILE_SETTINGS_KEY = 'profile.identity'
 export const WEB_SEARCH_SETTINGS_KEY = 'websearch.providers'
+export const SPELL_SETTINGS_KEY = 'spell.dicts'
+
+/** On-device spell-check. The active dictionary follows the project target lang. */
+export interface SpellSettings {
+  enabled: boolean
+  /** Personal dictionary — words the user marked correct, fed to the checker. */
+  personalWords: string[]
+}
+
+export const DEFAULT_SPELL_SETTINGS: SpellSettings = {
+  enabled: false,
+  personalWords: [],
+}
 
 /**
  * Local identity for authored actions (comments today; tracked changes and
@@ -190,4 +203,17 @@ export function mergeWebSearchSettings(
 export async function getWebSearchSettings(): Promise<WebSearchSettings> {
   const stored = await settingsRepo.get<Partial<WebSearchSettings>>(WEB_SEARCH_SETTINGS_KEY)
   return mergeWebSearchSettings(stored)
+}
+
+export function mergeSpellSettings(stored: Partial<SpellSettings> | undefined): SpellSettings {
+  if (!stored) return { ...DEFAULT_SPELL_SETTINGS, personalWords: [] }
+  return {
+    enabled: stored.enabled ?? DEFAULT_SPELL_SETTINGS.enabled,
+    personalWords: stored.personalWords ?? [],
+  }
+}
+
+export async function getSpellSettings(): Promise<SpellSettings> {
+  const stored = await settingsRepo.get<Partial<SpellSettings>>(SPELL_SETTINGS_KEY)
+  return mergeSpellSettings(stored)
 }

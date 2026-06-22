@@ -183,7 +183,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 | **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
 | **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
 | **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1 |
-| **11** | **Language quality** | Web search + AutoCorrect ✅; rule‑based grammar/style QA hints + selection‑aware lookup ✅; Hunspell spell‑check still pending | — (F1 for inline marks) |
+| **11** | **Language quality** | Web search + AutoCorrect ✅; grammar/style QA hints + selection lookup ✅; on‑device Hunspell spell‑check (panel) ✅, rich‑editor squiggles next | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
 | **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next | F2, F3 |
@@ -272,13 +272,20 @@ foundation work.
   the pre‑existing double‑space / whitespace / terminology‑consistency checks —
   privacy‑safe and fully offline.
 
-**Spelling (Hunspell)** *(pending, Phase 11)*
+**Spelling (Hunspell)** *(panel shipped, Phase 11; rich-editor squiggles next)*
 - memoQ: Hunspell or MS Word; squiggly underlines; download dictionaries.
-- Verbalis: **Hunspell compiled to WASM**, dictionaries fetched on demand and
-  cached by the service worker (same pattern as the embedding model in
-  `vite.config.ts`). Runs in a Web Worker; misspellings shown as Lexical
-  decorations with a suggestion popover. No text leaves the device. *Still to do —
-  the heavy slice of Phase 11.*
+- Verbalis: **nspell** (pure-JS, Hunspell-compatible — same wooorm ecosystem as
+  remark; chosen over a WASM build for far less complexity, same offline result)
+  runs in a **Web Worker** (`src/workers/spell.worker.ts`, `getSpellWorker`).
+  Dictionaries are bundled static assets (`public/dictionaries/<lang>/`, built by
+  `scripts/build-dictionaries.mjs` from the `dictionary-*` packages), fetched on
+  demand and `CacheFirst` SW-cached — never precached. The active dictionary
+  follows `project.targetLang` (en + pt ship today). A **Spelling sidebar panel**
+  lists the focused segment's misspellings with click-to-apply suggestions, plus
+  "Add to dictionary" (a personal word list in `settings`/`spell.dicts`) and
+  "Ignore" — working in **both** the plain textarea and the rich editor. Pure
+  core in `src/core/spell/` (`tokenizeWords`, `createChecker`). No text leaves the
+  device. **Next:** rich-editor squiggle decorations + inline suggestion popover.
 
 **Dictionary lookup** *(shipped, Phase 11)*
 - Already present: Wiktionary adapter + Quick Lookup dialog (`src/features/lookup`,

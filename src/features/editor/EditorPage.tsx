@@ -339,6 +339,7 @@ export default function EditorPage() {
   }
 
   const focusedSource = segments[focusIndex]?.source
+  const focusedTarget = segments[focusIndex]?.target
   const focusedId = segments[focusIndex]?.id
 
   // Broadcast which segment the local user is on, so peers' presence follows.
@@ -512,6 +513,8 @@ export default function EditorPage() {
         <div className="hidden md:block">
           <SidebarPanel
             focusedSource={focusedSource}
+            focusedTarget={focusedTarget}
+            focusedSegmentId={focusedId}
             projectId={project.id}
             sourceLang={project.sourceLang}
             targetLang={project.targetLang}
@@ -527,6 +530,8 @@ export default function EditorPage() {
           open={mobileSheetOpen}
           onOpenChange={setMobileSheetOpen}
           focusedSource={focusedSource}
+          focusedTarget={focusedTarget}
+          focusedSegmentId={focusedId}
           projectId={project.id}
           sourceLang={project.sourceLang}
           targetLang={project.targetLang}
