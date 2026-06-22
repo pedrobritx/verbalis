@@ -317,16 +317,20 @@ foundation work.
   Phase 12 anchors comments to a text range via a `CommentMark` and adds a
   project‑wide comments view.
 
-**Changes tracking + show/hide** *(Phase 12)*
+**Changes tracking + show/hide** *(read-only Changes view shipped, Phase 12)*
 - memoQ: per‑author insertion/deletion colors, mark insertions underlined /
   deletions struck through, toggle visibility (see the Appearance → Tracked
   changes screenshot).
-- Verbalis: tracked changes are a natural read of the CRDT history — each edit
-  carries its author (the local identity) and timestamp. Render as
-  `TrackedChangeMark` decorations with per‑author colors; a single toolbar
-  toggle shows/hides them; accept/reject per change or in bulk. No separate
-  "track changes on/off" mode to forget — history is always recorded, *display*
-  is the toggle.
+- Verbalis: tracked changes are a natural read of the CRDT history — each saved
+  version carries its author (the local identity) and timestamp. A **Changes**
+  sidebar tab (`changes/ChangesPanel.tsx`) lists every segment whose target
+  changed across versions (`versionRepo.latestChanges`), rendering a word diff
+  (`diffWords`) with **per‑author colours** (`core/history/authorColor.ts`,
+  insertions coloured / deletions struck through) and a single **show/hide**
+  toggle; clicking a row jumps to the segment. History is always recorded, so
+  there is no "track changes on/off" mode to forget — *display* is the toggle.
+- **Next:** live in‑editor `TrackedChangeMark` decorations and accept/reject per
+  change (the editing half), plus comment‑range anchoring (`CommentMark`).
 
 **Versioning history** *(Phase 12)*
 - Per‑segment timeline (who/when/what) and named project snapshots with

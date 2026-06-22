@@ -5,6 +5,7 @@ import { GlossaryPanel } from './glossary/GlossaryPanel'
 import { MTPanel } from './mt/MTPanel'
 import { QAPanel } from './qa/QAPanel'
 import { SpellPanel } from './spell/SpellPanel'
+import { ChangesPanel } from './changes/ChangesPanel'
 import { VersionHistoryPanel } from './history/VersionHistoryPanel'
 import { PeersPanel } from './peers/PeersPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
@@ -27,6 +28,7 @@ const TABS: Array<{ id: SidebarTab; label: string }> = [
   { id: 'mt', label: 'MT' },
   { id: 'qa', label: 'QA' },
   { id: 'spell', label: 'Spell' },
+  { id: 'changes', label: 'Changes' },
   { id: 'history', label: 'History' },
   { id: 'peers', label: 'Peers' },
 ]
@@ -136,6 +138,11 @@ export function SidebarPanel({
             focusedTarget={focusedTarget}
             focusedSegmentId={focusedSegmentId}
           />
+        </div>
+      )}
+      {tab === 'changes' && (
+        <div data-testid="changes-panel">
+          <ChangesPanel projectId={projectId} />
         </div>
       )}
       {tab === 'history' && (

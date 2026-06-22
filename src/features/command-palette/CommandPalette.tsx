@@ -29,6 +29,7 @@ import {
   Globe,
   Languages,
   SpellCheck,
+  GitCompare,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -138,6 +139,13 @@ export function CommandPalette() {
           >
             <SpellCheck />
             <span>Switch sidebar to Spelling</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => setSidebarTab('changes'))}
+            data-testid="cmd-sidebar-changes"
+          >
+            <GitCompare />
+            <span>Switch sidebar to Changes</span>
           </CommandItem>
           <CommandItem
             disabled={!editorActions}

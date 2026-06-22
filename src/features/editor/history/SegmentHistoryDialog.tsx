@@ -8,36 +8,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { versionRepo, type SegmentHistoryEntry } from '@/storage/repositories/versionRepo'
-import { diffWords } from '@/core/history/diff'
 import { useSegmentHistoryStore } from './useSegmentHistoryStore'
 import { relativeTime } from './relativeTime'
-
-/** Render a word diff of `next` against `prev` with insert/delete coloring. */
-function DiffText({ prev, next }: { prev: string; next: string }) {
-  const parts = diffWords(prev, next)
-  return (
-    <p className="text-sm whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
-      {parts.map((part, i) => {
-        if (part.op === 'equal') return <span key={i}>{part.text}</span>
-        if (part.op === 'add') {
-          return (
-            <span key={i} style={{ color: 'var(--color-confirm)', fontWeight: 600 }}>
-              {part.text}
-            </span>
-          )
-        }
-        return (
-          <span
-            key={i}
-            style={{ color: 'var(--color-error)', textDecoration: 'line-through' }}
-          >
-            {part.text}
-          </span>
-        )
-      })}
-    </p>
-  )
-}
+import { DiffText } from './DiffText'
 
 /**
  * Per-segment "row history" (Foundation F2): a timeline of a segment's target
