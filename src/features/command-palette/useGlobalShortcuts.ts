@@ -70,7 +70,7 @@ export function useGlobalShortcuts() {
       if (e.key === 'l' || e.key === 'L') {
         if (e.shiftKey) return
         e.preventDefault()
-        openLookup()
+        openLookup(activeSelectionText().trim())
         return
       }
       if (e.key === 'h' || e.key === 'H') {

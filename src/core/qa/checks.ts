@@ -101,6 +101,29 @@ export function runQA(
       push(seg, 'double_space', 'warning', 'Target contains a double space.')
     }
 
+    if (rules.space_before_punct) {
+      // French legitimately uses a space before ; : ? ! — only flag the comma
+      // and period there; flag the whole set for every other language.
+      const isFrench = opts.targetLang.toLowerCase().startsWith('fr')
+      const re = isFrench ? /\s[,.]/ : /\s[,.;:?!]/
+      if (re.test(target)) {
+        push(seg, 'space_before_punct', 'warning', 'Target has a space before punctuation.')
+      }
+    }
+
+    if (rules.repeated_word && /\b(\p{L}{2,})\s+\1\b/iu.test(target)) {
+      push(seg, 'repeated_word', 'warning', 'Target repeats a word back-to-back.')
+    }
+
+    if (rules.straight_quotes && /["]/.test(target)) {
+      push(
+        seg,
+        'straight_quotes',
+        'warning',
+        'Target uses straight quotes ("); consider typographic quotes (“ ”).',
+      )
+    }
+
     if (rules.term_inconsistency && glossary.length > 0) {
       const hits = findGlossaryHits(seg.source, glossary, { limit: 50 })
       const normTarget = normalize(target)
