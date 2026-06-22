@@ -27,6 +27,7 @@ import {
   Copy,
   Trash2,
   Globe,
+  Languages,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -51,6 +52,7 @@ import { useConcordanceStore } from '@/features/editor/concordance/useConcordanc
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
+import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
 import { getWebSearchSettings } from '@/storage/repositories/settingsRepo'
 
 const STATUS_FILTERS: Array<{ id: StatusFilter; label: string }> = [
@@ -81,6 +83,7 @@ export function CommandPalette() {
   const editorActions = useEditorActionsStore((s) => s.actions)
   const openImport = useImportDialogStore((s) => s.setOpen)
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
+  const openLookup = useQuickLookupStore((s) => s.openWith)
   const openProjectDialog = useProjectDialogsStore((s) => s.open)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
   const webSearch = useLiveQuery(() => getWebSearchSettings(), [])
@@ -225,6 +228,14 @@ export function CommandPalette() {
             <span>Concordance search…</span>
             <CommandShortcut>⌃⇧K</CommandShortcut>
           </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => openLookup(''))}
+            data-testid="cmd-lookup"
+          >
+            <Languages />
+            <span>Quick lookup…</span>
+            <CommandShortcut>⌃L</CommandShortcut>
+          </CommandItem>
         </CommandGroup>
         {webSearchProviders.length > 0 && (
           <CommandGroup heading="Web search (source term)">
@@ -300,6 +311,7 @@ export function CommandPalette() {
     openAnalysis,
     openAddTerm,
     openConcordance,
+    openLookup,
     openProjectDialog,
     currentProjectId,
     webSearchProviders,

@@ -7,6 +7,7 @@ import { GlobalShortcuts } from '@/features/command-palette/useGlobalShortcuts'
 import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
 import { useEditorModeStore } from '@/features/editor/useEditorModeStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
+import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
 
 function LocationProbe() {
   const loc = useLocation()
@@ -29,6 +30,7 @@ beforeEach(() => {
   useCommandPaletteStore.setState({ open: false })
   useEditorModeStore.setState({ reviewMode: false, statusFilter: 'all' })
   useImportDialogStore.setState({ open: false })
+  useQuickLookupStore.setState({ open: false, prefill: '' })
 })
 
 afterEach(() => {
@@ -71,6 +73,30 @@ describe('CommandPalette', () => {
       expect(screen.getByTestId('loc').textContent).toBe('/tm')
     })
     expect(useCommandPaletteStore.getState().open).toBe(false)
+  })
+
+  it('Ctrl+L opens quick lookup', () => {
+    render(<Harness />)
+    expect(useQuickLookupStore.getState().open).toBe(false)
+    act(() => {
+      fireEvent.keyDown(window, { key: 'l', ctrlKey: true })
+    })
+    expect(useQuickLookupStore.getState().open).toBe(true)
+    expect(useQuickLookupStore.getState().prefill).toBe('')
+  })
+
+  it('Ctrl+L prefills quick lookup with the active selection', () => {
+    render(<Harness />)
+    const ta = document.createElement('textarea')
+    ta.value = 'boa-fé objetiva'
+    document.body.appendChild(ta)
+    ta.focus()
+    ta.setSelectionRange(0, 6) // "boa-fé"
+    act(() => {
+      fireEvent.keyDown(window, { key: 'l', ctrlKey: true })
+    })
+    expect(useQuickLookupStore.getState().prefill).toBe('boa-fé')
+    document.body.removeChild(ta)
   })
 
   it('triggers global import dialog from the "Import file…" item', async () => {

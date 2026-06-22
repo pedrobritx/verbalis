@@ -21,7 +21,7 @@ const GROUPS: ShortcutGroup[] = [
     heading: 'Global',
     items: [
       { keys: 'Ctrl K', description: 'Open command palette' },
-      { keys: 'Ctrl L', description: 'Quick term lookup' },
+      { keys: 'Ctrl L', description: 'Look up selected / current term' },
       { keys: '?', description: 'Show this cheat-sheet' },
     ],
   },
