@@ -16,6 +16,7 @@ import {
   nextMissingTagId,
   splitTextWithTags,
 } from '@/core/bilingual/inlineTags'
+import { autocorrectOnInput, type AutocorrectSettings } from '@/core/text/autocorrect'
 
 // Lexical only loads when rich editing is actually used, keeping it out of the
 // main bundle for the default (plain-text) path.
@@ -50,6 +51,8 @@ interface SegmentRowProps {
   canJoinNext: boolean
   /** Use the Lexical rich-text target editor (code segments stay plain). */
   richEditing: boolean
+  /** AutoCorrect rules applied while typing in the plain editor. */
+  autocorrect?: AutocorrectSettings
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
   onConfirm: () => void
@@ -69,6 +72,7 @@ export function SegmentRow({
   isBilingual,
   canJoinNext,
   richEditing,
+  autocorrect,
   commentAuthor,
   onConfirm,
   onToggleReviewed,
@@ -340,7 +344,29 @@ export function SegmentRow({
                   registerHandle(el ? plainHandleRef.current : null)
                 }}
                 value={target}
-                onChange={(e) => setTarget(e.target.value)}
+                onChange={(e) => {
+                  const el = e.target
+                  const raw = el.value
+                  if (autocorrect?.enabled) {
+                    const caret = el.selectionStart ?? raw.length
+                    const fixed = autocorrectOnInput(raw, caret, autocorrect.rules)
+                    if (fixed) {
+                      setTarget(fixed.value)
+                      requestAnimationFrame(() => {
+                        const node = taElRef.current
+                        if (node) {
+                          try {
+                            node.setSelectionRange(fixed.caret, fixed.caret)
+                          } catch {
+                            // selection range not supported — ignore.
+                          }
+                        }
+                      })
+                      return
+                    }
+                  }
+                  setTarget(raw)
+                }}
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
                 readOnly={locked}

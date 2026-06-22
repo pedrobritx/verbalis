@@ -26,6 +26,7 @@ import {
   Pencil,
   Copy,
   Trash2,
+  Globe,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -50,6 +51,7 @@ import { useConcordanceStore } from '@/features/editor/concordance/useConcordanc
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { useImportDialogStore } from '@/features/import/useImportDialogStore'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
+import { getWebSearchSettings } from '@/storage/repositories/settingsRepo'
 
 const STATUS_FILTERS: Array<{ id: StatusFilter; label: string }> = [
   { id: 'all', label: 'All' },
@@ -81,6 +83,11 @@ export function CommandPalette() {
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
   const openProjectDialog = useProjectDialogsStore((s) => s.open)
   const projects = useLiveQuery(() => projectRepo.getAll(), [])
+  const webSearch = useLiveQuery(() => getWebSearchSettings(), [])
+  const webSearchProviders = useMemo(
+    () => (webSearch?.providers ?? []).filter((p) => p.enabled),
+    [webSearch],
+  )
 
   const projectMatch = matchPath('/project/:id', pathname)
   const currentProjectId = projectMatch?.params.id
@@ -219,6 +226,22 @@ export function CommandPalette() {
             <CommandShortcut>⌃⇧K</CommandShortcut>
           </CommandItem>
         </CommandGroup>
+        {webSearchProviders.length > 0 && (
+          <CommandGroup heading="Web search (source term)">
+            {webSearchProviders.map((p) => (
+              <CommandItem
+                key={p.id}
+                value={`web search ${p.name}`}
+                disabled={!editorActions}
+                onSelect={() => run(() => editorActions?.webSearchCurrent(p))}
+                data-testid={`cmd-websearch-${p.id}`}
+              >
+                <Globe />
+                <span>Search “{p.name}” for current source</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         <CommandGroup heading="Project">
           <CommandItem
             disabled={!currentProjectId}
@@ -279,6 +302,7 @@ export function CommandPalette() {
     openConcordance,
     openProjectDialog,
     currentProjectId,
+    webSearchProviders,
   ])
 
   return (

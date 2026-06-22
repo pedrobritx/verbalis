@@ -35,6 +35,7 @@ import { SegmentHistoryDialog } from './history/SegmentHistoryDialog'
 import { useProjectCrdt } from './useProjectCrdt'
 import { useProjectSync } from './peers/useProjectSync'
 import { canJoin } from '@/core/segments/operations'
+import { buildSearchUrl } from '@/core/websearch/providers'
 import { useEditorSettings } from './useEditorSettings'
 import type { SegmentEditorHandle } from './SegmentEditorHandle'
 import { normalize } from '@/core/tm/similarity'
@@ -57,7 +58,7 @@ export default function EditorPage() {
   const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
   const editorHandles = useRef<Array<SegmentEditorHandle | null>>([])
-  const { richEditing } = useEditorSettings()
+  const { richEditing, autocorrect } = useEditorSettings()
   const panelOpen = useSidebarPanelStore((s) => s.open)
   const togglePanel = useSidebarPanelStore((s) => s.toggle)
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
@@ -221,6 +222,18 @@ export default function EditorPage() {
       translateCurrentWithMT: (providerId) => translateCurrentWithMT(providerId),
       runPretranslate,
       populateNumbers,
+      webSearchCurrent: (provider) => {
+        if (!project) return
+        const seg = segments[focusIndex]
+        const q = seg?.source?.trim()
+        if (!q) return
+        const url = buildSearchUrl(provider, {
+          q,
+          src: project.sourceLang,
+          tgt: project.targetLang,
+        })
+        window.open(url, '_blank', 'noopener,noreferrer')
+      },
     })
     return () => setActions(null)
   }, [
@@ -231,6 +244,7 @@ export default function EditorPage() {
     runPretranslate,
     populateNumbers,
     setActions,
+    project,
   ])
 
   if (!id) return null
@@ -480,6 +494,7 @@ export default function EditorPage() {
                   canJoin(seg, segments[originalIndex + 1])
                 }
                 richEditing={richEditing}
+                autocorrect={autocorrect}
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}

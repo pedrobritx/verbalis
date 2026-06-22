@@ -183,7 +183,7 @@ Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned
 | **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
 | **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
 | **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1 |
-| **11** | **Language quality** | Hunspell spell‑check, grammar hints, dictionary lookup, web search, abbreviations/autocorrect | — (F1 for inline marks) |
+| **11** | **Language quality** | Web search providers + AutoCorrect/abbreviation expansion ✅; Hunspell spell‑check, grammar hints, dictionary-lookup popover still pending | — (F1 for inline marks) |
 | **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
 | **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
 | **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next | F2, F3 |
@@ -254,8 +254,11 @@ foundation work.
   English defaults plus a curated PT/legal set (sbd *replaces* rather than extends
   its list, so both are shipped). ✅ Phase 9.
   (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
-  (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
-  on input. Both are editable lists in Settings, seeded with PT/EN defaults.
+  on input — shipped (Phase 11). Pure core `src/core/text/autocorrect.ts`
+  (`autocorrectOnInput`, whole-word, capital-preserving), wired into the plain
+  editor (`SegmentRow`) and gated by an editable, default-off rules list in
+  `EditorSettingsSection`. Seeded with PT/EN defaults; rich-editor AutoCorrect is a
+  follow-up once rich mode is default-on.
 
 ### B. Language quality
 
@@ -275,13 +278,15 @@ foundation work.
   offline‑cache‑first policy (reuse the Workbox runtime cache already wired for
   Wiktionary).
 
-**Web search** *(Phase 11)*
+**Web search** *(shipped, Phase 11)*
 - memoQ: configurable web‑search providers in the resource console.
-- Verbalis: a Settings list of providers (`{name, urlTemplate}` with `{q}` and
-  `{src}`/`{tgt}` placeholders), launched from the selection menu / palette.
-  Opens the user's browser to the provider directly (no proxy → nothing about the
-  query is logged by Verbalis). Ships with Linguee, IATE, Google, DeepL‑web as
-  optional, all disabled until enabled.
+- Verbalis: a Settings list of providers (`{id, name, urlTemplate, enabled}` with
+  `{q}`, `{src}` and `{tgt}` placeholders — `src/core/websearch/providers.ts`,
+  `buildSearchUrl`), edited in `WebSearchSettingsSection`. Enabled providers appear
+  in the command palette and open the focused segment's **source** term directly in
+  the user's browser via `editorActions.webSearchCurrent` (no proxy → nothing about
+  the query is logged by Verbalis). Ships with Linguee, Reverso, WordReference,
+  DeepL‑web, Google and Google Scholar, all disabled until enabled.
 
 ### C. Review & collaboration
 
