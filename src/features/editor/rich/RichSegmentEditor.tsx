@@ -33,6 +33,7 @@ import { autosaveStatus } from '../segmentAutosave'
 import { useEditorSelectionStore } from '../useEditorSelectionStore'
 import { FormatToolbar } from './FormatToolbar'
 import { $createInlineTagNode } from './InlineTagNode'
+import './LinkNode'
 import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 

@@ -3,12 +3,23 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
   $getSelection,
   $isRangeSelection,
+  $createTextNode,
   FORMAT_TEXT_COMMAND,
+  type LexicalNode,
   type TextFormatType,
 } from 'lexical'
-import { Bold, Italic, Underline, Superscript, Subscript, CaseUpper } from 'lucide-react'
+import {
+  Bold,
+  Italic,
+  Underline,
+  Superscript,
+  Subscript,
+  CaseUpper,
+  Link as LinkIcon,
+} from 'lucide-react'
 import { transformCase, CASE_LABELS, type CaseTransform } from '@/core/text/case'
 import { cn } from '@/lib/utils'
+import { $createLinkNode, $isLinkNode, LinkNode } from './LinkNode'
 
 interface MarkButton {
   format: TextFormatType
@@ -28,23 +39,40 @@ const CASE_MODES: CaseTransform[] = ['upper', 'lower', 'title', 'sentence']
 
 type ActiveFormats = Record<string, boolean>
 
+/** Walk up from a node to the nearest enclosing link, if any. */
+function $linkAncestor(node: LexicalNode | null): LinkNode | null {
+  let n: LexicalNode | null = node
+  while (n) {
+    if ($isLinkNode(n)) return n
+    n = n.getParent()
+  }
+  return null
+}
+
 export function FormatToolbar() {
   const [editor] = useLexicalComposerContext()
   const [active, setActive] = useState<ActiveFormats>({})
   const [caseOpen, setCaseOpen] = useState(false)
   const caseRef = useRef<HTMLDivElement | null>(null)
 
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
+  const [editingLink, setEditingLink] = useState(false)
+  const linkRef = useRef<HTMLDivElement | null>(null)
+
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         const sel = $getSelection()
         if ($isRangeSelection(sel)) {
+          const link = $linkAncestor(sel.anchor.getNode())
           setActive({
             bold: sel.hasFormat('bold'),
             italic: sel.hasFormat('italic'),
             underline: sel.hasFormat('underline'),
             subscript: sel.hasFormat('subscript'),
             superscript: sel.hasFormat('superscript'),
+            link: !!link,
           })
         }
       })
@@ -60,6 +88,15 @@ export function FormatToolbar() {
     return () => document.removeEventListener('pointerdown', onDown)
   }, [caseOpen])
 
+  useEffect(() => {
+    if (!linkOpen) return
+    const onDown = (e: PointerEvent) => {
+      if (linkRef.current && !linkRef.current.contains(e.target as Node)) setLinkOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [linkOpen])
+
   const applyCase = (mode: CaseTransform) => {
     setCaseOpen(false)
     editor.update(() => {
@@ -68,6 +105,50 @@ export function FormatToolbar() {
         sel.insertText(transformCase(sel.getTextContent(), mode))
       }
     })
+  }
+
+  // Open the link popover, pre-filling the URL when the caret is inside a link
+  // (edit) versus wrapping the current selection (insert).
+  const openLinkPopover = () => {
+    editor.getEditorState().read(() => {
+      const sel = $getSelection()
+      const link = $isRangeSelection(sel) ? $linkAncestor(sel.anchor.getNode()) : null
+      setEditingLink(!!link)
+      setLinkUrl(link ? link.getURL() : '')
+    })
+    setLinkOpen(true)
+  }
+
+  const applyLink = () => {
+    const url = linkUrl.trim()
+    if (!url) return
+    editor.update(() => {
+      const sel = $getSelection()
+      if (!$isRangeSelection(sel)) return
+      const existing = $linkAncestor(sel.anchor.getNode())
+      if (existing) {
+        existing.setURL(url)
+        return
+      }
+      const text = sel.getTextContent()
+      const link = $createLinkNode(url)
+      link.append($createTextNode(text || url))
+      sel.insertNodes([link])
+    })
+    setLinkOpen(false)
+  }
+
+  const removeLink = () => {
+    editor.update(() => {
+      const sel = $getSelection()
+      if (!$isRangeSelection(sel)) return
+      const link = $linkAncestor(sel.anchor.getNode())
+      if (!link) return
+      // Unwrap: move the link's children out before it, then drop the link.
+      for (const child of link.getChildren()) link.insertBefore(child)
+      link.remove()
+    })
+    setLinkOpen(false)
   }
 
   return (
@@ -98,6 +179,83 @@ export function FormatToolbar() {
           {m.icon}
         </button>
       ))}
+
+      <div className="relative" ref={linkRef}>
+        <button
+          type="button"
+          aria-label="Link"
+          aria-pressed={!!active.link}
+          aria-haspopup="dialog"
+          aria-expanded={linkOpen}
+          title="Insert / edit link"
+          data-testid="format-link"
+          onClick={openLinkPopover}
+          className="inline-flex items-center justify-center w-7 h-7 rounded transition-colors hover:bg-[var(--color-fill)]"
+          style={{
+            color: active.link ? 'var(--color-accent)' : 'var(--color-muted)',
+            background: active.link ? 'var(--color-accent-fill)' : 'transparent',
+          }}
+        >
+          <LinkIcon size={14} />
+        </button>
+        {linkOpen && (
+          <div
+            role="dialog"
+            aria-label="Link URL"
+            data-testid="format-link-popover"
+            className="absolute left-0 z-30 mt-1 flex w-64 flex-col gap-2 rounded-md border p-2 shadow-md"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+          >
+            <input
+              type="url"
+              autoFocus
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  applyLink()
+                } else if (e.key === 'Escape') {
+                  setLinkOpen(false)
+                }
+              }}
+              placeholder="https://example.com"
+              data-testid="format-link-input"
+              className="w-full rounded border px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+              style={{
+                borderColor: 'var(--color-border)',
+                background: 'var(--color-bg)',
+                color: 'var(--color-text)',
+              }}
+            />
+            <div className="flex items-center justify-between gap-2">
+              {editingLink ? (
+                <button
+                  type="button"
+                  onClick={removeLink}
+                  data-testid="format-link-remove"
+                  className="text-xs px-2 py-1 rounded transition-colors hover:bg-[var(--color-fill)]"
+                  style={{ color: 'var(--color-error)' }}
+                >
+                  Remove
+                </button>
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                onClick={applyLink}
+                disabled={!linkUrl.trim()}
+                data-testid="format-link-apply"
+                className="text-xs px-2 py-1 rounded transition-colors hover:opacity-80 disabled:opacity-40"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
+              >
+                {editingLink ? 'Update' : 'Add link'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="relative" ref={caseRef}>
         <button
