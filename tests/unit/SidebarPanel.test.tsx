@@ -95,6 +95,27 @@ describe('SidebarPanel (multi-pane)', () => {
     expect(after[1]).toBe(before[0])
   })
 
+  it('lists active tools in the customizer in the same order as the sidebar', () => {
+    useSidebarPanelStore.setState({
+      layout: {
+        ...useSidebarPanelStore.getState().layout,
+        translate: ['mt', 'tm', 'glossary', 'lookup'],
+      },
+    })
+    renderPanel()
+    fireEvent.click(screen.getByTestId('sidebar-customize'))
+    // The move-up control renders only for active tools, in layout order.
+    const activeOrder = screen
+      .getAllByTestId(/^sidebar-moveup-/)
+      .map((el) => el.getAttribute('data-testid'))
+    expect(activeOrder).toEqual([
+      'sidebar-moveup-mt',
+      'sidebar-moveup-tm',
+      'sidebar-moveup-glossary',
+      'sidebar-moveup-lookup',
+    ])
+  })
+
   it('keeps stage layouts independent', () => {
     useSidebarPanelStore.getState().togglePanel('translate', 'mt')
     expect(useSidebarPanelStore.getState().layout.translate).not.toContain('mt')
