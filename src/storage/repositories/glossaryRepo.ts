@@ -21,6 +21,7 @@ export const glossaryRepo = {
   remove: (id: string) => db.glossary.delete(id),
   removeMany: (ids: string[]) => db.glossary.bulkDelete(ids),
   bulkAdd: (entries: GlossaryEntry[]) => db.glossary.bulkAdd(entries),
+  bulkPut: (entries: GlossaryEntry[]) => db.glossary.bulkPut(entries),
   byProject: (projectId: string) => db.glossary.where({ projectId }).toArray(),
   // Returns entries available in a given project: project-scoped + unassigned (global).
   byProjectOrGlobal: async (projectId: string): Promise<GlossaryEntry[]> => {

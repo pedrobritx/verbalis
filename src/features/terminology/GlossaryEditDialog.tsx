@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
+import { LANG_OPTIONS } from '@/core/lang/options'
 import { Textarea } from '@/components/ui/textarea'
 import type { GlossaryEntry, Project } from '@/core/types'
 
@@ -137,12 +138,22 @@ export function GlossaryEditDialog({
             <Label>Translations</Label>
             {translations.map((row, i) => (
               <div key={i} className="grid grid-cols-[5rem_1fr_auto] gap-2 items-center">
-                <Input
-                  placeholder="lang"
+                <Select
                   value={row.lang}
                   onChange={(e) => updateRow(i, 'lang', e.target.value)}
                   data-testid={`glossary-translation-lang-${i}`}
-                />
+                >
+                  <option value="">lang</option>
+                  {/* Preserve a code that isn't one of our known options (e.g. imported). */}
+                  {row.lang && !LANG_OPTIONS.some((o) => o.value === row.lang) && (
+                    <option value={row.lang}>{row.lang}</option>
+                  )}
+                  {LANG_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
                 <Input
                   placeholder="translation"
                   value={row.value}
