@@ -89,6 +89,15 @@ export default function EditorPage() {
     editorHandles.current[focusIndex]?.focus()
   }, [focusIndex])
 
+  // Broadcast which segment the local user is on, so peers' presence follows.
+  // This must run unconditionally — above the early returns below — so the hook
+  // order stays stable across the loading → loaded transition (a hook placed
+  // after those returns triggers React error #310 once data resolves).
+  const activeSegmentId = segments?.[focusIndex]?.id
+  useEffect(() => {
+    setActiveSegment(activeSegmentId)
+  }, [activeSegmentId, setActiveSegment])
+
   // Derive status counts from the segments already in memory so the filter bar
   // doesn't re-scan the same rows from the database.
   const statusCounts = useMemo(
@@ -341,11 +350,6 @@ export default function EditorPage() {
   const focusedSource = segments[focusIndex]?.source
   const focusedTarget = segments[focusIndex]?.target
   const focusedId = segments[focusIndex]?.id
-
-  // Broadcast which segment the local user is on, so peers' presence follows.
-  useEffect(() => {
-    setActiveSegment(focusedId)
-  }, [focusedId, setActiveSegment])
 
   return (
     <div
