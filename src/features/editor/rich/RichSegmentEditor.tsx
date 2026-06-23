@@ -30,6 +30,7 @@ import {
 import type { SegmentStatus } from '@/core/types'
 import type { SegmentEditorHandle } from '../SegmentEditorHandle'
 import { autosaveStatus } from '../segmentAutosave'
+import { useEditorSelectionStore } from '../useEditorSelectionStore'
 import { FormatToolbar } from './FormatToolbar'
 import { $createInlineTagNode } from './InlineTagNode'
 import { InlineTagChip } from './InlineTagChip'
@@ -212,8 +213,18 @@ function EditorLogic(props: RichSegmentEditorProps) {
       saveTimerRef.current = setTimeout(flushSave, SAVE_DELAY_MS)
     }
 
+    const setSelection = useEditorSelectionStore.getState().setText
+
     const unregisters = [
       editor.registerUpdateListener(({ editorState, prevEditorState }) => {
+        // Mirror the current text selection to the Lookup panel (cheap read).
+        editorState.read(() => {
+          const sel = $getSelection()
+          if ($isRangeSelection(sel) && !sel.isCollapsed()) {
+            const text = sel.getTextContent()
+            if (text.trim()) setSelection(text)
+          }
+        })
         // Skip selection-only changes (node tree unchanged).
         if (editorState.toJSON && prevEditorState) {
           const rich = JSON.stringify(editorState.toJSON())

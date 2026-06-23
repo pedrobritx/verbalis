@@ -17,6 +17,7 @@ import {
   splitTextWithTags,
 } from '@/core/bilingual/inlineTags'
 import { autocorrectOnInput, type AutocorrectSettings } from '@/core/text/autocorrect'
+import { useEditorSelectionStore } from './useEditorSelectionStore'
 
 // Lexical only loads when rich editing is actually used, keeping it out of the
 // main bundle for the default (plain-text) path.
@@ -100,6 +101,18 @@ export function SegmentRow({
   const isCode = segment.sourceMeta?.kind === 'code'
   const useRich = richEditing && !isCode
   const inlineTags = segment.bilingualMeta?.inlineTags
+  const setSelection = useEditorSelectionStore((s) => s.setText)
+
+  // Push the current textarea selection to the Lookup panel.
+  const captureTextareaSelection = (el: HTMLTextAreaElement) => {
+    const text = el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0)
+    if (text.trim()) setSelection(text)
+  }
+  // Push a DOM selection (read-only source cell) to the Lookup panel.
+  const captureDomSelection = () => {
+    const text = window.getSelection?.()?.toString()
+    if (text && text.trim()) setSelection(text)
+  }
 
   // Plain-path focusable handle: wraps the textarea so the page can drive focus
   // and glossary insertion uniformly across plain and rich editors.
@@ -274,6 +287,7 @@ export function SegmentRow({
               <Textarea
                 value={sourceDraft}
                 onChange={(e) => setSourceDraft(e.target.value)}
+                onSelect={(e) => captureTextareaSelection(e.currentTarget)}
                 onBlur={() => void toggleEditSource()}
                 aria-label={`Edit source ${segment.index + 1}`}
                 data-testid={`source-edit-${segment.index}`}
@@ -289,6 +303,7 @@ export function SegmentRow({
                   fontFamily: isCode ? 'var(--font-mono)' : undefined,
                 }}
                 data-testid={`source-${segment.index}`}
+                onMouseUp={captureDomSelection}
               >
                 {inlineTags ? renderSourceWithTags(segment.source, inlineTags) : segment.source}
               </div>
@@ -377,6 +392,7 @@ export function SegmentRow({
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
+                onSelect={(e) => captureTextareaSelection(e.currentTarget)}
                 readOnly={locked}
                 autoResize
                 placeholder={locked ? 'Locked' : 'Translation…'}
