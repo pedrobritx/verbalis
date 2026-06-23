@@ -373,6 +373,14 @@ export default function EditorPage() {
     if (i + 1 < segments.length) setFocusIndex(i + 1)
   }
 
+  // Revert a confirmed segment back to draft (the inverse of confirm). TM entries
+  // already saved on confirm are intentionally left in place.
+  const unconfirm = async (i: number) => {
+    const seg = segments[i]
+    if (!seg || seg.locked || seg.status !== 'translated') return
+    await segmentRepo.update(seg.id, { status: 'draft' })
+  }
+
   const handleApplyTM = async (target: string) => {
     const seg = segments[focusIndex]
     if (!seg || seg.locked) return
@@ -533,6 +541,7 @@ export default function EditorPage() {
                 spellEnabled={spellEnabled}
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
+                onUnconfirm={() => unconfirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}
                 onJoin={() => handleJoin(originalIndex)}
                 onMoveFocus={(dir) => moveFocus(originalIndex, dir)}
