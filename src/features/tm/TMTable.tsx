@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import type { TMEntry, Project } from '@/core/types'
 
 interface TMTableProps {
@@ -7,6 +7,7 @@ interface TMTableProps {
   selected: Set<string>
   onToggle: (id: string) => void
   onToggleAll: (checked: boolean) => void
+  onEdit: (entry: TMEntry) => void
   onDelete: (id: string) => void
 }
 
@@ -22,6 +23,7 @@ export function TMTable({
   selected,
   onToggle,
   onToggleAll,
+  onEdit,
   onDelete,
 }: TMTableProps) {
   if (entries.length === 0) {
@@ -57,7 +59,7 @@ export function TMTable({
           <th className="p-2 text-left text-xs font-medium">Langs</th>
           <th className="p-2 text-left text-xs font-medium">Project</th>
           <th className="p-2 text-left text-xs font-medium">Date</th>
-          <th className="w-10 p-2" />
+          <th className="w-16 p-2" />
         </tr>
       </thead>
       <tbody>
@@ -93,15 +95,26 @@ export function TMTable({
               {formatDate(e.date)}
             </td>
             <td className="p-2 align-top">
-              <button
-                onClick={() => onDelete(e.id)}
-                aria-label="Delete entry"
-                className="p-1 rounded transition-colors hover:opacity-70"
-                style={{ color: 'var(--color-muted)' }}
-                data-testid="tm-delete-row"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => onEdit(e)}
+                  aria-label="Edit entry"
+                  className="p-1 rounded transition-colors hover:opacity-70"
+                  style={{ color: 'var(--color-muted)' }}
+                  data-testid="tm-edit-row"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => onDelete(e.id)}
+                  aria-label="Delete entry"
+                  className="p-1 rounded transition-colors hover:opacity-70"
+                  style={{ color: 'var(--color-muted)' }}
+                  data-testid="tm-delete-row"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </td>
           </tr>
         ))}

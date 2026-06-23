@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { TMImportButton } from './TMImportButton'
 import { TMExportButton } from './TMExportButton'
 import { TMTable } from './TMTable'
+import { TMEditDialog } from './TMEditDialog'
 
 const ALL_LANGS = '__all__'
 const ALL_PROJECTS = '__all__'
@@ -24,6 +25,8 @@ export default function TMPage() {
   const [langPair, setLangPair] = useState<string>(ALL_LANGS)
   const [projectFilter, setProjectFilter] = useState<string>(ALL_PROJECTS)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [editing, setEditing] = useState<TMEntry | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
 
   const projectsById = useMemo(() => {
     const map = new Map<string, Project>()
@@ -87,6 +90,18 @@ export default function TMPage() {
   const handleBulkDelete = async () => {
     await tmRepo.removeMany(Array.from(selected))
     setSelected(new Set())
+  }
+
+  const handleEdit = (entry: TMEntry) => {
+    setEditing(entry)
+    setEditOpen(true)
+  }
+
+  const handleEditSave = async (
+    id: string,
+    changes: Pick<TMEntry, 'source' | 'target' | 'projectId'>,
+  ) => {
+    await tmRepo.update(id, changes)
   }
 
   return (
@@ -169,7 +184,16 @@ export default function TMPage() {
         selected={selected}
         onToggle={toggle}
         onToggleAll={toggleAll}
+        onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      <TMEditDialog
+        open={editOpen}
+        entry={editing}
+        projects={projects ?? []}
+        onOpenChange={setEditOpen}
+        onSave={handleEditSave}
       />
     </div>
   )

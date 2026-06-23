@@ -7,14 +7,35 @@ export interface RawDictionary {
   dic: string
 }
 
-/** Languages we ship a dictionary for (matches the stripped target lang). */
-export const SUPPORTED_SPELL_LANGS = ['en', 'pt'] as const
+/**
+ * Dictionary keys we ship under public/dictionaries/<key>/. `en` is American and
+ * `pt` is Brazilian (the wooorm defaults); `en-GB`/`pt-PT` are the regional
+ * variants so British/European targets spell-check correctly instead of falling
+ * back to the wrong variant.
+ */
+export const SUPPORTED_SPELL_LANGS = ['en', 'en-GB', 'pt', 'pt-PT'] as const
 export type SpellLang = (typeof SUPPORTED_SPELL_LANGS)[number]
 
-/** Map a project's target language (e.g. `pt-BR`, `en-GB`) to a shipped dict. */
+/**
+ * Map a project's BCP-47 target language to the best shipped dictionary. Exact
+ * variants resolve to their own dictionary; a bare base language resolves to the
+ * shipped default for that language (en→American, pt→Brazilian). Anything we
+ * don't bundle returns null (spell-check stays off).
+ */
+const VARIANT_TO_DICT: Record<string, SpellLang> = {
+  en: 'en',
+  'en-us': 'en',
+  'en-gb': 'en-GB',
+  pt: 'pt',
+  'pt-br': 'pt',
+  'pt-pt': 'pt-PT',
+}
+
 export function resolveSpellLang(targetLang: string | undefined): SpellLang | null {
-  const base = (targetLang ?? '').split('-')[0].toLowerCase()
-  return (SUPPORTED_SPELL_LANGS as readonly string[]).includes(base) ? (base as SpellLang) : null
+  const tag = (targetLang ?? '').toLowerCase()
+  if (tag in VARIANT_TO_DICT) return VARIANT_TO_DICT[tag]
+  const base = tag.split('-')[0]
+  return base in VARIANT_TO_DICT ? VARIANT_TO_DICT[base] : null
 }
 
 function assetUrl(path: string): string {

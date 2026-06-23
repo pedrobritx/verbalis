@@ -19,10 +19,15 @@ const repoRoot = resolve(__dirname, '..')
 const require = createRequire(import.meta.url)
 const outRoot = join(repoRoot, 'public/dictionaries')
 
-// lang code (matches the stripped project target language) -> npm package.
+// Dictionary key (see resolveSpellLang in src/core/spell/dictionaries.ts) -> npm
+// package. `dictionary-en` is American English and `dictionary-pt` is Brazilian
+// Portuguese (per wooorm); the regional variants are shipped alongside so a
+// project targeting en-GB or pt-PT gets the right spelling, not a fallback.
 const LANGS = {
-  en: 'dictionary-en',
-  pt: 'dictionary-pt',
+  en: 'dictionary-en', // American English
+  'en-GB': 'dictionary-en-gb', // British English
+  pt: 'dictionary-pt', // Brazilian Portuguese
+  'pt-PT': 'dictionary-pt-pt', // European Portuguese
 }
 
 const manifest = []

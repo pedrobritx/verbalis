@@ -7,6 +7,8 @@ import { corpusRepo } from '@/storage/repositories/corpusRepo'
 import type { InstalledCorpusPack } from '@/core/corpus/types'
 import { useCorpusManifest } from './useCorpusManifest'
 import { CorpusPackCard } from './CorpusPackCard'
+import { CorpusImportButton } from './CorpusImportButton'
+import { CustomCorpusCard } from './CustomCorpusCard'
 
 export default function CorporaPage() {
   const { data: manifest, isLoading, isError, error } = useCorpusManifest()
@@ -23,6 +25,12 @@ export default function CorporaPage() {
     [installedPacks],
   )
 
+  // Custom (user-uploaded) packs live outside the bundled manifest.
+  const customPacks = useMemo(
+    () => (installedPacks ?? []).filter((p) => p.id.startsWith('custom:')),
+    [installedPacks],
+  )
+
   const subtitle =
     installedPacks === undefined
       ? 'Loading…'
@@ -32,7 +40,7 @@ export default function CorporaPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto">
-      <PageHeader title="Corpora" subtitle={subtitle} />
+      <PageHeader title="Corpora" subtitle={subtitle} actions={<CorpusImportButton />} />
 
       <div
         className="rounded-lg border p-4 text-callout"
@@ -75,6 +83,22 @@ export default function CorporaPage() {
         >
           <AlertCircle size={16} />
           {error instanceof Error ? error.message : 'Failed to load corpora catalogue.'}
+        </div>
+      )}
+
+      {customPacks.length > 0 && (
+        <div className="flex flex-col gap-3" data-testid="custom-corpora">
+          <h2
+            className="text-footnote font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            Your corpora
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {customPacks.map((pack) => (
+              <CustomCorpusCard key={pack.id} pack={pack} />
+            ))}
+          </div>
         </div>
       )}
 

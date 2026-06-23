@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
+import { relangEntry } from '@/core/glossary/relang'
+import { LANG_OPTIONS } from '@/core/lang/options'
 import { corpusRepo } from '@/storage/repositories/corpusRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import type { GlossaryEntry, Project } from '@/core/types'
@@ -82,6 +84,7 @@ export default function TerminologyPage() {
   const [query, setQuery] = useState('')
   const [projectFilter, setProjectFilter] = useState<string>(ALL_PROJECTS)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkLang, setBulkLang] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [draft, setDraft] = useState<GlossaryEditDraft | null>(null)
 
@@ -128,6 +131,16 @@ export default function TerminologyPage() {
 
   const handleBulkDelete = async () => {
     await glossaryRepo.removeMany(Array.from(selected))
+    setSelected(new Set())
+  }
+
+  const handleBulkRelang = async (lang: string) => {
+    if (!lang || !entries) return
+    const updated = entries
+      .filter((e) => selected.has(e.id))
+      .map((e) => relangEntry(e, lang))
+    if (updated.length === 0) return
+    await glossaryRepo.bulkPut(updated)
     setSelected(new Set())
   }
 
@@ -216,15 +229,39 @@ export default function TerminologyPage() {
           <span className="text-sm" style={{ color: 'var(--color-text)' }}>
             {selected.size} selected
           </span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            data-testid="glossary-bulk-delete"
-          >
-            <Trash2 />
-            Delete selected
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select
+              value={bulkLang}
+              onChange={(e) => setBulkLang(e.target.value)}
+              aria-label="Language to file selected terms under"
+              data-testid="glossary-bulk-lang"
+            >
+              <option value="">Change language…</option>
+              {LANG_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </Select>
+            <Button
+              variant="bordered"
+              size="sm"
+              disabled={!bulkLang}
+              onClick={() => void handleBulkRelang(bulkLang)}
+              data-testid="glossary-bulk-relang"
+            >
+              Apply
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              data-testid="glossary-bulk-delete"
+            >
+              <Trash2 />
+              Delete selected
+            </Button>
+          </div>
         </div>
       )}
 

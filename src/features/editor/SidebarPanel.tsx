@@ -157,56 +157,79 @@ function SidebarCustomizer() {
           >
             Tools in this stage
           </div>
-          {ALL_TABS.map((tab) => {
-            const idx = layout.indexOf(tab)
-            const present = idx >= 0
-            return (
-              <div
-                key={tab}
-                className="flex items-center gap-1.5 rounded px-1.5 py-1 text-sm"
-                style={{ color: 'var(--color-text)' }}
-              >
-                <label className="flex flex-1 items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={present}
-                    onChange={() => togglePanel(stage, tab)}
-                    data-testid={`sidebar-customize-${tab}`}
-                  />
-                  <span className="flex items-center gap-1.5">
-                    <span style={{ color: 'var(--color-muted)' }}>{TAB_ICONS[tab]}</span>
-                    {TAB_LABELS[tab]}
-                  </span>
-                </label>
-                {present && (
-                  <span className="flex items-center">
-                    <button
-                      type="button"
-                      onClick={() => movePanel(stage, tab, -1)}
-                      disabled={idx === 0}
-                      aria-label={`Move ${TAB_LABELS[tab]} up`}
-                      data-testid={`sidebar-moveup-${tab}`}
-                      className="p-0.5 rounded transition-colors hover:opacity-70 disabled:opacity-30"
-                      style={{ color: 'var(--color-muted)' }}
-                    >
-                      <ChevronUp size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => movePanel(stage, tab, 1)}
-                      disabled={idx === layout.length - 1}
-                      aria-label={`Move ${TAB_LABELS[tab]} down`}
-                      data-testid={`sidebar-movedown-${tab}`}
-                      className="p-0.5 rounded transition-colors hover:opacity-70 disabled:opacity-30"
-                      style={{ color: 'var(--color-muted)' }}
-                    >
-                      <ChevronDown size={13} />
-                    </button>
-                  </span>
-                )}
-              </div>
-            )
-          })}
+          {/* Active tools, in the exact order they render in the sidebar, so
+              reordering here moves the sections there identically. */}
+          {layout.map((tab, idx) => (
+            <div
+              key={tab}
+              className="flex items-center gap-1.5 rounded px-1.5 py-1 text-sm"
+              style={{ color: 'var(--color-text)' }}
+            >
+              <label className="flex flex-1 items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked
+                  onChange={() => togglePanel(stage, tab)}
+                  data-testid={`sidebar-customize-${tab}`}
+                />
+                <span className="flex items-center gap-1.5">
+                  <span style={{ color: 'var(--color-muted)' }}>{TAB_ICONS[tab]}</span>
+                  {TAB_LABELS[tab]}
+                </span>
+              </label>
+              <span className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => movePanel(stage, tab, -1)}
+                  disabled={idx === 0}
+                  aria-label={`Move ${TAB_LABELS[tab]} up`}
+                  data-testid={`sidebar-moveup-${tab}`}
+                  className="p-0.5 rounded transition-colors hover:opacity-70 disabled:opacity-30"
+                  style={{ color: 'var(--color-muted)' }}
+                >
+                  <ChevronUp size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => movePanel(stage, tab, 1)}
+                  disabled={idx === layout.length - 1}
+                  aria-label={`Move ${TAB_LABELS[tab]} down`}
+                  data-testid={`sidebar-movedown-${tab}`}
+                  className="p-0.5 rounded transition-colors hover:opacity-70 disabled:opacity-30"
+                  style={{ color: 'var(--color-muted)' }}
+                >
+                  <ChevronDown size={13} />
+                </button>
+              </span>
+            </div>
+          ))}
+
+          {ALL_TABS.some((t) => !layout.includes(t)) && (
+            <div
+              className="px-1.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: 'var(--color-muted)' }}
+            >
+              Add tools
+            </div>
+          )}
+          {ALL_TABS.filter((t) => !layout.includes(t)).map((tab) => (
+            <label
+              key={tab}
+              className="flex items-center gap-2 rounded px-1.5 py-1 text-sm cursor-pointer"
+              style={{ color: 'var(--color-text)' }}
+            >
+              <input
+                type="checkbox"
+                checked={false}
+                onChange={() => togglePanel(stage, tab)}
+                data-testid={`sidebar-customize-${tab}`}
+              />
+              <span className="flex items-center gap-1.5">
+                <span style={{ color: 'var(--color-muted)' }}>{TAB_ICONS[tab]}</span>
+                {TAB_LABELS[tab]}
+              </span>
+            </label>
+          ))}
           <button
             type="button"
             onClick={() => {
@@ -302,10 +325,13 @@ export function SidebarPanel({
   return (
     <aside
       data-testid="sidebar-panel"
-      className="flex flex-col gap-2 rounded-md border p-2 h-fit sticky top-0"
+      className="flex flex-col gap-2 rounded-md border p-2 sticky top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto"
       style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
     >
-      <div className="flex items-center justify-between px-1">
+      <div
+        className="flex items-center justify-between px-1 py-0.5 sticky top-0 z-10"
+        style={{ background: 'var(--color-surface)' }}
+      >
         <span
           className="text-[10px] font-semibold uppercase tracking-wider"
           style={{ color: 'var(--color-muted)' }}
