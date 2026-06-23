@@ -144,9 +144,15 @@ importers:
       dictionary-en:
         specifier: ^4.0.0
         version: 4.0.0
+      dictionary-en-gb:
+        specifier: ^3.0.0
+        version: 3.0.0
       dictionary-pt:
         specifier: ^4.0.0
         version: 4.0.0
+      dictionary-pt-pt:
+        specifier: ^2.0.0
+        version: 2.0.0
       fake-indexeddb:
         specifier: ^6.2.5
         version: 6.2.5
@@ -2647,8 +2653,14 @@ packages:
   dexie@4.4.2:
     resolution: {integrity: sha512-zMtV8q79EFE5U8FKZvt0Y/77PCU/Hr/RDxv1EDeo228L+m/HTbeN2AjoQm674rhQCX8n3ljK87lajt7UQuZfvw==}
 
+  dictionary-en-gb@3.0.0:
+    resolution: {integrity: sha512-gU/dwC9xGYPh/0CCcmGNXO8OwSgOySAqevcSXxADCsgUD+tr6OJ52u7XaC7No7dNssvdUSfVjkzcqLrRZq3kPA==}
+
   dictionary-en@4.0.0:
     resolution: {integrity: sha512-3NHnE1uq33ZE/CIwaZ6gqxa4BnglHnxeAcTM0GJ7cmtRGcvX9InMK/IqLtYcUMFCUpUNgybH+DzkqdgAo3F1zg==}
+
+  dictionary-pt-pt@2.0.0:
+    resolution: {integrity: sha512-N44fxg2uDhF71Ql20zpe6BpdMlVkOT7oyjltuOhRwb2mx2SX3CJ/lqUE6+/HKZdqaxggqNbM/qv02a+Sa1XQiA==}
 
   dictionary-pt@4.0.0:
     resolution: {integrity: sha512-ryJRhAtsaunBWw9grYXmVFftfab8+BCQ5wwh7fUzWO0oYEeMuR1lW2ubu1AHdvxOL32XP+u5wW/XhbFuoFuq8Q==}
@@ -7193,7 +7205,11 @@ snapshots:
 
   dexie@4.4.2: {}
 
+  dictionary-en-gb@3.0.0: {}
+
   dictionary-en@4.0.0: {}
+
+  dictionary-pt-pt@2.0.0: {}
 
   dictionary-pt@4.0.0: {}
 
