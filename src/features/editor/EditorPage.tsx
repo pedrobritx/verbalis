@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, Eye, PanelRight, PanelRightClose, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, PanelRight, PanelRightClose, Pencil, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo, tallyStatus } from '@/storage/repositories/segmentRepo'
 import { tmRepo } from '@/storage/repositories/tmRepo'
@@ -12,10 +11,13 @@ import { useProjectSegments } from './useProjectSegments'
 import { SidebarPanel } from './SidebarPanel'
 import { MobileSidebarSheet } from './MobileSidebarSheet'
 import { StatusFilterBar } from './StatusFilterBar'
+import { StageSwitcher } from './StageSwitcher'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
 import { EditorToolbar } from './tools/EditorToolbar'
+import { PeersPresenceChip } from './peers/PeersPresenceChip'
+import { STAGE_TABS, STAGE_DEFAULT_TAB } from './stageConfig'
 import { FindReplaceDialog } from './findReplace/FindReplaceDialog'
 import { useFindReplaceStore } from './findReplace/useFindReplaceStore'
 import { AnalysisDialog } from './analysis/AnalysisDialog'
@@ -73,7 +75,7 @@ export default function EditorPage() {
     }
   }, [togglePanel])
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
-  const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
+  const stage = useEditorModeStore((s) => s.stage)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
   const setActions = useEditorActionsStore((s) => s.setActions)
   const setSidebarTab = useSidebarPanelStore((s) => s.setTab)
@@ -206,6 +208,31 @@ export default function EditorPage() {
     setPanelOpen(true)
     setSidebarTab('qa')
   }, [setPanelOpen, setSidebarTab])
+
+  // Stage drives the sidebar: on a stage *change*, open the panel and snap to the
+  // stage's primary tab — unless the current tab already belongs to the new stage
+  // (e.g. a command-palette jump set both at once), in which case keep it. On
+  // mount we leave the panel's open/closed choice alone. The smart status-filter
+  // default lives in the store's setStage.
+  const prevStageRef = useRef(stage)
+  useEffect(() => {
+    if (prevStageRef.current === stage) return
+    prevStageRef.current = stage
+    setPanelOpen(true)
+    const currentTab = useSidebarPanelStore.getState().tab
+    if (!STAGE_TABS[stage].includes(currentTab)) {
+      setSidebarTab(STAGE_DEFAULT_TAB[stage])
+    }
+  }, [stage, setSidebarTab, setPanelOpen])
+
+  // The header presence chip opens the Peers panel into whichever container is
+  // live for the viewport (desktop sidebar vs. mobile sheet).
+  const openPeers = useCallback(() => {
+    setSidebarTab('peers')
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+    if (isMobile) setMobileSheetOpen(true)
+    else setPanelOpen(true)
+  }, [setSidebarTab, setPanelOpen])
 
   useEffect(() => {
     if (!segments || segments.length === 0) {
@@ -393,6 +420,7 @@ export default function EditorPage() {
               {project.bilingualMeta?.format === 'xliff12' && (
                 <XliffExportButton project={project} segments={segments} />
               )}
+              <PeersPresenceChip onOpen={openPeers} />
               <button
                 onClick={() => openProjectDialog('edit', project.id)}
                 aria-label="Edit project"
@@ -414,24 +442,6 @@ export default function EditorPage() {
                 <Trash2 size={16} />
               </button>
               <button
-                onClick={toggleReviewMode}
-                aria-label={reviewMode ? 'Exit review mode' : 'Enter review mode'}
-                aria-pressed={reviewMode}
-                data-testid="review-mode-toggle"
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border h-9 px-3 text-footnote transition-colors',
-                  reviewMode ? 'font-semibold' : 'hover:opacity-80',
-                )}
-                style={{
-                  borderColor: reviewMode ? 'var(--color-accent)' : 'var(--color-border)',
-                  color: reviewMode ? 'var(--color-accent)' : 'var(--color-muted)',
-                  background: reviewMode ? 'var(--color-accent-fill)' : 'transparent',
-                }}
-              >
-                <Eye size={14} />
-                Review
-              </button>
-              <button
                 onClick={handleTogglePanel}
                 aria-label={panelOpen ? 'Hide tools' : 'Show tools'}
                 data-testid="sidebar-toggle"
@@ -444,13 +454,17 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <EditorToolbar
-          onPretranslate={() => void runPretranslate()}
-          onPopulateNumbers={() => void populateNumbers()}
-          onFindReplace={() => openFindReplace(true)}
-          onRunQA={runQA}
-          onAnalysis={() => openAnalysis(true)}
-        />
+        <div className="flex flex-col gap-2">
+          <StageSwitcher />
+          <EditorToolbar
+            stage={stage}
+            onPretranslate={() => void runPretranslate()}
+            onPopulateNumbers={() => void populateNumbers()}
+            onFindReplace={() => openFindReplace(true)}
+            onRunQA={runQA}
+            onAnalysis={() => openAnalysis(true)}
+          />
+        </div>
 
         <EditorTips />
 

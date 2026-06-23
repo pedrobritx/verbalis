@@ -28,7 +28,7 @@ function Harness() {
 
 beforeEach(() => {
   useCommandPaletteStore.setState({ open: false })
-  useEditorModeStore.setState({ reviewMode: false, statusFilter: 'all' })
+  useEditorModeStore.setState({ stage: 'translate', reviewMode: false, statusFilter: 'all' })
   useImportDialogStore.setState({ open: false })
   useQuickLookupStore.setState({ open: false, prefill: '' })
 })
