@@ -9,6 +9,8 @@ import { ChangesPanel } from './changes/ChangesPanel'
 import { VersionHistoryPanel } from './history/VersionHistoryPanel'
 import { PeersPanel } from './peers/PeersPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
+import { useEditorModeStore } from './useEditorModeStore'
+import { STAGE_TABS } from './stageConfig'
 
 interface SidebarPanelProps {
   focusedSource: string | undefined
@@ -22,16 +24,16 @@ interface SidebarPanelProps {
   onApplyMT: (target: string) => void
 }
 
-const TABS: Array<{ id: SidebarTab; label: string }> = [
-  { id: 'tm', label: 'TM' },
-  { id: 'glossary', label: 'Glossary' },
-  { id: 'mt', label: 'MT' },
-  { id: 'qa', label: 'QA' },
-  { id: 'spell', label: 'Spell' },
-  { id: 'changes', label: 'Changes' },
-  { id: 'history', label: 'History' },
-  { id: 'peers', label: 'Peers' },
-]
+const TAB_LABELS: Record<SidebarTab, string> = {
+  tm: 'TM',
+  glossary: 'Glossary',
+  mt: 'MT',
+  qa: 'QA',
+  spell: 'Spell',
+  changes: 'Changes',
+  history: 'History',
+  peers: 'Peers',
+}
 
 export function SidebarPanel({
   focusedSource,
@@ -47,6 +49,14 @@ export function SidebarPanel({
   const tab = useSidebarPanelStore((s) => s.tab)
   const setTab = useSidebarPanelStore((s) => s.setTab)
   const setOpen = useSidebarPanelStore((s) => s.setOpen)
+  const stage = useEditorModeStore((s) => s.stage)
+
+  const tabs = STAGE_TABS[stage]
+  // Peers is valid even though it isn't in any stage strip (opened via the header
+  // chip). Otherwise, if the stored tab doesn't belong to this stage yet — e.g. a
+  // frame before EditorPage's stage effect resets it — fall back to the first tab
+  // so the panel never renders content from another stage.
+  const activeTab: SidebarTab = tabs.includes(tab) || tab === 'peers' ? tab : tabs[0]
 
   return (
     <aside
@@ -61,15 +71,15 @@ export function SidebarPanel({
           className="flex items-center gap-1 rounded-md border p-0.5"
           style={{ borderColor: 'var(--color-border)' }}
         >
-          {TABS.map((t) => {
-            const isActive = tab === t.id
+          {tabs.map((id) => {
+            const isActive = activeTab === id
             return (
               <button
-                key={t.id}
+                key={id}
                 role="tab"
                 aria-selected={isActive}
-                data-testid={`sidebar-tab-${t.id}`}
-                onClick={() => setTab(t.id)}
+                data-testid={`sidebar-tab-${id}`}
+                onClick={() => setTab(id)}
                 className={cn(
                   'text-xs px-2 py-1 rounded transition-colors',
                   isActive ? 'font-semibold' : 'hover:opacity-80',
@@ -79,7 +89,7 @@ export function SidebarPanel({
                   color: isActive ? 'var(--color-text)' : 'var(--color-muted)',
                 }}
               >
-                {t.label}
+                {TAB_LABELS[id]}
               </button>
             )
           })}
@@ -95,7 +105,7 @@ export function SidebarPanel({
         </button>
       </div>
 
-      {tab === 'tm' && (
+      {activeTab === 'tm' && (
         <div data-testid="tm-panel">
           <TMPanel
             focusedSource={focusedSource}
@@ -105,7 +115,7 @@ export function SidebarPanel({
           />
         </div>
       )}
-      {tab === 'glossary' && (
+      {activeTab === 'glossary' && (
         <div data-testid="glossary-panel">
           <GlossaryPanel
             focusedSource={focusedSource}
@@ -116,7 +126,7 @@ export function SidebarPanel({
           />
         </div>
       )}
-      {tab === 'mt' && (
+      {activeTab === 'mt' && (
         <div data-testid="mt-panel">
           <MTPanel
             focusedSource={focusedSource}
@@ -126,12 +136,12 @@ export function SidebarPanel({
           />
         </div>
       )}
-      {tab === 'qa' && (
+      {activeTab === 'qa' && (
         <div data-testid="qa-panel">
           <QAPanel projectId={projectId} targetLang={targetLang} />
         </div>
       )}
-      {tab === 'spell' && (
+      {activeTab === 'spell' && (
         <div data-testid="spell-panel">
           <SpellPanel
             targetLang={targetLang}
@@ -140,17 +150,17 @@ export function SidebarPanel({
           />
         </div>
       )}
-      {tab === 'changes' && (
+      {activeTab === 'changes' && (
         <div data-testid="changes-panel">
           <ChangesPanel projectId={projectId} />
         </div>
       )}
-      {tab === 'history' && (
+      {activeTab === 'history' && (
         <div data-testid="history-panel">
           <VersionHistoryPanel projectId={projectId} />
         </div>
       )}
-      {tab === 'peers' && <PeersPanel projectId={projectId} />}
+      {activeTab === 'peers' && <PeersPanel projectId={projectId} />}
     </aside>
   )
 }

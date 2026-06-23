@@ -26,6 +26,8 @@ test('save a named version and restore the project to it', async ({ page }) => {
   await target1.press('Control+Enter')
   await expect(row1Pill).toHaveAttribute('data-status', 'translated')
 
+  // History lives in the Revise stage's sidebar tabs.
+  await page.getByTestId('stage-revise').click()
   await page.getByTestId('sidebar-tab-history').click()
   await expect(page.getByTestId('history-panel')).toBeVisible()
   await page.getByTestId('version-label-input').fill('milestone')

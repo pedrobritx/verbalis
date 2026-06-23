@@ -28,10 +28,15 @@ test('command palette: in-editor actions mark current segment reviewed', async (
   await page.getByRole('button', { name: 'Import', exact: true }).click()
   await expect(page).toHaveURL(/#\/project\//)
 
-  // Open palette and toggle review mode.
+  // Open palette and toggle review mode — now expressed as the Revise stage.
   await page.keyboard.press('Control+K')
   await page.getByTestId('cmd-toggle-review-mode').click()
-  await expect(page.getByTestId('review-mode-toggle')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('stage-revise')).toHaveAttribute('aria-selected', 'true')
+
+  // Revise snaps the status filter to "translated"; widen to All so the
+  // (initially untranslated) first segment stays visible after we mark it.
+  await page.keyboard.press('Control+K')
+  await page.getByTestId('cmd-filter-all').click()
 
   // Mark the current (first, focused-by-default) segment reviewed.
   await page.keyboard.press('Control+K')

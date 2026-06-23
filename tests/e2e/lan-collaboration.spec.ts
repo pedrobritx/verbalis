@@ -32,11 +32,11 @@ test('two peers discover each other and sync edits over the LAN transport', asyn
 
   // Enable sharing from the first tab; the flag is per-project, so the second
   // tab picks it up and both start a sync session.
-  await page1.getByTestId('sidebar-tab-peers').click()
+  await page1.getByTestId('peers-presence-chip').click()
   await expect(page1.getByTestId('peers-panel')).toBeVisible()
   await page1.getByTestId('peers-share-toggle').check()
 
-  await page2.getByTestId('sidebar-tab-peers').click()
+  await page2.getByTestId('peers-presence-chip').click()
   await expect(page2.getByTestId('peers-panel')).toBeVisible()
   await expect(page2.getByTestId('peers-share-toggle')).toBeChecked()
 

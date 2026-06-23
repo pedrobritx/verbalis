@@ -44,8 +44,9 @@ import {
 import { useTheme } from '@/app/providers'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { useCommandPaletteStore } from './useCommandPaletteStore'
-import { useSidebarPanelStore } from '@/features/editor/useSidebarPanelStore'
+import { useSidebarPanelStore, type SidebarTab } from '@/features/editor/useSidebarPanelStore'
 import { useEditorModeStore, type StatusFilter } from '@/features/editor/useEditorModeStore'
+import { stageForTab } from '@/features/editor/stageConfig'
 import { useEditorActionsStore } from '@/features/editor/useEditorActionsStore'
 import { useFindReplaceStore } from '@/features/editor/findReplace/useFindReplaceStore'
 import { useAnalysisStore } from '@/features/editor/analysis/useAnalysisStore'
@@ -81,6 +82,7 @@ export function CommandPalette() {
   const openConcordance = useConcordanceStore((s) => s.openWith)
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
+  const setStage = useEditorModeStore((s) => s.setStage)
   const setStatusFilter = useEditorModeStore((s) => s.setStatusFilter)
   const editorActions = useEditorActionsStore((s) => s.actions)
   const openImport = useImportDialogStore((s) => s.setOpen)
@@ -106,6 +108,17 @@ export function CommandPalette() {
     [setOpen],
   )
 
+  // Jump straight to a sidebar panel, bringing its owning workflow stage along so
+  // the tab is actually visible (each stage only shows its own tabs).
+  const goToSidebar = useCallback(
+    (tab: SidebarTab) => {
+      setStage(stageForTab(tab))
+      setSidebarOpen(true)
+      setSidebarTab(tab)
+    },
+    [setStage, setSidebarOpen, setSidebarTab],
+  )
+
   const editorItems = useMemo(() => {
     if (!inEditor) return null
     return (
@@ -118,30 +131,30 @@ export function CommandPalette() {
             <PanelRight />
             <span>Toggle sidebar panel</span>
           </CommandItem>
-          <CommandItem onSelect={() => run(() => setSidebarTab('tm'))}>
+          <CommandItem onSelect={() => run(() => goToSidebar('tm'))}>
             <Database />
             <span>Switch sidebar to TM</span>
           </CommandItem>
-          <CommandItem onSelect={() => run(() => setSidebarTab('glossary'))}>
+          <CommandItem onSelect={() => run(() => goToSidebar('glossary'))}>
             <BookA />
             <span>Switch sidebar to Glossary</span>
           </CommandItem>
           <CommandItem
-            onSelect={() => run(() => setSidebarTab('mt'))}
+            onSelect={() => run(() => goToSidebar('mt'))}
             data-testid="cmd-sidebar-mt"
           >
             <Wand2 />
             <span>Switch sidebar to Machine translation</span>
           </CommandItem>
           <CommandItem
-            onSelect={() => run(() => setSidebarTab('spell'))}
+            onSelect={() => run(() => goToSidebar('spell'))}
             data-testid="cmd-sidebar-spell"
           >
             <SpellCheck />
             <span>Switch sidebar to Spelling</span>
           </CommandItem>
           <CommandItem
-            onSelect={() => run(() => setSidebarTab('changes'))}
+            onSelect={() => run(() => goToSidebar('changes'))}
             data-testid="cmd-sidebar-changes"
           >
             <GitCompare />
@@ -187,6 +200,29 @@ export function CommandPalette() {
             <span>Jump to next draft</span>
           </CommandItem>
         </CommandGroup>
+        <CommandGroup heading="Workflow stage">
+          <CommandItem
+            onSelect={() => run(() => setStage('prepare'))}
+            data-testid="cmd-stage-prepare"
+          >
+            <FileText />
+            <span>Stage: Prepare (source preparation)</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => setStage('translate'))}
+            data-testid="cmd-stage-translate"
+          >
+            <Languages />
+            <span>Stage: Translate</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => setStage('revise'))}
+            data-testid="cmd-stage-revise"
+          >
+            <CheckCircle2 />
+            <span>Stage: Revise (review &amp; QA)</span>
+          </CommandItem>
+        </CommandGroup>
         <CommandGroup heading="Tools">
           <CommandItem
             disabled={!editorActions}
@@ -213,12 +249,7 @@ export function CommandPalette() {
             <CommandShortcut>⌃H</CommandShortcut>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              run(() => {
-                setSidebarOpen(true)
-                setSidebarTab('qa')
-              })
-            }
+            onSelect={() => run(() => goToSidebar('qa'))}
             data-testid="cmd-run-qa"
           >
             <ShieldCheck />
@@ -318,8 +349,8 @@ export function CommandPalette() {
     editorActions,
     reviewMode,
     run,
-    setSidebarTab,
-    setSidebarOpen,
+    goToSidebar,
+    setStage,
     setStatusFilter,
     toggleReviewMode,
     togglePanel,
