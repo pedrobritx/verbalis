@@ -22,6 +22,7 @@ import { useFindReplaceStore } from './findReplace/useFindReplaceStore'
 import { AnalysisDialog } from './analysis/AnalysisDialog'
 import { useAnalysisStore } from './analysis/useAnalysisStore'
 import { AddTermDialog } from './glossary/AddTermDialog'
+import { GlossaryEditController } from './glossary/GlossaryEditController'
 import { ConcordanceDialog } from './concordance/ConcordanceDialog'
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
@@ -580,6 +581,7 @@ export default function EditorPage() {
       <SegmentHistoryDialog />
       <AnalysisDialog project={project} />
       <AddTermDialog projectId={project.id} targetLang={project.targetLang} />
+      <GlossaryEditController />
       <ConcordanceDialog project={project} />
     </div>
   )
