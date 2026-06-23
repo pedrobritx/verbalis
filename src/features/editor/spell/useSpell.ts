@@ -1,19 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getSpellWorker } from '@/workers/client'
-import { fetchDictionary, resolveSpellLang, type SpellLang } from '@/core/spell/dictionaries'
+import { resolveSpellLang } from '@/core/spell/dictionaries'
+import { ensureDictionaryLoaded } from '@/core/spell/loader'
 import { tokenizeWords, type WordToken } from '@/core/spell/tokenize'
 
 export type SpellState = 'idle' | 'loading' | 'ready' | 'error' | 'unsupported'
 
 /**
  * Loads the bundled dictionary for the project's target language into the spell
- * worker (once per language) and exposes checking / suggesting. The dictionary is
- * a static asset cached by the service worker, so after first use it works offline.
+ * worker (shared, once per language) and exposes checking / suggesting. The
+ * dictionary is a static asset cached by the service worker, so after first use it
+ * works offline.
  */
 export function useSpell(targetLang: string, enabled: boolean, personalWords: string[]) {
   const lang = resolveSpellLang(targetLang)
   const [state, setState] = useState<SpellState>('idle')
-  const loadedRef = useRef<SpellLang | null>(null)
 
   useEffect(() => {
     if (!enabled) {
@@ -24,24 +25,12 @@ export function useSpell(targetLang: string, enabled: boolean, personalWords: st
       setState('unsupported')
       return
     }
-    if (loadedRef.current === lang) {
-      setState('ready')
-      return
-    }
     let active = true
     setState('loading')
-    void (async () => {
-      try {
-        const worker = getSpellWorker()
-        const { aff, dic } = await fetchDictionary(lang)
-        await worker.load(lang, aff, dic, personalWords)
-        if (!active) return
-        loadedRef.current = lang
-        setState('ready')
-      } catch {
-        if (active) setState('error')
-      }
-    })()
+    ensureDictionaryLoaded(lang, personalWords).then(
+      () => active && setState('ready'),
+      () => active && setState('error'),
+    )
     return () => {
       active = false
     }

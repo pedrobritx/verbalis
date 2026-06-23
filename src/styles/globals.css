@@ -200,3 +200,14 @@
 .rsg-tag-button:hover {
   background: var(--color-accent-fill);
 }
+
+/* Spell-check underline overlay: a non-mutating marker painted over a misspelled
+   word in the rich editor. The plugin positions each empty button over the word,
+   so the marker is a dashed bottom border (an empty box can't carry a
+   text-decoration). Token-coloured; no raw hex. */
+.rsg-spell-error {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px dashed var(--color-error);
+  cursor: pointer;
+}
