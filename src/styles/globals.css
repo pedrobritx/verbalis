@@ -163,6 +163,12 @@
   font-size: 0.75em;
   vertical-align: super;
 }
+/* Hyperlinks authored in the rich segment editor (LinkNode). */
+.rsg-link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
 /* Allow soft line breaks inside a single-paragraph segment cell. */
 .rsg-editor p {
   margin: 0;

@@ -17,12 +17,12 @@ import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
 import { EditorToolbar } from './tools/EditorToolbar'
 import { PeersPresenceChip } from './peers/PeersPresenceChip'
-import { STAGE_TABS, STAGE_DEFAULT_TAB } from './stageConfig'
 import { FindReplaceDialog } from './findReplace/FindReplaceDialog'
 import { useFindReplaceStore } from './findReplace/useFindReplaceStore'
 import { AnalysisDialog } from './analysis/AnalysisDialog'
 import { useAnalysisStore } from './analysis/useAnalysisStore'
 import { AddTermDialog } from './glossary/AddTermDialog'
+import { GlossaryEditController } from './glossary/GlossaryEditController'
 import { ConcordanceDialog } from './concordance/ConcordanceDialog'
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
@@ -209,21 +209,34 @@ export default function EditorPage() {
     setSidebarTab('qa')
   }, [setPanelOpen, setSidebarTab])
 
-  // Stage drives the sidebar: on a stage *change*, open the panel and snap to the
-  // stage's primary tab — unless the current tab already belongs to the new stage
-  // (e.g. a command-palette jump set both at once), in which case keep it. On
-  // mount we leave the panel's open/closed choice alone. The smart status-filter
-  // default lives in the store's setStage.
+  // Stage drives the sidebar: each stage owns its own (customisable) panel layout,
+  // so on a stage *change* we just reveal the panel — the stacked tools for the new
+  // stage render themselves. On mount we leave the panel's open/closed choice alone.
+  // The smart status-filter default lives in the store's setStage.
   const prevStageRef = useRef(stage)
   useEffect(() => {
     if (prevStageRef.current === stage) return
     prevStageRef.current = stage
     setPanelOpen(true)
-    const currentTab = useSidebarPanelStore.getState().tab
-    if (!STAGE_TABS[stage].includes(currentTab)) {
-      setSidebarTab(STAGE_DEFAULT_TAB[stage])
+  }, [stage, setPanelOpen])
+
+  // Ctrl/⌘+Shift+L reveals the Lookup panel in the current stage (adding it if the
+  // translator removed it) so a selected word can be looked up without hunting for
+  // the tool. The panel already mirrors the live selection once visible.
+  const showPanel = useSidebarPanelStore((s) => s.showPanel)
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault()
+        showPanel(useEditorModeStore.getState().stage, 'lookup')
+        const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+        if (isMobile) setMobileSheetOpen(true)
+        else setPanelOpen(true)
+      }
     }
-  }, [stage, setSidebarTab, setPanelOpen])
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [showPanel, setPanelOpen])
 
   // The header presence chip opens the Peers panel into whichever container is
   // live for the viewport (desktop sidebar vs. mobile sheet).
@@ -358,6 +371,14 @@ export default function EditorPage() {
       }
     }
     if (i + 1 < segments.length) setFocusIndex(i + 1)
+  }
+
+  // Revert a confirmed segment back to draft (the inverse of confirm). TM entries
+  // already saved on confirm are intentionally left in place.
+  const unconfirm = async (i: number) => {
+    const seg = segments[i]
+    if (!seg || seg.locked || seg.status !== 'translated') return
+    await segmentRepo.update(seg.id, { status: 'draft' })
   }
 
   const handleApplyTM = async (target: string) => {
@@ -520,6 +541,7 @@ export default function EditorPage() {
                 spellEnabled={spellEnabled}
                 commentAuthor={commentAuthor}
                 onConfirm={() => confirm(originalIndex)}
+                onUnconfirm={() => unconfirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}
                 onJoin={() => handleJoin(originalIndex)}
                 onMoveFocus={(dir) => moveFocus(originalIndex, dir)}
@@ -568,6 +590,7 @@ export default function EditorPage() {
       <SegmentHistoryDialog />
       <AnalysisDialog project={project} />
       <AddTermDialog projectId={project.id} targetLang={project.targetLang} />
+      <GlossaryEditController />
       <ConcordanceDialog project={project} />
     </div>
   )

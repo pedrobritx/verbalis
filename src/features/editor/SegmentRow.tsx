@@ -17,6 +17,7 @@ import {
   splitTextWithTags,
 } from '@/core/bilingual/inlineTags'
 import { autocorrectOnInput, type AutocorrectSettings } from '@/core/text/autocorrect'
+import { useEditorSelectionStore } from './useEditorSelectionStore'
 
 // Lexical only loads when rich editing is actually used, keeping it out of the
 // main bundle for the default (plain-text) path.
@@ -60,6 +61,8 @@ interface SegmentRowProps {
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
   onConfirm: () => void
+  /** Revert a confirmed (translated) segment back to draft. */
+  onUnconfirm: () => void
   onToggleReviewed: () => void
   onJoin: () => void
   onMoveFocus: (direction: -1 | 1) => void
@@ -81,6 +84,7 @@ export function SegmentRow({
   spellEnabled,
   commentAuthor,
   onConfirm,
+  onUnconfirm,
   onToggleReviewed,
   onJoin,
   onMoveFocus,
@@ -100,6 +104,18 @@ export function SegmentRow({
   const isCode = segment.sourceMeta?.kind === 'code'
   const useRich = richEditing && !isCode
   const inlineTags = segment.bilingualMeta?.inlineTags
+  const setSelection = useEditorSelectionStore((s) => s.setText)
+
+  // Push the current textarea selection to the Lookup panel.
+  const captureTextareaSelection = (el: HTMLTextAreaElement) => {
+    const text = el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0)
+    if (text.trim()) setSelection(text)
+  }
+  // Push a DOM selection (read-only source cell) to the Lookup panel.
+  const captureDomSelection = () => {
+    const text = window.getSelection?.()?.toString()
+    if (text && text.trim()) setSelection(text)
+  }
 
   // Plain-path focusable handle: wraps the textarea so the page can drive focus
   // and glossary insertion uniformly across plain and rich editors.
@@ -227,6 +243,9 @@ export function SegmentRow({
     await flushTarget()
     if (reviewMode) {
       onToggleReviewed()
+    } else if (segment.status === 'translated') {
+      // Clicking the check on an already-confirmed segment un-confirms it.
+      onUnconfirm()
     } else {
       onConfirm()
     }
@@ -274,6 +293,7 @@ export function SegmentRow({
               <Textarea
                 value={sourceDraft}
                 onChange={(e) => setSourceDraft(e.target.value)}
+                onSelect={(e) => captureTextareaSelection(e.currentTarget)}
                 onBlur={() => void toggleEditSource()}
                 aria-label={`Edit source ${segment.index + 1}`}
                 data-testid={`source-edit-${segment.index}`}
@@ -289,6 +309,7 @@ export function SegmentRow({
                   fontFamily: isCode ? 'var(--font-mono)' : undefined,
                 }}
                 data-testid={`source-${segment.index}`}
+                onMouseUp={captureDomSelection}
               >
                 {inlineTags ? renderSourceWithTags(segment.source, inlineTags) : segment.source}
               </div>
@@ -377,6 +398,7 @@ export function SegmentRow({
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
+                onSelect={(e) => captureTextareaSelection(e.currentTarget)}
                 readOnly={locked}
                 autoResize
                 placeholder={locked ? 'Locked' : 'Translation…'}
@@ -413,19 +435,39 @@ export function SegmentRow({
                 type="button"
                 onClick={() => void handleConfirmClick()}
                 disabled={locked}
-                aria-label={reviewMode ? 'Mark reviewed' : 'Confirm segment'}
+                aria-label={
+                  reviewMode
+                    ? 'Mark reviewed'
+                    : segment.status === 'translated'
+                    ? 'Un-confirm segment'
+                    : 'Confirm segment'
+                }
+                aria-pressed={!reviewMode && segment.status === 'translated'}
                 title={
                   locked
                     ? 'Segment is locked'
                     : reviewMode
                     ? 'Mark reviewed (Ctrl+Shift+Enter)'
+                    : segment.status === 'translated'
+                    ? 'Un-confirm segment (back to draft)'
                     : 'Confirm segment (Ctrl+Enter)'
                 }
                 data-testid={`confirm-${segment.index}`}
                 className="inline-flex items-center justify-center w-7 h-7 rounded-md border transition-colors hover:bg-[var(--color-fill)] disabled:opacity-40 disabled:pointer-events-none"
                 style={{
-                  borderColor: 'var(--color-border)',
-                  color: reviewMode ? 'var(--color-accent)' : 'var(--color-confirm)',
+                  borderColor:
+                    !reviewMode && segment.status === 'translated'
+                      ? 'var(--color-confirm)'
+                      : 'var(--color-border)',
+                  background:
+                    !reviewMode && segment.status === 'translated'
+                      ? 'var(--color-confirm)'
+                      : 'transparent',
+                  color: reviewMode
+                    ? 'var(--color-accent)'
+                    : segment.status === 'translated'
+                    ? 'var(--color-bg)'
+                    : 'var(--color-confirm)',
                 }}
               >
                 {reviewMode ? <Eye size={15} /> : <Check size={16} />}
