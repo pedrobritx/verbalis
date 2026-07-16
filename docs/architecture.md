@@ -9,7 +9,7 @@ VERBALIS is a local-first, browser-native CAT (Computer-Assisted Translation) to
 | Layer | Choice | Notes |
 |---|---|---|
 | Framework | React 18 + TypeScript | Strict mode, full type safety |
-| Bundler | Vite 6 | base: '/' (root), configurable via `BASE_PATH` env var |
+| Bundler | Vite 6 | base: '/' for the custom-domain root (override with VITE_BASE_PATH for subdirectory builds) |
 | Styling | Tailwind CSS 3 + shadcn/ui | Owned components, Radix primitives |
 | State | Zustand (UI) + TanStack Query v5 (async) | No Redux boilerplate |
 | Routing | React Router v6 HashRouter | GH Pages SPA compatibility |
@@ -56,14 +56,10 @@ Migrations are handled by Dexie's versioning system (`this.version(N).stores(...
 
 ## Deployment
 
-Static build → GitHub Actions → GitHub Pages, served at the custom subdomain
-`https://verbalis.britx.me` (root of its own domain, not a path under a shared
-site).
+Static build → GitHub Actions → GitHub Pages at `https://verbalis.britx.me/`.
 
 Critical GH Pages constraints:
-- `base: '/'` in vite.config.ts — deployed at the domain root. Overridable via
-  the `BASE_PATH` env var (e.g. `BASE_PATH=/verbalis/ pnpm build`) for anyone
-  forking this project into a path-based GitHub Pages deployment instead.
+- `base: '/' (override with VITE_BASE_PATH for subdirectory builds)` in vite.config.ts
 - `HashRouter` (not BrowserRouter) — no server-side routing on GH Pages
 - PWA `start_url: "."` and `scope: "."` — relative paths required, so they
   resolve correctly under either a root or nested base
@@ -96,7 +92,7 @@ Verbalis is installable and works fully offline once the service worker has cach
 - **First-run offline-ready toast**. `onOfflineReady` flips the same store; `src/pwa/OfflineReadyToast.tsx` shows a one-shot "ready to work offline" toast gated by `localStorage` (`verbalis.pwa.offlineReadyAck`). The ack key is cleared whenever `onNeedRefresh` fires so a post-update install re-confirms.
 - **Online/offline awareness**. `src/hooks/useNetworkStatus.ts` subscribes to window `online`/`offline` and seeds from `navigator.onLine`. `src/components/layout/OfflineBadge.tsx` renders a small "Offline" pill in the TopBar when offline. `WiktionaryLookup` uses it to gate the Look-up button on either being online or having an in-memory cache hit, and translates `WiktionaryError('network')` into a clear offline message.
 - **Wiktionary runtime cache**. `vite.config.ts` adds two Workbox `runtimeCaching` rules (StaleWhileRevalidate, max 100 entries / 30 days) — one for the REST `/api/rest_v1/page/definition/*` endpoint, one for the action API `/w/api.php`. Previously-looked-up terms therefore resolve from cache when the network is unavailable.
-- **Navigation fallback**. `workbox.navigateFallback: `${basePath}index.html`` (derived from the same `BASE_PATH`-driven `base` as the Vite config) keeps offline deep-refreshes inside the SPA shell rather than hitting Workbox's default 404.
+- **Navigation fallback**. `workbox.navigateFallback: '<base>/index.html'` keeps offline deep-refreshes inside the SPA shell rather than hitting Workbox's default 404.
 - **Build identity**. `vite.config.ts` injects `__APP_VERSION__` (from `package.json`), `__BUILD_SHA__` (from `git rev-parse --short HEAD`, falling back to `'dev'`), and `__BUILD_TIME__` via `define`. The Settings page shows all three in an "About" section so users can report bugs against a specific build.
 
 ## Phase 6 — AI integrations & semantic TM
