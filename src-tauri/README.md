@@ -45,6 +45,6 @@ The desktop build is a **separate pipeline** (a second toolchain — see roadmap
 rustup default stable
 pnpm add -D @tauri-apps/cli @tauri-apps/api   # if not already installed
 
-pnpm tauri:dev      # dev: loads http://localhost:5173/verbalis/
+pnpm tauri:dev      # dev: loads http://localhost:5173/
 pnpm tauri:build    # production bundle (runs `pnpm build` first)
 ```

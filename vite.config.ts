@@ -14,8 +14,14 @@ try {
 }
 const buildTime = new Date().toISOString()
 
+// Deployed at the root of its own subdomain (https://verbalis.britx.me), so the
+// default base is '/'. Set BASE_PATH (e.g. '/verbalis/') to build for a
+// path-based deployment instead — trailing slash is normalized either way.
+const rawBasePath = process.env.BASE_PATH?.trim() || '/'
+const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`
+
 export default defineConfig({
-  base: '/verbalis/',
+  base: basePath,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_SHA__: JSON.stringify(sha),
@@ -47,7 +53,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/verbalis/index.html',
+        navigateFallback: `${basePath}index.html`,
         runtimeCaching: [
           {
             // Bundled terminology corpora and the translation guide — fetched on
