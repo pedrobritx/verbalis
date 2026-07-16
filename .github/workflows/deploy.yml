@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      base_path:
+        description: >-
+          Base path to build for (e.g. "/verbalis/" for a path-based deploy).
+          Leave blank to deploy at the domain root (default, used for the
+          verbalis.britx.me subdomain).
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -29,6 +37,8 @@ jobs:
       - run: pnpm install
       - run: pnpm generate-icons
       - run: pnpm build
+        env:
+          BASE_PATH: ${{ github.event.inputs.base_path || '/' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -61,7 +61,8 @@ Static build → GitHub Actions → GitHub Pages at `https://verbalis.britx.me/`
 Critical GH Pages constraints:
 - `base: '/' (override with VITE_BASE_PATH for subdirectory builds)` in vite.config.ts
 - `HashRouter` (not BrowserRouter) — no server-side routing on GH Pages
-- PWA `start_url: "."` and `scope: "."` — relative paths required
+- PWA `start_url: "."` and `scope: "."` — relative paths required, so they
+  resolve correctly under either a root or nested base
 
 ## Command Palette & Review Modes (Phase 4)
 

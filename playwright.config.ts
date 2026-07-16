@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Mirrors vite.config.ts: BASE_PATH defaults to '/' (subdomain-root deployment).
+const rawBasePath = process.env.BASE_PATH?.trim() || '/'
+const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,

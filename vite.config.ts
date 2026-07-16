@@ -16,6 +16,12 @@ const buildTime = new Date().toISOString()
 const base = process.env.VITE_BASE_PATH ?? '/'
 const normalizedBase = base.endsWith('/') ? base : `${base}/`
 
+// Deployed at the root of its own subdomain (https://verbalis.britx.me), so the
+// default base is '/'. Set BASE_PATH (e.g. '/verbalis/') to build for a
+// path-based deployment instead — trailing slash is normalized either way.
+const rawBasePath = process.env.BASE_PATH?.trim() || '/'
+const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`
+
 export default defineConfig({
   base: normalizedBase,
   define: {
