@@ -39,7 +39,7 @@ export function resolveSpellLang(targetLang: string | undefined): SpellLang | nu
 }
 
 function assetUrl(path: string): string {
-  // BASE_URL is '/verbalis/' on GitHub Pages, '/' in dev — same as corpora.
+  // BASE_URL follows the configured Vite base — same as corpora.
   const base = import.meta.env.BASE_URL.endsWith('/')
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`

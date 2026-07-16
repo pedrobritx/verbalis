@@ -1,7 +1,8 @@
 import type { CorpusManifest, CorpusPackFile } from './types'
 
-// Static corpora assets live under <base>/corpora/. BASE_URL is '/verbalis/' in
-// production and '/' under test/dev, so this resolves correctly in both.
+// Static corpora assets live under <base>/corpora/. BASE_URL follows the
+// configured Vite base, so this resolves for both custom domains and
+// optional subdirectory builds.
 export function corpusAssetUrl(file: string): string {
   const base = import.meta.env.BASE_URL || '/'
   return `${base.replace(/\/$/, '')}/corpora/${file}`

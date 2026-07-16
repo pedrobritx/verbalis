@@ -13,9 +13,11 @@ try {
   // Tarball installs or detached environments — fall back to 'dev'.
 }
 const buildTime = new Date().toISOString()
+const base = process.env.VITE_BASE_PATH ?? '/'
+const normalizedBase = base.endsWith('/') ? base : `${base}/`
 
 export default defineConfig({
-  base: '/verbalis/',
+  base: normalizedBase,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_SHA__: JSON.stringify(sha),
@@ -47,7 +49,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/verbalis/index.html',
+        navigateFallback: `${normalizedBase}index.html`,
         runtimeCaching: [
           {
             // Bundled terminology corpora and the translation guide — fetched on
