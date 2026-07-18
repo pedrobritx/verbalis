@@ -19,7 +19,7 @@ import {
   type LexicalEditor,
 } from 'lexical'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
-import { RICH_NAMESPACE, RICH_THEME, getRichNodes } from '@/core/editor/richText'
+import { RICH_NAMESPACE, RICH_THEME, getRichNodes, richStateToPlain } from '@/core/editor/richText'
 import {
   classifyInlineTagKind,
   listTagIds,
@@ -39,6 +39,7 @@ import './LinkNode'
 import './ChangeMarkNode'
 import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
+import { TrackedChangesPlugin } from './TrackedChangesPlugin'
 
 /** Initial-state builder: seed a paragraph from plain text, turning `{id}`
  *  placeholders into atomic InlineTagNodes (chips). */
@@ -167,6 +168,7 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
         </div>
       </div>
       <HistoryPlugin />
+      <TrackedChangesPlugin locked={locked} />
       <EditorLogic {...props} />
     </LexicalComposer>
   )
@@ -192,8 +194,13 @@ function EditorLogic(props: RichSegmentEditorProps) {
   // Register listeners and command handlers once for this editor.
   useEffect(() => {
     const computeRich = () => JSON.stringify(editor.getEditorState().toJSON())
-    const computePlain = () =>
-      editor.getEditorState().read(() => $getRoot().getTextContent())
+    // Derive plain text by re-parsing the serialized state rather than reading
+    // the live root's text. RootNode.getTextContent() returns a DOM-derived
+    // cache in read mode, and a pending deletion's text is present in the DOM
+    // (struck through) even though ChangeMarkNode.getTextContent() suppresses it
+    // — so the live read would leak deleted text. A fresh parse has no DOM cache
+    // and applies the node overrides, giving the D2 "proposed text" reliably.
+    const computePlain = () => richStateToPlain(computeRich())
 
     // Seed the "last saved" baseline from the mounted state so a benign initial
     // update never triggers a write.

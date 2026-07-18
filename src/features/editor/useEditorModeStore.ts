@@ -22,22 +22,33 @@ const STAGE_STATUS_DEFAULTS: Record<EditorStage, StatusFilter> = {
   revise: 'translated',
 }
 
+/**
+ * How target edits are applied. In `direct` mode edits mutate the text as today;
+ * in `suggesting` mode edits become tracked changes (insert/delete marks)
+ * attributed to the local author, Google-Docs style. Global across the editor.
+ */
+export type EditMode = 'direct' | 'suggesting'
+
 interface EditorModeState {
   stage: EditorStage
   /** Derived mirror of `stage === 'revise'`, kept in state so existing consumers
    * (SegmentRow, command palette, the Ctrl+Shift+R shortcut) read it unchanged. */
   reviewMode: boolean
   statusFilter: StatusFilter
+  editMode: EditMode
   setStage: (stage: EditorStage) => void
   toggleReviewMode: () => void
   setReviewMode: (on: boolean) => void
   setStatusFilter: (filter: StatusFilter) => void
+  setEditMode: (mode: EditMode) => void
+  toggleEditMode: () => void
 }
 
 export const useEditorModeStore = create<EditorModeState>((set, get) => ({
   stage: 'translate',
   reviewMode: false,
   statusFilter: 'all',
+  editMode: 'direct',
   setStage: (stage) =>
     set({
       stage,
@@ -49,4 +60,6 @@ export const useEditorModeStore = create<EditorModeState>((set, get) => ({
   toggleReviewMode: () => get().setStage(get().stage === 'revise' ? 'translate' : 'revise'),
   setReviewMode: (on) => get().setStage(on ? 'revise' : 'translate'),
   setStatusFilter: (statusFilter) => set({ statusFilter }),
+  setEditMode: (editMode) => set({ editMode }),
+  toggleEditMode: () => set({ editMode: get().editMode === 'suggesting' ? 'direct' : 'suggesting' }),
 }))

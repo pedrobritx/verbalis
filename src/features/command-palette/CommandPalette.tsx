@@ -30,6 +30,7 @@ import {
   Languages,
   SpellCheck,
   GitCompare,
+  MessageSquarePlus,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -82,6 +83,8 @@ export function CommandPalette() {
   const openConcordance = useConcordanceStore((s) => s.openWith)
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const toggleReviewMode = useEditorModeStore((s) => s.toggleReviewMode)
+  const editMode = useEditorModeStore((s) => s.editMode)
+  const toggleEditMode = useEditorModeStore((s) => s.toggleEditMode)
   const setStage = useEditorModeStore((s) => s.setStage)
   const setStatusFilter = useEditorModeStore((s) => s.setStatusFilter)
   const editorActions = useEditorActionsStore((s) => s.actions)
@@ -175,6 +178,13 @@ export function CommandPalette() {
             <Eye />
             <span>{reviewMode ? 'Exit review mode' : 'Enter review mode'}</span>
             <CommandShortcut>⌃⇧R</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => run(() => toggleEditMode())}
+            data-testid="cmd-toggle-suggesting"
+          >
+            <MessageSquarePlus />
+            <span>{editMode === 'suggesting' ? 'Switch to direct editing' : 'Switch to suggesting mode'}</span>
           </CommandItem>
           <CommandItem
             disabled={!editorActions}
