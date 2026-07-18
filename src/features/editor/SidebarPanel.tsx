@@ -353,7 +353,7 @@ export function SidebarPanel({
       </div>
 
       {showPeers && (
-        <div data-testid="peers-panel">
+        <div>
           <SidebarSection tab="peers" removable={false}>
             {renderPanel('peers')}
           </SidebarSection>

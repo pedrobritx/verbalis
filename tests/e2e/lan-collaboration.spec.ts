@@ -34,7 +34,10 @@ test('two peers discover each other and sync edits over the LAN transport', asyn
   // tab picks it up and both start a sync session.
   await page1.getByTestId('peers-presence-chip').click()
   await expect(page1.getByTestId('peers-panel')).toBeVisible()
-  await page1.getByTestId('peers-share-toggle').check()
+  // The toggle is a controlled checkbox that re-renders only after the async
+  // Dexie write lands, so click + assert instead of check() (which races it).
+  await page1.getByTestId('peers-share-toggle').click()
+  await expect(page1.getByTestId('peers-share-toggle')).toBeChecked()
 
   await page2.getByTestId('peers-presence-chip').click()
   await expect(page2.getByTestId('peers-panel')).toBeVisible()

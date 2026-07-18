@@ -1,0 +1,129 @@
+# Verbalis 2.0 — Translation IDE Revamp Roadmap
+
+> **This is the canonical scope document for the revamp.** Any session — human or AI — continuing
+> this work must read this file and [`STATUS.md`](./STATUS.md) before touching code, implement
+> exactly one phase at a time using its prompt in [`prompts/`](./prompts/), and must not diverge
+> from the scope, decisions, or invariants recorded here. Scope changes require the project
+> owner's approval and a PR that edits this file explicitly.
+>
+> Product context lives in [`docs/vision/`](../vision/) (Overview, Product Vision, Product
+> Features, UX Vision, Architecture Vision). Current-system context lives in
+> [`docs/architecture.md`](../architecture.md) and [`docs/roadmap-professional-features.md`](../roadmap-professional-features.md).
+
+## 1. Context
+
+Verbalis today is a local-first, 100% client-side CAT web app (React 18 + TS + Vite, Dexie/IndexedDB, opt-in Lexical rich editor, Yjs CRDT layer, static deploy to GitHub Pages at verbalis.britx.me, HashRouter). The vision documents redefine it as a **Translation IDE**: an extensible professional environment with inline tracked changes, range-anchored comments, live multi-user collaboration with roles, git-like versioning, accounts, cloud connectors, and a plugin ecosystem.
+
+This roadmap delivers the **web version**; desktop (Tauri) stays on the roadmap tail. The premise change:
+
+- **Two modes forever**: (a) 100% local — everything today keeps working, no account; (b) **signed-in** — "Continue with" Google / Microsoft / Apple + magic link (passkeys as fast-follow, see D7), unlocking synced preferences & layout, personal term bank & TM, cloud projects, live collaboration.
+- **Roles per project**: `project_manager` / `translator` / `revisor`, enforced by Postgres RLS where enforceable and by UI gating elsewhere.
+- **Extensions & plugins**: built-in addon registry first (MT providers, QA rules, formats become addons), Google Drive + OneDrive connectors; marketplace later.
+
+The repo already contains real foundations to **extend, not replace**: per-project Yjs docs (y-indexeddb), Dexie↔Yjs bridges with Dexie as local source of truth, a tiny `SyncTransport` seam (`src/storage/sync/transport/types.ts`), version snapshots + per-segment history + read-only changes panel with author colours (`src/storage/repositories/versionRepo.ts`, `src/core/history/diff.ts`), per-segment un-anchored comments, and the opt-in per-segment Lexical editor with the load-bearing contract *"Lexical state is truth, `richStateToPlain()` derives plain `target`"* (`src/core/editor/richText.ts` — it uses `$getRoot().getTextContent()`, so mark nodes overriding `getTextContent()` shape plain text in both live and headless paths automatically). Genuinely new axes: real document/block model, in-editor accept/reject change tracking, Supabase identity + cloud transport, roles, addons.
+
+## 2. Locked decisions (owner-confirmed)
+
+| Decision | Choice |
+| --- | --- |
+| Backend | **Supabase** (Auth + Postgres/RLS + Realtime + Storage); strictly additive, local-only mode never loads it |
+| v1 cloud connectors | **Google Drive + OneDrive** (storage-connector addons); iCloud deferred to desktop phase |
+| Build automation | **Prompt pack in this folder + a scheduled Routine** firing autonomous sessions, one phase per session, each ending in a draft PR |
+| Rate budget | **Claude Pro** → small surgical phases (one slice, ≤ ~15–20 files, tests included), max 1 phase/day |
+
+## 3. Architecture decisions
+
+- **D1 — Tracked changes via Lexical mark nodes per segment cell, not a document-wide editor rewrite.** A custom `ChangeMarkNode` (modeled on `@lexical/mark`'s `MarkNode`, following the `InlineTagNode` precedent) is incremental, serializes inside `targetRich`, and survives versioning/restore for free. A document-wide editor would invalidate the entire per-segment stack (autosave, TM/QA, CRDT, XLIFF chips).
+- **D2 — Plain-text semantics: `target` = "proposed text"** (pending insertions included, pending deletions excluded), implemented by `ChangeMarkNode.getTextContent() → ''` for deletes — the same trick `InlineTagNode` uses. Live editor and headless `richStateToPlain` agree with zero changes to TM/QA/search call sites. A pure `richStateToOriginal()` walker (exclude inserts, include deletes) feeds diff rendering. Confirm-to-TM is gated on "no pending changes" (Phase 1.6) so suggestions never contaminate the TM.
+- **D3 — Change metadata inline in the mark attrs** (`{changeId, type: insert|delete, authorId, authorName, createdAt}`); no parallel structure to keep consistent. Panels use a pure `extractChanges(targetRich)`. Author colours reuse `src/core/history/authorColor.ts`.
+- **D4 — Collab granularity: per-segment edit leases + LWW `targetRich`**; character-level same-segment rich co-editing (`@lexical/yjs`/`Y.XmlText`) is roadmap. Leases (lowest-peerId tie-break) match CAT-industry row-locking norms; concurrent edits on *different* segments already merge perfectly.
+- **D5 — Document model: new `documents` + `blocks` Dexie tables above flat segments**; segments stay the unit of translation/TM/QA/sync and gain an unindexed `blockId`. Existing projects backfilled from `sourceMeta.blockIndex`; XLIFF projects get no document tree (round-trip untouched).
+- **D6 — Supabase strictly additive**: env-flag + dynamic `import()` — zero bundle cost when unset. Cloud collab source of truth = Yjs blobs (`ydoc_state` snapshot + `ydoc_updates` append log with `author_id`); structured rows only where Postgres must query/enforce (`profiles`, `user_settings`, `projects`, `project_members`, `personal_termbank`/`personal_tm`).
+- **D7 — Auth: Supabase PKCE flow** (`flowType: 'pkce'` pinned) — the `?code=` query lands *before* the `#/route` fragment, so HashRouter never sees it; a pre-router bootstrap exchanges the code and strips the query. Native Supabase Auth covers Google/Apple/Azure OAuth + magic links; **passkeys are NOT native Supabase Auth** → honest fast-follow (Supabase roadmap or Edge-Function WebAuthn), not advertised in v1 UI.
+- **D8 — Roles: RLS enforces the enforceable** (membership, write access, PM-only management, `author_id = auth.uid()` on every update row → tamper-evident attribution). Content-level workflow rules (translator-must-suggest) are client-enforced with the authored append-only update log as audit trail; server-side validation is roadmap. Stated honestly in docs.
+- **D9 — Extensions v1: in-process typed registry with real manifests/permissions**; sandboxed (iframe/worker RPC) hosting deferred but the manifest contract is final now, so extension authors never migrate.
+
+## 4. Milestones & phases
+
+Sizing: **S** ≈ ≤8 files; **M** ≈ 10–20 files. Every phase ends green: `pnpm typecheck && pnpm test:unit && pnpm build` (+ Playwright where UI-facing), branch `claude/revamp-phase-N-N`, draft PR, [`STATUS.md`](./STATUS.md) updated in the same PR.
+
+### Phase 0 — Bootstrap (this commit)
+Roadmap, status checklist, prompt pack, and vision docs committed to the repo.
+
+### Milestone 0 — Guardrails
+- **0.1 CI hardening — S — deps: none.** Create `.github/workflows/ci.yml` (PR + non-main push: install → generate-icons → `tsc -b` → `vitest run` → build → Playwright chromium). Modify `playwright.config.ts` (CI retries/reporter), `package.json` (`test:unit`, `typecheck` scripts). Keep `deploy.yml` untouched; upload traces on failure. **DoD**: PRs show a green check running unit + e2e.
+
+### Milestone 1 — Inline tracked changes + anchored comments (flagship; pure client, no backend)
+- **1.1 Change model core + `ChangeMarkNode` + derivation semantics — M — deps: 0.1.** Create `src/core/changes/model.ts`, `src/core/changes/extract.ts`, `src/features/editor/rich/ChangeMarkNode.ts` (attrs per D3; `getTextContent()→''` for deletes; strikethrough/underline + author colour in `createDOM`). Modify `src/core/editor/richText.ts` (add `richStateToOriginal`), `src/styles/globals.css`. Tests: model/extract round-trips; plain derivation per D2. **DoD**: hand-built `targetRich` with marks renders styled; derivation semantics proven; existing tests pass.
+- **1.2 Rich editing default-on + Playwright migration — M — deps: 1.1.** Flip `DEFAULT_EDITOR_SETTINGS.richEditing` to true (`src/storage/repositories/settingsRepo.ts`); migrate all 7 e2e specs off `textarea.fill()` to contenteditable helpers (`tests/e2e/helpers/richEditor.ts`); plain stays for code segments + opt-out. **DoD**: full e2e suite green with rich default; opt-out works.
+- **1.3 Suggesting mode — M — deps: 1.2.** Create `src/core/changes/suggest.ts` ($-helpers: insert/delete-as-suggestion, mark split/merge), `src/features/editor/rich/TrackedChangesPlugin.tsx` (intercept `CONTROLLED_TEXT_INSERTION`/`PASTE`/`CUT`/`KEY_BACKSPACE`/`KEY_DELETE` when suggesting; IME: act only on final insertions post-composition — top correctness risk). Modify `useEditorModeStore` (`editMode: direct|suggesting`), `RichSegmentEditor`, toolbar/palette toggle, `settingsRepo` (stable `authorId` uuid in `profile.identity`). **DoD**: no keystroke destroys prior text in suggesting mode; `target` follows D2; direct mode byte-identical to today.
+- **1.4 Accept/reject + Changes panel rework — M — deps: 1.3.** Create `src/core/changes/resolve.ts` (live `$accept/$rejectChange` + headless `resolveChangeInRich` for unmounted segments), `src/features/editor/rich/ChangeHoverCard.tsx`. Rework `changes/ChangesPanel.tsx` to list *pending* suggestions live (old version-diff view becomes a "History" sub-tab); `segmentRepo.resolveChange` routes through `segmentRepo.update` so bridges/versioning see it. Accept-all/reject-all per segment & project. **DoD**: full suggest → review → accept/reject loop works locally.
+- **1.5 Range-anchored threaded comments — M — deps: 1.2 (parallel to 1.3/1.4).** Create `CommentMarkNode` (thin `MarkNode` subclass), `comments/CommentsPanel.tsx` (project-wide, filter, click-to-jump). Extend `SegmentComment` with `parentId?/anchorId?/quote?` (additive), carry through `segmentCrdt.ts` comment mapping; "comment on selection" in toolbar; resolve dims/removes mark. Comments stay inline on segments (existing Dexie + Y.Array path — zero new sync work). **DoD**: select → comment → highlighted range + thread; replies/resolve; survives Yjs round-trip + restore.
+- **1.6 Review polish — S — deps: 1.4, 1.5.** Confirm blocked while pending changes exist (toast); next/prev-change keyboard nav + palette commands; revision stage pins Changes/Comments panels; show/hide marks toggle. **DoD**: pending segments can't reach TM; keyboard review works. *Milestone 1 = Google-Docs-style review, fully local.*
+
+### Milestone 2 — Document model, DOCX fidelity, preview, DOCX export
+- **2.1 Document/block schema (Dexie v6) + backfill — M — deps: 0.1.** Create `src/core/documents/model.ts` (`DocumentEntity`, `Block` with kind/depth/attrs/`InlineRun[]` source runs, tables/images), `documentRepo`/`blockRepo`, `fromSegments.ts` backfill. Modify `db.ts` (v6: `documents`, `blocks`, `assets`; upgrade backfills monolingual projects), `Segment.blockId?`, `segmentCrdt.ts` SCALAR_FIELDS, import flow stamps `blockId`. Blocks not mirrored to Yjs in v1 (immutable post-import). **DoD**: fresh + upgraded projects have consistent block trees; no UI change.
+- **2.2 DOCX import fidelity — M — deps: 2.1.** Create `src/core/documents/docxImport.ts`: mammoth with explicit `styleMap` + `convertImage` → assets; walker captures strong/em/u/sub/sup/a runs, tables, images. `segmentation/docx.ts` delegates, keeping the `ParsedSegment` contract. Store original .docx blob in `assets` for future re-import. Fixture-based tests. **DoD**: styled DOCX yields blocks with runs/tables/images; segment output strictly richer than before.
+- **2.3 Document preview pane — M — deps: 2.1.** `preview/DocumentPreview.tsx` + pure `core/documents/render.ts`: block tree with translated targets substituted (fallback source + untranslated tint), source/target/side-by-side, click-block→focus-segment. **DoD**: live assembled translated document while editing.
+- **2.4 Clean DOCX export — M — deps: 2.2, 2.3.** `core/documents/toDocx.ts` (dynamic `import('docx')`): blocks + `targetRich` formatting runs → headings/lists/links/tables/images. Pending changes export as accepted-preview (D2) with warning. Test by unzipping the buffer and asserting `document.xml`. **DoD**: import → translate → export opens correctly in Word. *Milestone 2 = document revamp, fully local.*
+
+### Milestone 3 — Accounts (Supabase) + synced preferences & personal resources
+- **3.1 Supabase bootstrap + Google/magic-link auth + PKCE/HashRouter handling — M — deps: 0.1.** Create `src/storage/cloud/supabaseClient.ts` (lazy singleton, `flowType:'pkce'`, only when `VITE_SUPABASE_URL` set), `authBootstrap.ts` (pre-router `?code=` exchange + `history.replaceState`), `features/account/` (`useAuthStore`, `SignInDialog`, `AccountMenu`), `supabase/migrations/0001_profiles.sql` (profiles + RLS + signup trigger), `docs/cloud.md`. Modify `main.tsx` (await bootstrap), `TopBar`, CI (build once with dummy env). Signed-out behavior byte-identical; no supabase chunk in initial graph when unset. **DoD**: OAuth + magic link round-trip on the deployed hash-routed site.
+- **3.2 Microsoft + Apple providers + account settings — S — deps: 3.1.** Provider buttons driven by `VITE_AUTH_PROVIDERS` (deploys without Apple's paid setup hide the button, not break). `AccountSettingsSection` (display name → profiles, linked identities, sign out). Document Azure app registration + Apple Developer Program requirement. **DoD**: configured providers work; unconfigured are hidden.
+- **3.3 Synced preferences/settings/layout — M — deps: 3.1.** `0002_user_settings.sql` (`user_settings(user_id,key,value jsonb,updated_at)` RLS owner-only); `cloud/settingsSync.ts` — pull-on-signin, push-on-change, per-key LWW; `SYNCED_SETTINGS_KEYS` allowlist (editor prefs, layout, lookup, spell; **MT API keys never sync**). Dexie stays the read path — sync is a background reconciler. **DoD**: sign in on machine B → prefs/layout arrive; local-only unaffected.
+- **3.4 Personal term bank + TM sync — M — deps: 3.3.** `0003_personal_resources.sql` (owner-only rows + tombstones); generic `cloud/rowSync.ts` (cursor, LWW, tombstones); Dexie v7 `syncTombstones` table; glossary/tm repos stamp `updatedAt` + tombstone deletes when signed in; bundled corpora never sync. **DoD**: two devices converge; deletes don't resurrect. *Milestone 3 = accounts shipped.*
+
+### Milestone 4 — Cloud projects + real-time collaboration
+- **4.1 Cloud project schema + RLS + publish/join — M — deps: 3.1.** `0004_projects.sql`: `projects`, `project_members(role enum: project_manager|translator|revisor)`, `ydoc_state(state bytea, seq)`, `ydoc_updates(update bytea, author_id default auth.uid())`, member-scoped RLS + `is_project_member`/`has_role` helpers, `project-files` bucket. `cloud/projectCloud.ts`: `publishProject` (seeds cloud from local Yjs doc — pre-publish history survives), `openCloudProject` (hydrates local Dexie project). `Project.cloud?: {id, role}`. Publish is owner-only UX; joining is member-only (prevents duplicate cloud projects). **DoD**: publish; second account opens it; non-members RLS-denied.
+- **4.2 `SupabaseRealtimeTransport` + chunking — M — deps: 4.1.** Implements the existing `SyncTransport` interface unchanged (`start/send/onMessage/destroy`, `hello/bye/state-request/state/update/presence`). Private broadcast channel `project:{cloudId}`; pure `chunking.ts` splits payloads >60KB (Realtime caps ~250KB; base64 +33%); outbound updates debounce-merged via `Y.mergeUpdates` (300ms). Initial state comes from Postgres (4.3), never broadcast for large docs. Transport picked in `createTransport` when project is cloud + signed in; BroadcastChannel/LAN paths untouched. **DoD**: two browsers exchange live edits; protocol unit-covered.
+- **4.3 Postgres persistence loop — M — deps: 4.2.** `cloud/ydocPersistence.ts`: on open, fetch `ydoc_state` + newer updates, apply as `ORIGIN_REMOTE`; local updates appended debounced; client-side compaction >200 rows via optimistic `claim_compaction(project_id, expected_seq)` RPC (`0005_compaction.sql`). Realtime is latency, Postgres is truth; offline members converge by replay (Yjs idempotent). **DoD**: offline-A/online-B edits converge on reconnect; updates table bounded.
+- **4.4 Live collab UX: cursors, leases, attribution — M — deps: 4.3, 1.6.** Presence gains `editingSegmentId`/`userId`/`caret`; deterministic lease (lowest peerId) renders other peers' segment read-only with name chip + live preview; `RemoteCaretOverlay` reuses offset→DOM mapping from `src/core/spell/offsets.ts`. Remote suggesting-mode edits arrive pre-attributed via `ChangeMarkNode` — "everyone's changes tracked" falls out of M1 + sync. Guard in `reverseBridge.ts`: rebuild rich from plain on detected stale-LWW mismatch. **DoD**: live cursors; simultaneous entry yields one editor + one viewer; lease releases on blur. *Milestone 4 = real-time collaboration shipped.*
+
+### Milestone 5 — Roles & workflow
+- **5.1 Members & roles management — M — deps: 4.1.** `cloud/members.ts` (invite by email via profiles lookup, change role, remove), `MembersPanel`, `0006_member_policies.sql` (PM-only member writes; trigger keeps ≥1 PM). **DoD**: PM invites translator + revisor; non-PM read-only; server rejects non-PM writes.
+- **5.2 Role-gated editing workflow — M — deps: 5.1, 1.6.** Pure `core/workflow/rules.ts`: `(role, stage, status) → {canEditDirect, mustSuggest, canResolveChanges, canReview, canManage}`; `projects.stage (translation|review|final)` + `deadline` (`0007_workflow.sql`, PM-only update). Translator in review stage is forced into suggesting (toggle disabled); accept/reject visible only to revisor/PM; local-only projects = PM-of-self (all permissive, zero regression). **DoD**: full role matrix works; local-only unchanged.
+- **5.3 Approval + attribution in versioning — S — deps: 5.2.** `ProjectVersion.authorId?/approval?`; revisor/PM "Sign off" creates a labeled approval version; one stable author identity across marks, comments, versions, presence. **DoD**: sign-off flow; attribution unified. *Milestone 5 = roles shipped → **web v2 launch candidate**.*
+
+### Milestone 6 — Extensions & connectors
+- **6.1 Extension registry + MT providers as built-in addons — M — deps: 0.1.** `core/extensions/types.ts` (`ExtensionManifest {id, name, version, kinds, permissions, builtIn}`; kinds: `mt-provider|qa-rule|panel|import-format|export-format|storage-connector`), `registry.ts` (enablement persisted in settings), `builtins.ts`; `src/extensions/mt/*` manifest wrappers delegating to existing `src/core/mt/*` (no logic moves); `mt/index.ts` resolves via registry. Existing MT tests untouched prove behavior preservation. **DoD**: four MT providers run through registry; disabling removes from panel.
+- **6.2 QA rules + formats as addons + Add-ons page — M — deps: 6.1.** Wrap `QA_CODES` rules and XLIFF/TMX/TBX/CSV/DOCX-export as contributions; `features/addons/AddonsPage.tsx` (catalogue, enable/disable, permission display, "suggested/built-in" UX); `/addons` route + nav. QA falls back to all-on when registry empty (keeps tests). **DoD**: Add-ons page lists everything pluggable; toggling a QA addon changes QA output.
+- **6.3 Google Drive connector — M — deps: 6.1, 2.4.** `src/extensions/connectors/gdrive/` (Google Identity Services token client, `drive.file` scope — avoids verification burden; REST list/download/upload; token in memory/session only), generic `ConnectorFilePicker`; "From cloud" in ImportDialog + "Save to cloud" on DOCX export. Pure client OAuth — works for local-only users too. **DoD**: import DOCX from Drive; export back to Drive.
+- **6.4 OneDrive connector — S — deps: 6.3.** `src/extensions/connectors/onedrive/` via dynamic `@azure/msal-browser` (`loginPopup` — avoids redirect/hash-router interplay), Graph `Files.ReadWrite`. **DoD**: same loop on OneDrive; both connectors appear as addons with permission labels. *Milestone 6 = extensions + connectors shipped.*
+
+### Roadmap tail (not scheduled)
+Tauri desktop (real mDNS LAN transport, native FS, iCloud via CloudKit), passkeys (native Supabase when available, else Edge-Function WebAuthn), marketplace + sandboxed third-party extensions (iframe/worker RPC host consuming the 6.1 manifest), project branches/merge atop `versions`, `@lexical/yjs` character-level same-segment co-editing (replacing lease+LWW), optional E2E encryption for cloud projects, Edge-Function compaction + server-side workflow validation, comments notifications.
+
+## 5. Build automation: prompts + Routines (Pro-calibrated)
+
+### 5.1 Mechanism
+- **The repo is the coordination point.** [`STATUS.md`](./STATUS.md) tracks one line per phase (`pending / in-progress / in-review / done (PR #n)`); [`prompts/phase-N-N.md`](./prompts/) holds the per-phase prompt. Every autonomous session reads STATUS first — sessions are stateless and order-safe.
+- **One daily Routine, not 20+ triggers.** A single Routine (fresh session per fire) runs [`prompts/phase-runner.md`](./prompts/phase-runner.md): read STATUS → if the previous phase's PR is open, check CI/review comments, fix if needed, stop → else pick the next `pending` phase whose deps are `done`, load its prompt file, implement exactly that scope, run tests, push `claude/revamp-phase-N-N`, open draft PR, update STATUS, subscribe to PR activity. Robust to slipping: nothing double-fires; a skipped day costs nothing.
+- **The owner is the merge gate.** Each phase = one draft PR reviewed/merged by the owner; the next session only proceeds past a merged (or explicitly skipped) predecessor.
+- **Pro-sizing rules baked into every prompt**: one coherent slice; no drive-by refactors; on scope overflow, ship the core slice green and append the remainder to STATUS as phase N.N.1. Never leave the branch red.
+
+### 5.2 Schedule
+- Routine: daily at **10:00 UTC (07:00 América/São_Paulo — adjustable)**, fresh session per fire, push + email completion notifications on.
+- Expected calendar: ~4–5 weeks for Milestones 0–5 (web v2 launch candidate), +1–2 weeks for Milestone 6, at ~1 merged phase/day with occasional review-fix days. Phases 1.5, 2.x and 6.1 can interleave when a cloud phase is blocked on review.
+- Manual override: paste any `prompts/phase-N-N.md` into a fresh session whenever spare quota exists; STATUS keeps everything consistent.
+- **Supabase prerequisite (one-time, human)**: create the Supabase project + OAuth apps (Google, Azure; Apple when ready) before Milestone 3 starts; `docs/cloud.md` (written in 3.1) is the checklist. Free tier pauses after ~1 week idle — plan a keep-alive or upgrade before inviting collaborators.
+
+## 6. Risks & gotchas (mitigations designed in)
+
+1. **OAuth on GH Pages + HashRouter**: pin `flowType:'pkce'`; strip `?code=` pre-router; exact-origin redirect allow-list (prod + localhost); verify Workbox never caches Supabase calls.
+2. **Realtime payload/rate limits**: ~250KB cap → 60KB chunking, `Y.mergeUpdates` debouncing, initial state via Postgres only.
+3. **Supabase free-tier pauses after ~1 week idle** + 500MB DB + connection caps: keep-alive or paid tier before real collaboration; compaction bounds `ydoc_updates`.
+4. **Suggesting-mode IME/composition** is the hardest correctness problem (Milestone 1): act only on final controlled insertions; e2e coverage; direct mode as escape hatch.
+5. **LWW `targetRich` under concurrency**: the lease is load-bearing; `reverseBridge` guard rebuilds rich from plain on mismatch.
+6. **mammoth fidelity ceiling** (no headers/footers/text boxes/columns): capture what it exposes, keep the original .docx in `assets` for future OOXML-native re-import.
+7. **Apple OAuth requires paid Apple Developer Program** ($99/yr): provider list is env-driven; builds without it degrade gracefully.
+8. **Bundle size**: supabase-js, docx, msal are dynamic-import only; add an initial-chunk size check to CI when convenient.
+9. **RLS cannot inspect Yjs blobs**: content-level role rules are client-side; authored append-only update log is the audit trail — documented honestly.
+10. **Cloud tests**: vitest never hits real Supabase (injectable client, mirroring `fetchImpl` pattern in `src/core/mt/`); RLS verified via documented manual matrix / `supabase test`.
+
+## 7. Verification
+
+- **Per phase**: `pnpm typecheck && pnpm test:unit && pnpm build` + phase-specific Playwright specs, enforced by the CI workflow (0.1) on every PR — this is the guardrail autonomous sessions depend on.
+- **Milestone 1**: e2e `tracked-changes.spec.ts` + `comments-anchored.spec.ts` — suggest, accept/reject, anchored thread, confirm-gate.
+- **Milestone 2**: import styled DOCX fixture → preview → export → unzip-assert `document.xml`; open in Word manually once.
+- **Milestone 3/4/5 (needs a real Supabase project)**: manual matrix in `docs/cloud.md` — OAuth round-trip on the deployed site; two-browser live edit; offline/reconnect convergence; RLS denial for non-members; role matrix (translator forced-suggest, revisor accept/reject, PM manage). Two-tab BroadcastChannel e2e covers lease/presence logic without a backend.
+- **Milestone 6**: MT/QA behavior-preservation proven by untouched existing tests; connector loop tested with mocked fetch + one manual Drive/OneDrive round-trip.
