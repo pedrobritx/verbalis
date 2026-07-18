@@ -79,3 +79,64 @@ test('suggesting mode: deletion is tracked and never destroys prior text', async
   // The proposed target drops the pending deletion.
   await expect.poll(() => readSegTarget(page, 1)).toBe('')
 })
+
+test('accept an insertion in the editor via the hover card', async ({ page }) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+  await t1.pressSequentially('Hola')
+  await expect(t1.locator('[data-change-type="insert"]')).toHaveText('Hola')
+  // Wait for the suggestion to persist before resolving (the resolver reads the
+  // stored targetRich).
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+
+  // Click the mark to open the hover card, then accept.
+  await t1.locator('[data-change-type="insert"]').click()
+  await expect(page.getByTestId('change-hover-card')).toBeVisible()
+  await page.getByTestId('change-hover-accept').click()
+
+  // The mark is gone; the text stays as an accepted, normal insertion.
+  await expect(t1.locator('[data-change-type="insert"]')).toHaveCount(0)
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+})
+
+test('accept a suggestion from the Changes panel', async ({ page }) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+  await t1.pressSequentially('Hola')
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+
+  // The Changes panel (Suggestions tab) lists the pending change in the Revise stage.
+  await page.getByTestId('stage-revise').click()
+  await expect(page.getByTestId('suggestions-results')).toBeVisible()
+  await page.locator('[data-testid^="suggestion-accept-"]').first().click()
+
+  // Nothing left pending; the accepted text is the segment target.
+  await expect(page.getByTestId('suggestions-empty')).toBeVisible()
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+})
+
+test('reject a suggestion from the Changes panel removes the proposed insertion', async ({
+  page,
+}) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+  await t1.pressSequentially('Hola')
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+
+  await page.getByTestId('stage-revise').click()
+  await expect(page.getByTestId('suggestions-results')).toBeVisible()
+  await page.locator('[data-testid^="suggestion-reject-"]').first().click()
+
+  // Rejecting the insertion drops the proposed text entirely.
+  await expect(page.getByTestId('suggestions-empty')).toBeVisible()
+  await expect.poll(() => readSegTarget(page, 1)).toBe('')
+})
