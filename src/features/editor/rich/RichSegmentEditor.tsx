@@ -120,13 +120,18 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="flex flex-col gap-1">
-        {focused && !locked && (
-          <div className="flex flex-wrap items-center gap-1">
-            <FormatToolbar />
-            <TagStrip source={source} inlineTags={inlineTags} />
-          </div>
-        )}
+        {/* The focus-time toolbar floats above the editor as an overlay rather
+            than an in-flow row. In-flow, mounting/unmounting it on focus/blur
+            reflowed the whole segment list, which could swallow the very next
+            click on unrelated chrome (e.g. the stage switcher). An absolute
+            overlay keeps surrounding layout stable. */}
         <div className="relative" ref={editorBoxRef}>
+          {focused && !locked && (
+            <div className="absolute bottom-full left-0 z-20 mb-1 flex flex-wrap items-center gap-1">
+              <FormatToolbar />
+              <TagStrip source={source} inlineTags={inlineTags} />
+            </div>
+          )}
           <RichTextPlugin
             contentEditable={
               <ContentEditable

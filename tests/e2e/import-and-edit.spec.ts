@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { targetEditor, setTarget } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -23,9 +24,8 @@ test('import a markdown file, edit a segment, confirm with Ctrl+Enter', async ({
   // 1 heading + 2 paragraph sentences * 2 paragraphs + 2 list items + 1 code + 2 blockquote = 10
   await expect(list.locator('[data-segment-row]')).toHaveCount(10)
 
-  const target1 = page.getByTestId('target-1')
-  await target1.click()
-  await target1.fill('Translated sentence.')
+  const target1 = targetEditor(page, 1)
+  await setTarget(page, 1, 'Translated sentence.')
 
   // wait for autosave to flip status to draft
   const row1Pill = list.locator('[data-segment-row]').nth(1).getByTestId('status-pill')

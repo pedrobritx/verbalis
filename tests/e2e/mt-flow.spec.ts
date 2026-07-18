@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { targetEditor, expectTargetText } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const MD_FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -61,7 +62,7 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
   await expect(page.getByTestId('mt-panel')).toBeVisible()
 
   // Focus first segment, click Translate.
-  const firstTarget = page.getByTestId('target-1')
+  const firstTarget = targetEditor(page, 1)
   await firstTarget.click()
 
   await page.getByTestId('mt-translate-button').click()
@@ -71,7 +72,7 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
 
   // Apply.
   await page.getByTestId('mt-apply').click()
-  await expect(firstTarget).toHaveValue('Frase traducida por LT.')
+  await expectTargetText(page, 1, 'Frase traducida por LT.')
 
   // Status pill should flip to draft (was untranslated).
   const pill = page

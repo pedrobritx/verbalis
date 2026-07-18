@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { targetEditor, setTarget, expectTargetText } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const MD_FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -28,9 +29,8 @@ test('TM auto-populates on confirm and surfaces matches in a second project', as
 }) => {
   // Project 1: translate the first paragraph sentence.
   await importSample(page, 'first')
-  const target1 = page.getByTestId('target-1')
-  await target1.click()
-  await target1.fill('Frase traducida uno.')
+  const target1 = targetEditor(page, 1)
+  await setTarget(page, 1, 'Frase traducida uno.')
   await target1.press('Control+Enter')
 
   const row1Pill = page
@@ -44,7 +44,7 @@ test('TM auto-populates on confirm and surfaces matches in a second project', as
   await importSample(page, 'second')
 
   // Focus the segment with the same source.
-  const target1B = page.getByTestId('target-1')
+  const target1B = targetEditor(page, 1)
   await target1B.click()
 
   const panel = page.getByTestId('tm-panel')
@@ -57,7 +57,7 @@ test('TM auto-populates on confirm and surfaces matches in a second project', as
   // Apply via Ctrl+1.
   await target1B.focus()
   await page.keyboard.press('Control+1')
-  await expect(target1B).toHaveValue('Frase traducida uno.')
+  await expectTargetText(page, 1, 'Frase traducida uno.')
 
   // Status should become draft (was untranslated).
   const row1BPill = page
@@ -70,8 +70,8 @@ test('TM auto-populates on confirm and surfaces matches in a second project', as
 
 test('TM management page lists entries and exports TMX', async ({ page }) => {
   await importSample(page, 'first')
-  const target1 = page.getByTestId('target-1')
-  await target1.fill('Salida exportada.')
+  const target1 = targetEditor(page, 1)
+  await setTarget(page, 1, 'Salida exportada.')
   await target1.press('Control+Enter')
 
   // Wait for the TM write to complete before navigating away.
