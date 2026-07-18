@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { setTarget, expectTargetText } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -48,10 +49,6 @@ test('two peers discover each other and sync edits over the LAN transport', asyn
   await expect(page2.getByTestId('peers-list').locator('li')).toHaveCount(1, { timeout: 10_000 })
 
   // A live edit on tab 1 converges on tab 2.
-  const target1 = page1.getByTestId('target-1')
-  await target1.click()
-  await target1.fill('Synced across peers.')
-  await expect(page2.getByTestId('target-1')).toHaveValue('Synced across peers.', {
-    timeout: 10_000,
-  })
+  await setTarget(page1, 1, 'Synced across peers.')
+  await expectTargetText(page2, 1, 'Synced across peers.', { timeout: 10_000 })
 })

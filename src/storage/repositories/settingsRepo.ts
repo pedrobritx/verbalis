@@ -52,8 +52,9 @@ export interface EditorSettings {
   qaRules: QARuleToggles
   /**
    * Use the rich-text target editor (bold/italic/underline/sub-sup, case
-   * transforms) instead of the plain textarea. Opt-in while the rich editor
-   * foundation matures; code segments always stay plain.
+   * transforms, and — from Milestone 1 — tracked changes and anchored
+   * comments) instead of the plain textarea. Default on; translators can opt
+   * out to the plain editor. Code segments always stay plain regardless.
    */
   richEditing: boolean
   /** AutoCorrect / abbreviation expansion applied as the translator types. */
@@ -64,7 +65,7 @@ export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
   autoPropagate: true,
   pretranslateThreshold: 0.75,
   qaRules: { ...DEFAULT_QA_RULES },
-  richEditing: false,
+  richEditing: true,
   autocorrect: DEFAULT_AUTOCORRECT_SETTINGS,
 }
 

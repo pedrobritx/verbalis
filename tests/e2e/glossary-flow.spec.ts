@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { targetEditor, expectTargetText } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const MD_FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -62,7 +63,7 @@ test('a glossary term is surfaced in the editor and can be inserted', async ({ p
   await expect(page).toHaveURL(/#\/project\//)
 
   // Focus the first paragraph sentence (index 1 in the sample fixture).
-  const target = page.getByTestId('target-1')
+  const target = targetEditor(page, 1)
   await target.click()
 
   // The sidebar stacks per-stage sections; Glossary is part of the default
@@ -77,5 +78,5 @@ test('a glossary term is surfaced in the editor and can be inserted', async ({ p
   // The primary insert button carries the candidate matching the project's
   // target language (es → "párrafo"); scope to the first hit card.
   await page.getByTestId('glossary-hit-0').getByTestId('glossary-insert-primary').click()
-  await expect(target).toHaveValue(/párrafo/)
+  await expectTargetText(page, 1, /párrafo/)
 })

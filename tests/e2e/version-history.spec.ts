@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { targetEditor, setTarget, expectTargetText } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
@@ -18,9 +19,8 @@ test('save a named version and restore the project to it', async ({ page }) => {
   await expect(list).toBeVisible()
 
   // Translate and confirm a segment, then save a named version of that state.
-  const target1 = page.getByTestId('target-1')
-  await target1.click()
-  await target1.fill('First translation.')
+  const target1 = targetEditor(page, 1)
+  await setTarget(page, 1, 'First translation.')
   const row1Pill = list.locator('[data-segment-row]').nth(1).getByTestId('status-pill')
   await expect(row1Pill).toHaveAttribute('data-status', 'draft', { timeout: 2000 })
   await target1.press('Control+Enter')
@@ -36,14 +36,13 @@ test('save a named version and restore the project to it', async ({ page }) => {
   await expect(milestone).toHaveCount(1)
 
   // Change the translation after the version was saved; let autosave flush.
-  await target1.click()
-  await target1.fill('Second translation.')
+  await setTarget(page, 1, 'Second translation.')
   await page.waitForTimeout(500)
-  await expect(target1).toHaveValue('Second translation.')
+  await expectTargetText(page, 1, 'Second translation.')
 
   // Restore the project to the saved version.
   await milestone.getByTestId('version-restore').click()
   await milestone.getByTestId('version-restore-confirm').click()
 
-  await expect(target1).toHaveValue('First translation.')
+  await expectTargetText(page, 1, 'First translation.')
 })
