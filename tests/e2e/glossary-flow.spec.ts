@@ -65,8 +65,8 @@ test('a glossary term is surfaced in the editor and can be inserted', async ({ p
   const target = page.getByTestId('target-1')
   await target.click()
 
-  // Switch the sidebar to the Glossary tab.
-  await page.getByTestId('sidebar-tab-glossary').click()
+  // The sidebar stacks per-stage sections; Glossary is part of the default
+  // translate-stage layout, so it is already on screen.
   const glossaryPanel = page.getByTestId('glossary-panel')
   await expect(glossaryPanel).toBeVisible()
   const hit = page.getByTestId('glossary-hit-0')
@@ -74,6 +74,8 @@ test('a glossary term is surfaced in the editor and can be inserted', async ({ p
   await expect(hit).toContainText('paragraph')
 
   await target.focus()
-  await page.getByTestId('glossary-insert-0').click()
+  // The primary insert button carries the candidate matching the project's
+  // target language (es → "párrafo"); scope to the first hit card.
+  await page.getByTestId('glossary-hit-0').getByTestId('glossary-insert-primary').click()
   await expect(target).toHaveValue(/párrafo/)
 })

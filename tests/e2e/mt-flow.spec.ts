@@ -38,16 +38,18 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
   // MyMemory is enabled by default — turn it off first so we can observe the
   // empty state and then exercise the LibreTranslate-only path.
   await page.goto('/#/settings')
+  await page.getByTestId('settings-nav-mt').click()
   await page.getByTestId('mt-mymemory-enabled').uncheck()
 
   await importSample(page, 'mt-project')
 
-  // Switch to the MT tab — should show empty state.
-  await page.getByTestId('sidebar-tab-mt').click()
+  // The MT section is part of the default translate-stage sidebar layout —
+  // it should show the empty state.
   await expect(page.getByTestId('mt-empty')).toBeVisible()
 
   // Configure LibreTranslate in Settings.
   await page.goto('/#/settings')
+  await page.getByTestId('settings-nav-mt').click()
   await page.getByTestId('mt-libretranslate-enabled').check()
   await page.getByTestId('mt-libre-endpoint').fill(LIBRE_ENDPOINT)
   await page.getByTestId('mt-libretranslate-default').check()
@@ -56,7 +58,7 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
   await page.goto('/')
   await page.getByText('mt-project').click()
   await expect(page).toHaveURL(/#\/project\//)
-  await page.getByTestId('sidebar-tab-mt').click()
+  await expect(page.getByTestId('mt-panel')).toBeVisible()
 
   // Focus first segment, click Translate.
   const firstTarget = page.getByTestId('target-1')
@@ -82,6 +84,7 @@ test('MT tab shows empty state, then translates after LibreTranslate is enabled'
 
 test('Settings shows semantic TM section with build button', async ({ page }) => {
   await page.goto('/#/settings')
+  await page.getByTestId('settings-nav-semantic').click()
   await expect(page.getByTestId('semantic-enabled')).toBeVisible()
   await expect(page.getByTestId('semantic-model')).toContainText('paraphrase-multilingual')
   await expect(page.getByTestId('semantic-build')).toBeVisible()

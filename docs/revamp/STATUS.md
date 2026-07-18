@@ -12,7 +12,7 @@ Rules for autonomous sessions:
 | Phase | Name | Size | Depends on | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Bootstrap: roadmap, status, prompts, vision docs in repo | S | — | in-review |
-| 0.1 | CI hardening (typecheck + vitest + Playwright on PRs) | S | — | pending |
+| 0.1 | CI hardening (typecheck + vitest + Playwright on PRs) | S | — | in-review (PR #37) |
 | 1.1 | Change model core + ChangeMarkNode + derivation semantics | M | 0.1 | pending |
 | 1.2 | Rich editing default-on + Playwright migration | M | 1.1 | pending |
 | 1.3 | Suggesting mode (edits become tracked suggestions) | M | 1.2 | pending |
@@ -42,3 +42,5 @@ Rules for autonomous sessions:
 ## Log
 
 - 2026-07-17 — Phase 0: plan drafted from the five vision documents + codebase exploration; committed to `claude/verbalis-ide-revamp-plan-bvvrzz`.
+- 2026-07-18 — Phase 0.1: CI workflow stacked on PR #37 (same branch as Phase 0, owner-approved) so the new CI validates the bootstrap PR itself. Deviation from ROADMAP wording: triggers on `pull_request` only (not non-main pushes) to avoid double-running CI on every PR push; every phase ships as a PR, so coverage is identical.
+- 2026-07-18 — Phase 0.1 also repaired 5 e2e specs that had silently rotted on `main` (nothing ran them in CI — exactly why this phase exists): the sidebar's tab strip became stacked sections (`sidebar-tab-*` testids gone), Settings gained sectioned navigation (`settings-nav-*` click required), glossary insert buttons were renamed (`glossary-insert-primary/secondary`), and a duplicate `peers-panel` testid in `SidebarPanel.tsx` broke strict mode (app fix: wrapper testid removed). Full suite green: 498 unit / 15 e2e.
