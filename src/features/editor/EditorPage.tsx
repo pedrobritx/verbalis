@@ -12,6 +12,7 @@ import { SidebarPanel } from './SidebarPanel'
 import { MobileSidebarSheet } from './MobileSidebarSheet'
 import { StatusFilterBar } from './StatusFilterBar'
 import { StageSwitcher } from './StageSwitcher'
+import { EditModeToggle } from './EditModeToggle'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
@@ -476,7 +477,10 @@ export default function EditorPage() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <StageSwitcher />
+          <div className="flex flex-wrap items-center gap-2">
+            <StageSwitcher />
+            <EditModeToggle />
+          </div>
           <EditorToolbar
             stage={stage}
             onPretranslate={() => void runPretranslate()}

@@ -37,6 +37,13 @@ export const DEFAULT_SPELL_SETTINGS: SpellSettings = {
 export interface ProfileSettings {
   /** Name attached to comments and, later, tracked changes / sync peers. */
   displayName: string
+  /**
+   * Stable local author id, minted once and persisted. Used to attribute and
+   * group tracked changes (and later comments / sync peers) independently of the
+   * mutable display name. Optional in storage for backward compatibility;
+   * `ensureLocalAuthor()` mints it on first use.
+   */
+  authorId?: string
 }
 
 export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
@@ -192,6 +199,33 @@ export function mergeProfileSettings(
 export async function getProfileSettings(): Promise<ProfileSettings> {
   const stored = await settingsRepo.get<Partial<ProfileSettings>>(PROFILE_SETTINGS_KEY)
   return mergeProfileSettings(stored)
+}
+
+/** The local author identity used to attribute tracked changes. */
+export interface LocalAuthor {
+  authorId: string
+  authorName: string
+}
+
+function newAuthorId(): string {
+  const c = globalThis.crypto as Crypto | undefined
+  if (c && typeof c.randomUUID === 'function') return c.randomUUID()
+  return `author-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+/**
+ * Read the local author, minting and persisting a stable `authorId` on first
+ * use so tracked-change attribution survives display-name edits and restarts.
+ * `authorName` falls back to a friendly default when the profile has no name.
+ */
+export async function ensureLocalAuthor(): Promise<LocalAuthor> {
+  const profile = await getProfileSettings()
+  let authorId = profile.authorId
+  if (!authorId) {
+    authorId = newAuthorId()
+    await settingsRepo.set(PROFILE_SETTINGS_KEY, { ...profile, authorId })
+  }
+  return { authorId, authorName: profile.displayName.trim() || 'You' }
 }
 
 export function mergeWebSearchSettings(
