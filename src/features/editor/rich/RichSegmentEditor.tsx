@@ -34,6 +34,9 @@ import { useEditorSelectionStore } from '../useEditorSelectionStore'
 import { FormatToolbar } from './FormatToolbar'
 import { $createInlineTagNode } from './InlineTagNode'
 import './LinkNode'
+// Side-effect import: registers ChangeMarkNode so getRichNodes() includes it and
+// a targetRich carrying tracked changes parses in the live editor (Milestone 1).
+import './ChangeMarkNode'
 import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 

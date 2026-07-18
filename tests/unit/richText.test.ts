@@ -5,10 +5,16 @@ import {
   $createParagraphNode,
   $createTextNode,
 } from 'lexical'
-import { richStateToPlain, RICH_NAMESPACE, getRichNodes } from '@/core/editor/richText'
-// Importing the node registers it via registerRichNode (side effect), so the
-// headless richStateToPlain editor can parse states that contain inline tags.
+import {
+  richStateToPlain,
+  richStateToOriginal,
+  RICH_NAMESPACE,
+  getRichNodes,
+} from '@/core/editor/richText'
+// Importing the nodes registers them via registerRichNode (side effect), so the
+// headless editors can parse states that contain inline tags and change marks.
 import { $createInlineTagNode } from '@/features/editor/rich/InlineTagNode'
+import { $createChangeMarkNode } from '@/features/editor/rich/ChangeMarkNode'
 import { splitTextWithTags } from '@/core/bilingual/inlineTags'
 import { parseXliff12, exportXliff12 } from '@/core/bilingual/xliff12'
 
@@ -74,6 +80,69 @@ describe('richStateToPlain', () => {
   it('round-trips adjacent and repeated tags', () => {
     const json = serializeWithTags('{1}{2} e {1}')
     expect(richStateToPlain(json)).toBe('{1}{2} e {1}')
+  })
+})
+
+// Tracked-changes derivation contract (ROADMAP §3 D2): the proposed plain text
+// (what TM/QA/search/export consume) includes pending insertions and excludes
+// pending deletions; the original text is the inverse. Non-change text projects
+// identically under both.
+describe('tracked-changes plain derivation', () => {
+  // "Hello [+brave ]new [-old ]world" — one insertion, one deletion.
+  function serializeWithChanges(): string {
+    const editor = createEditor({
+      namespace: RICH_NAMESPACE,
+      nodes: getRichNodes(),
+      onError: () => {},
+    })
+    editor.update(
+      () => {
+        const root = $getRoot()
+        const p = $createParagraphNode()
+        p.append($createTextNode('Hello '))
+        const ins = $createChangeMarkNode({
+          changeId: 'c1',
+          changeType: 'insert',
+          authorId: 'a',
+          authorName: 'Ada',
+          createdAt: 1,
+        })
+        ins.append($createTextNode('brave '))
+        p.append(ins)
+        p.append($createTextNode('new '))
+        const del = $createChangeMarkNode({
+          changeId: 'c2',
+          changeType: 'delete',
+          authorId: 'b',
+          authorName: 'Bo',
+          createdAt: 2,
+        })
+        del.append($createTextNode('old '))
+        p.append(del)
+        p.append($createTextNode('world'))
+        root.append(p)
+      },
+      { discrete: true },
+    )
+    return JSON.stringify(editor.getEditorState().toJSON())
+  }
+
+  it('proposed text includes insertions and excludes deletions', () => {
+    expect(richStateToPlain(serializeWithChanges())).toBe('Hello brave new world')
+  })
+
+  it('original text excludes insertions and includes deletions', () => {
+    expect(richStateToOriginal(serializeWithChanges())).toBe('Hello new old world')
+  })
+
+  it('richStateToOriginal matches richStateToPlain when there are no changes', () => {
+    const json = serializeWithText('O Art. 5º garante direitos.')
+    expect(richStateToOriginal(json)).toBe(richStateToPlain(json))
+  })
+
+  it('returns empty string for missing or unparseable input', () => {
+    expect(richStateToOriginal(undefined)).toBe('')
+    expect(richStateToOriginal('{ not valid')).toBe('')
   })
 })
 
