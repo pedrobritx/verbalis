@@ -1,6 +1,7 @@
 import {
   createEditor,
   $getRoot,
+  $isElementNode,
   type EditorThemeClasses,
   type Klass,
   type LexicalNode,
@@ -61,4 +62,61 @@ export function richStateToPlain(json: string | undefined): string {
   } catch {
     return ''
   }
+}
+
+/**
+ * Derive the *original* text — the inverse projection used for diff rendering
+ * (ROADMAP §3 D2). Where `richStateToPlain` yields the proposed text (pending
+ * insertions in, pending deletions out), this yields what the text was before
+ * the pending changes: insertions excluded, deletions included. Non-change text
+ * projects identically to `richStateToPlain` because it reuses the same headless
+ * editor and node text-projection; only `change-mark` nodes are flipped. Returns
+ * '' for empty or unparseable input rather than throwing.
+ */
+export function richStateToOriginal(json: string | undefined): string {
+  if (!json) return ''
+  const editor = createEditor({
+    namespace: RICH_NAMESPACE,
+    nodes: richNodes,
+    onError: () => {},
+  })
+  try {
+    const state = editor.parseEditorState(json)
+    let text = ''
+    state.read(() => {
+      text = originalTextOf($getRoot())
+    })
+    return text
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Recursively project a node to its original text. A `change-mark` node is
+ * detected by its type string (so core stays decoupled from the feature-layer
+ * node class) and flipped: a deletion mark — whose proposed projection is '' —
+ * contributes its wrapped text; an insertion mark contributes nothing. Every
+ * other node mirrors Lexical's own `getTextContent` block-joining behaviour.
+ */
+function originalTextOf(node: LexicalNode): string {
+  if (node.getType() === 'change-mark') {
+    const proposed = node.getTextContent()
+    if (proposed !== '') return '' // insertion: absent from the original
+    // deletion: recover the wrapped text its own getTextContent() suppresses.
+    if ($isElementNode(node)) return node.getChildren().map(originalTextOf).join('')
+    return ''
+  }
+  if ($isElementNode(node)) {
+    const children = node.getChildren()
+    let out = ''
+    children.forEach((child, i) => {
+      out += originalTextOf(child)
+      if ($isElementNode(child) && i !== children.length - 1 && !child.isInline()) {
+        out += '\n\n'
+      }
+    })
+    return out
+  }
+  return node.getTextContent()
 }

@@ -207,6 +207,23 @@
   background: var(--color-accent-fill);
 }
 
+/* Tracked-changes marks (ChangeMarkNode): a pending insertion (underlined) or a
+   pending deletion (struck through, text preserved). Coloured per author via the
+   --rsg-change-color custom property the node sets from colorForAuthor(). */
+.rsg-change-ins {
+  text-decoration: underline;
+  text-decoration-color: var(--rsg-change-color, var(--color-accent));
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  color: var(--rsg-change-color, inherit);
+}
+.rsg-change-del {
+  text-decoration: line-through;
+  text-decoration-color: var(--rsg-change-color, var(--color-muted));
+  color: var(--rsg-change-color, var(--color-muted));
+  opacity: 0.85;
+}
+
 /* Spell-check underline overlay: a non-mutating marker painted over a misspelled
    word in the rich editor. The plugin positions each empty button over the word,
    so the marker is a dashed bottom border (an empty box can't carry a
