@@ -140,3 +140,72 @@ test('reject a suggestion from the Changes panel removes the proposed insertion'
   await expect(page.getByTestId('suggestions-empty')).toBeVisible()
   await expect.poll(() => readSegTarget(page, 1)).toBe('')
 })
+
+test('confirm is blocked while a segment has pending suggestions', async ({ page }) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+  await t1.pressSequentially('Hola')
+  await expect.poll(() => readSegTarget(page, 1)).toBe('Hola')
+
+  const pill = page
+    .getByTestId('segment-list')
+    .locator('[data-segment-row]')
+    .nth(1)
+    .getByTestId('status-pill')
+  await expect(pill).toHaveAttribute('data-status', 'draft')
+
+  // Attempt to confirm — blocked with a message; status stays draft.
+  await page.getByTestId('confirm-1').click()
+  await expect(page.getByTestId('tool-message')).toContainText('pending')
+  await expect(pill).toHaveAttribute('data-status', 'draft')
+
+  // Accept the suggestion, then confirming succeeds.
+  await t1.locator('[data-change-type="insert"]').click()
+  await page.getByTestId('change-hover-accept').click()
+  await expect(t1.locator('[data-change-type="insert"]')).toHaveCount(0)
+  await page.getByTestId('confirm-1').click()
+  await expect(pill).toHaveAttribute('data-status', 'translated')
+})
+
+test('show/hide marks toggle sets the clean-view class on the segment list', async ({ page }) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+  await t1.pressSequentially('Hola')
+  await expect(t1.locator('[data-change-type="insert"]')).toBeVisible()
+
+  // Reach the Changes panel in the Revise stage; show all segments so the list
+  // (and our draft) stays rendered.
+  await page.getByTestId('stage-revise').click()
+  await page.getByTestId('status-filter-all').click()
+  const list = page.getByTestId('segment-list')
+  await expect(list).toBeVisible()
+  await expect(list).not.toHaveClass(/rsg-hide-marks/)
+
+  await page.getByTestId('changes-toggle-marks').click()
+  await expect(list).toHaveClass(/rsg-hide-marks/)
+})
+
+test('jump to next tracked change moves focus via the command palette', async ({ page }) => {
+  await importSample(page)
+  await page.getByTestId('edit-mode-suggesting').click()
+
+  // Put a suggestion in segment 3 (index 3), leave focus on segment 1.
+  const t3 = targetEditor(page, 3)
+  await t3.click()
+  await t3.pressSequentially('X')
+  await expect.poll(() => readSegTarget(page, 3)).toBe('X')
+  const t1 = targetEditor(page, 1)
+  await t1.click()
+
+  await page.keyboard.press('Control+k')
+  await page.getByTestId('cmd-next-change').click()
+
+  await expect(
+    page.locator('[data-segment-index="3"][data-focused="true"]'),
+  ).toBeVisible()
+})

@@ -377,7 +377,13 @@ export function SidebarPanel({
 
       {layout.map((t) => (
         <div key={t} data-testid={`${t}-panel`}>
-          <SidebarSection tab={t}>{renderPanel(t)}</SidebarSection>
+          {/* Pin the review panels in the Revise stage so they can't be removed. */}
+          <SidebarSection
+            tab={t}
+            removable={!(stage === 'revise' && (t === 'changes' || t === 'comments'))}
+          >
+            {renderPanel(t)}
+          </SidebarSection>
         </div>
       ))}
     </aside>

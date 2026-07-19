@@ -29,31 +29,46 @@ type Tab = 'suggestions' | 'history'
  */
 export function ChangesPanel({ projectId }: ChangesPanelProps) {
   const [tab, setTab] = useState<Tab>('suggestions')
+  const showMarks = useChangesStore((s) => s.showMarks)
+  const toggleMarks = useChangesStore((s) => s.toggleMarks)
   return (
     <div className="flex flex-col gap-2" data-testid="changes-panel">
-      <div
-        role="tablist"
-        aria-label="Changes view"
-        className="inline-flex items-center gap-1 rounded-md border p-0.5 text-xs"
-        style={{ borderColor: 'var(--color-border)' }}
-      >
-        {(['suggestions', 'history'] as Tab[]).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            data-testid={`changes-tab-${t}`}
-            onClick={() => setTab(t)}
-            className="rounded px-2 py-1 capitalize transition-colors"
-            style={{
-              background: tab === t ? 'var(--color-accent-fill)' : 'transparent',
-              color: tab === t ? 'var(--color-accent)' : 'var(--color-muted)',
-              fontWeight: tab === t ? 600 : 400,
-            }}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-2">
+        <div
+          role="tablist"
+          aria-label="Changes view"
+          className="inline-flex items-center gap-1 rounded-md border p-0.5 text-xs"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          {(['suggestions', 'history'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              data-testid={`changes-tab-${t}`}
+              onClick={() => setTab(t)}
+              className="rounded px-2 py-1 capitalize transition-colors"
+              style={{
+                background: tab === t ? 'var(--color-accent-fill)' : 'transparent',
+                color: tab === t ? 'var(--color-accent)' : 'var(--color-muted)',
+                fontWeight: tab === t ? 600 : 400,
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={toggleMarks}
+          data-testid="changes-toggle-marks"
+          aria-pressed={showMarks}
+          title={showMarks ? 'Hide tracked-change marks' : 'Show tracked-change marks'}
+          className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs transition-colors hover:bg-[var(--color-fill)]"
+          style={{ color: 'var(--color-muted)' }}
+        >
+          {showMarks ? <Eye size={13} /> : <EyeOff size={13} />}
+          {showMarks ? 'Marks' : 'Clean'}
+        </button>
       </div>
       {tab === 'suggestions' ? (
         <SuggestionsView projectId={projectId} />
