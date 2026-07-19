@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, PanelRight, PanelRightClose, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, PanelRight, PanelRightClose, Pencil, Trash2, BookOpenText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo, tallyStatus } from '@/storage/repositories/segmentRepo'
@@ -18,6 +18,9 @@ import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
 import { useChangesStore } from './changes/useChangesStore'
 import { hasPendingChanges } from '@/core/changes/extract'
+import { usePreviewStore } from './preview/usePreviewStore'
+import { DocumentPreview } from './preview/DocumentPreview'
+import { documentRepo } from '@/storage/repositories/documentRepo'
 import { EditorToolbar } from './tools/EditorToolbar'
 import { PeersPresenceChip } from './peers/PeersPresenceChip'
 import { FindReplaceDialog } from './findReplace/FindReplaceDialog'
@@ -81,6 +84,9 @@ export default function EditorPage() {
   const stage = useEditorModeStore((s) => s.stage)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
   const showMarks = useChangesStore((s) => s.showMarks)
+  const previewOpen = usePreviewStore((s) => s.open)
+  const togglePreview = usePreviewStore((s) => s.toggle)
+  const hasDocument = useLiveQuery(async () => !!(await documentRepo.getByProject(id ?? '')), [id])
   const setActions = useEditorActionsStore((s) => s.setActions)
   const setSidebarTab = useSidebarPanelStore((s) => s.setTab)
   const setPanelOpen = useSidebarPanelStore((s) => s.setOpen)
@@ -508,6 +514,22 @@ export default function EditorPage() {
           <div className="flex flex-wrap items-center gap-2">
             <StageSwitcher />
             <EditModeToggle />
+            {hasDocument && (
+              <button
+                type="button"
+                onClick={togglePreview}
+                aria-pressed={previewOpen}
+                data-testid="preview-toggle"
+                className="inline-flex items-center gap-1.5 rounded-full border h-8 px-3 text-footnote transition-colors hover:bg-[var(--color-fill)]"
+                style={{
+                  borderColor: previewOpen ? 'var(--color-accent)' : 'var(--color-border)',
+                  color: previewOpen ? 'var(--color-accent)' : 'var(--color-muted)',
+                }}
+              >
+                <BookOpenText size={14} />
+                Preview
+              </button>
+            )}
           </div>
           <EditorToolbar
             stage={stage}
@@ -520,6 +542,8 @@ export default function EditorPage() {
         </div>
 
         <EditorTips />
+
+        {hasDocument && previewOpen && <DocumentPreview projectId={id} />}
 
         {toolMsg && (
           <div
