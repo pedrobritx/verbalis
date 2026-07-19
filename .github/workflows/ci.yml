@@ -31,6 +31,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:unit
       - run: pnpm build
+      # Regression guard for the cloud path (ROADMAP §3.1): build once with the
+      # env flags set so a break in the signed-in code fails CI even though the
+      # local-only build above never loads it. Dummy values — never contacted.
+      - name: Build with cloud env configured
+        run: pnpm build
+        env:
+          VITE_SUPABASE_URL: https://dummy.supabase.co
+          VITE_SUPABASE_ANON_KEY: dummy-anon-key
+          VITE_AUTH_PROVIDERS: google,azure,apple
       - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4

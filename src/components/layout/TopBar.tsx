@@ -6,6 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { useCommandPaletteStore } from '@/features/command-palette/useCommandPaletteStore'
 import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
+import { AccountMenu } from '@/features/account/AccountMenu'
 import { OfflineBadge } from './OfflineBadge'
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -134,6 +135,7 @@ export function TopBar({ collapsed = false }: TopBarProps) {
         >
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+        <AccountMenu />
       </div>
     </header>
   )
