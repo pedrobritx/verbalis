@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   User,
+  UserCog,
   Languages,
   PencilRuler,
   SpellCheck,
@@ -11,6 +12,7 @@ import {
 import { APP_VERSION, BUILD_SHA, BUILD_TIME } from '@/lib/version'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { cn } from '@/lib/utils'
+import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
 import { MTSettingsSection } from './MTSettingsSection'
 import { SemanticTMSection } from './SemanticTMSection'
 import { LookupSettingsSection } from './LookupSettingsSection'
@@ -18,6 +20,7 @@ import { EditorSettingsSection } from './EditorSettingsSection'
 import { WebSearchSettingsSection } from './WebSearchSettingsSection'
 import { SpellSettingsSection } from './SpellSettingsSection'
 import { ProfileSettingsSection } from './ProfileSettingsSection'
+import { AccountSettingsSection } from '@/features/account/AccountSettingsSection'
 
 function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -51,10 +54,20 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-type SectionId = 'identity' | 'mt' | 'editor' | 'spell' | 'search' | 'semantic' | 'about'
+type SectionId =
+  | 'identity'
+  | 'account'
+  | 'mt'
+  | 'editor'
+  | 'spell'
+  | 'search'
+  | 'semantic'
+  | 'about'
 
 const NAV: Array<{ id: SectionId; label: string; icon: React.ReactNode }> = [
   { id: 'identity', label: 'Identity', icon: <User size={15} /> },
+  // Cloud accounts (3.2). Filtered out entirely on local-only deployments.
+  { id: 'account', label: 'Account', icon: <UserCog size={15} /> },
   { id: 'mt', label: 'Machine translation', icon: <Languages size={15} /> },
   { id: 'editor', label: 'Editor & QA', icon: <PencilRuler size={15} /> },
   { id: 'spell', label: 'Spell-check', icon: <SpellCheck size={15} /> },
@@ -63,12 +76,22 @@ const NAV: Array<{ id: SectionId; label: string; icon: React.ReactNode }> = [
   { id: 'about', label: 'About', icon: <Info size={15} /> },
 ]
 
+function visibleNav() {
+  return isCloudConfigured() ? NAV : NAV.filter((item) => item.id !== 'account')
+}
+
 function SectionContent({ id }: { id: SectionId }) {
   switch (id) {
     case 'identity':
       return (
         <Section title="Identity">
           <ProfileSettingsSection />
+        </Section>
+      )
+    case 'account':
+      return (
+        <Section title="Account">
+          <AccountSettingsSection />
         </Section>
       )
     case 'mt':
@@ -120,6 +143,7 @@ function SectionContent({ id }: { id: SectionId }) {
 
 export default function SettingsPage() {
   const [active, setActive] = useState<SectionId>('identity')
+  const nav = visibleNav()
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-6">
@@ -132,7 +156,7 @@ export default function SettingsPage() {
           data-testid="settings-nav"
           className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible md:sticky md:top-4 md:h-fit"
         >
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const isActive = active === item.id
             return (
               <button
