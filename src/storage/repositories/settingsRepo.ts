@@ -1,4 +1,4 @@
-import { db } from '@/storage/db'
+import { db, type SettingsRow } from '@/storage/db'
 import type { LookupSettings, MTSettings, SemanticTMSettings } from '@/core/types'
 import { DEFAULT_QA_RULES, type QARuleToggles } from '@/core/qa/types'
 import {
@@ -110,13 +110,48 @@ export const DEFAULT_SEMANTIC_TM: SemanticTMSettings = {
   threshold: 0.75,
 }
 
+/**
+ * Local settings-change fan-out (3.3). The cloud settings sync subscribes here to
+ * push allowlisted keys on change. Only genuine local edits notify — remote
+ * values applied by the sync go through {@link settingsRepo.applyRemote}, which
+ * stays silent so a pull can never echo straight back out as a push.
+ */
+type SettingsChangeListener = (key: string) => void
+const settingsListeners = new Set<SettingsChangeListener>()
+
+export function subscribeSettingsChange(listener: SettingsChangeListener): () => void {
+  settingsListeners.add(listener)
+  return () => settingsListeners.delete(listener)
+}
+
+function notifySettingsChange(key: string): void {
+  for (const listener of settingsListeners) listener(key)
+}
+
 export const settingsRepo = {
   get: async <T>(key: string): Promise<T | undefined> => {
     const row = await db.settings.get(key)
     return row?.value as T | undefined
   },
-  set: <T>(key: string, value: T) => db.settings.put({ key, value }),
-  delete: (key: string) => db.settings.delete(key),
+  /** The full row incl. sync metadata (`updatedAt`); undefined when absent. */
+  getRow: <T>(key: string) => db.settings.get(key) as Promise<SettingsRow<T> | undefined>,
+  set: <T>(key: string, value: T) => {
+    const p = db.settings.put({ key, value, updatedAt: Date.now() })
+    notifySettingsChange(key)
+    return p
+  },
+  /**
+   * Write a value received from the cloud, preserving the remote timestamp and
+   * *not* notifying local listeners (avoids a pull→push echo). Used only by the
+   * settings sync reconciler.
+   */
+  applyRemote: <T>(key: string, value: T, updatedAt: number) =>
+    db.settings.put({ key, value, updatedAt }),
+  delete: (key: string) => {
+    const p = db.settings.delete(key)
+    notifySettingsChange(key)
+    return p
+  },
   getAll: () => db.settings.toArray(),
 }
 

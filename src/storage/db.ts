@@ -15,6 +15,13 @@ import { buildBlocksFromSegments } from '@/core/documents/fromSegments'
 export interface SettingsRow<T = unknown> {
   key: string
   value: T
+  /**
+   * Epoch-ms of the last local write, stamped by `settingsRepo.set` (3.3). Drives
+   * per-key last-write-wins when a signed-in device reconciles with the cloud
+   * `user_settings` table. Unindexed and optional — rows written before 3.3 (and
+   * rows the sync never touches) simply lack it and read as "oldest".
+   */
+  updatedAt?: number
 }
 
 /**
