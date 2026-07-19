@@ -43,3 +43,15 @@ test('document preview assembles the translated document and jumps to a segment'
   await page.getByTestId('preview-mode-source').click()
   await expect(page.getByTestId('preview-body')).not.toContainText('Hola mundo')
 })
+
+test('export produces a translated .docx download', async ({ page }) => {
+  await importSample(page)
+  await setTarget(page, 1, 'Hola mundo')
+
+  await expect(page.getByTestId('export-docx')).toBeVisible()
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByTestId('export-docx').click(),
+  ])
+  expect(download.suggestedFilename()).toMatch(/\.docx$/)
+})
