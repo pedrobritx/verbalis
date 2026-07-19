@@ -6,6 +6,9 @@ export interface EditorActions {
   markCurrentReviewed: () => void
   jumpToNextWithStatus: (status: 'untranslated' | 'draft' | 'translated' | 'reviewed') => void
   jumpToSegment: (oneBasedIndex: number) => void
+  /** Focus the next/previous segment that has pending tracked changes. */
+  jumpToNextChange: () => void
+  jumpToPrevChange: () => void
   translateCurrentWithMT: (providerId?: MTProviderId) => Promise<void>
   /** Fill untranslated segments from TM at the configured threshold. */
   runPretranslate: () => Promise<void>

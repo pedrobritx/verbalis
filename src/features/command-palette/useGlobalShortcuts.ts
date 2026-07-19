@@ -55,6 +55,16 @@ export function useGlobalShortcuts() {
         actions.jumpToNextWithStatus(e.shiftKey ? 'draft' : 'untranslated')
         return
       }
+      // F8 / Shift+F8 — walk to the next / previous segment with pending tracked
+      // changes, so a reviewer can move through suggestions from the keyboard.
+      if (e.key === 'F8' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const actions = useEditorActionsStore.getState().actions
+        if (!actions) return
+        e.preventDefault()
+        if (e.shiftKey) actions.jumpToPrevChange()
+        else actions.jumpToNextChange()
+        return
+      }
       const mod = e.ctrlKey || e.metaKey
       if (!mod) return
       if (e.key === 'k' || e.key === 'K') {

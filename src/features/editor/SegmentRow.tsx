@@ -272,6 +272,7 @@ export function SegmentRow({
       data-segment-row
       data-segment-id={segment.id}
       data-segment-index={segment.index}
+      data-focused={isFocused ? 'true' : undefined}
       data-locked={locked ? 'true' : undefined}
       className="flex flex-col gap-2 rounded-md border px-3 py-2"
       style={{

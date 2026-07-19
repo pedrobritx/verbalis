@@ -224,6 +224,21 @@
   opacity: 0.85;
 }
 
+/* "Hide marks" review toggle: neutralise tracked-change and comment decorations
+   so the segment list reads as the clean proposed text (insertions plain,
+   deletions gone, no comment highlight). Class set on the segment-list container. */
+.rsg-hide-marks .rsg-change-ins {
+  text-decoration: none;
+  color: inherit;
+}
+.rsg-hide-marks .rsg-change-del {
+  display: none;
+}
+.rsg-hide-marks .rsg-comment {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
 /* Comment anchor (CommentMarkNode): highlights the text a thread is attached to. */
 .rsg-comment {
   background: var(--color-accent-fill);

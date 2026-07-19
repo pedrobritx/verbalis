@@ -16,6 +16,8 @@ import { EditModeToggle } from './EditModeToggle'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
+import { useChangesStore } from './changes/useChangesStore'
+import { hasPendingChanges } from '@/core/changes/extract'
 import { EditorToolbar } from './tools/EditorToolbar'
 import { PeersPresenceChip } from './peers/PeersPresenceChip'
 import { FindReplaceDialog } from './findReplace/FindReplaceDialog'
@@ -78,6 +80,7 @@ export default function EditorPage() {
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const stage = useEditorModeStore((s) => s.stage)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
+  const showMarks = useChangesStore((s) => s.showMarks)
   const setActions = useEditorActionsStore((s) => s.setActions)
   const setSidebarTab = useSidebarPanelStore((s) => s.setTab)
   const setPanelOpen = useSidebarPanelStore((s) => s.setOpen)
@@ -271,6 +274,24 @@ export default function EditorPage() {
         const i = oneBasedIndex - 1
         if (i >= 0 && i < segments.length) setFocusIndex(i)
       },
+      jumpToNextChange: () => {
+        for (let offset = 1; offset <= segments.length; offset += 1) {
+          const idx = (focusIndex + offset) % segments.length
+          if (hasPendingChanges(segments[idx].targetRich)) {
+            setFocusIndex(idx)
+            return
+          }
+        }
+      },
+      jumpToPrevChange: () => {
+        for (let offset = 1; offset <= segments.length; offset += 1) {
+          const idx = (focusIndex - offset + segments.length) % segments.length
+          if (hasPendingChanges(segments[idx].targetRich)) {
+            setFocusIndex(idx)
+            return
+          }
+        }
+      },
       translateCurrentWithMT: (providerId) => translateCurrentWithMT(providerId),
       runPretranslate,
       populateNumbers,
@@ -336,6 +357,13 @@ export default function EditorPage() {
   const confirm = async (i: number) => {
     const seg = segments[i]
     if (!seg || seg.locked) return
+    // Gate confirmation on there being no pending suggestions: unaccepted tracked
+    // changes must never reach the TM. Read fresh so a just-made suggestion counts.
+    const current = await segmentRepo.getById(seg.id)
+    if (current && hasPendingChanges(current.targetRich)) {
+      setToolMsg('Resolve or accept the pending suggestions before confirming this segment.')
+      return
+    }
     await segmentRepo.update(seg.id, { status: 'translated' })
     const fresh = await segmentRepo.getById(seg.id)
     if (fresh?.target && fresh.target.trim()) {
@@ -526,7 +554,10 @@ export default function EditorPage() {
             <p className="text-callout">No segments match this filter.</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-1.5" data-testid="segment-list">
+          <div
+            className={`flex flex-col gap-1.5${showMarks ? '' : ' rsg-hide-marks'}`}
+            data-testid="segment-list"
+          >
             {visibleSegments.map(({ seg, originalIndex }) => (
               <SegmentRow
                 key={seg.id}

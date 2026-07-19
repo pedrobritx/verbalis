@@ -209,6 +209,24 @@ export function CommandPalette() {
             <ArrowRight />
             <span>Jump to next draft</span>
           </CommandItem>
+          <CommandItem
+            disabled={!editorActions}
+            onSelect={() => run(() => editorActions?.jumpToNextChange())}
+            data-testid="cmd-next-change"
+          >
+            <ArrowRight />
+            <span>Jump to next tracked change</span>
+            <CommandShortcut>F8</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            disabled={!editorActions}
+            onSelect={() => run(() => editorActions?.jumpToPrevChange())}
+            data-testid="cmd-prev-change"
+          >
+            <ArrowRight />
+            <span>Jump to previous tracked change</span>
+            <CommandShortcut>⇧F8</CommandShortcut>
+          </CommandItem>
         </CommandGroup>
         <CommandGroup heading="Workflow stage">
           <CommandItem
