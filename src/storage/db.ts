@@ -9,6 +9,8 @@ import type {
   EmbeddingRecord,
 } from '@/core/types'
 import type { CorpusTerm, InstalledCorpusPack } from '@/core/corpus/types'
+import type { DocumentEntity, Block, Asset } from '@/core/documents/model'
+import { buildBlocksFromSegments } from '@/core/documents/fromSegments'
 
 export interface SettingsRow<T = unknown> {
   key: string
@@ -37,6 +39,53 @@ export async function migrateTemplatesToOwnTable(tx: Transaction): Promise<void>
   }
 }
 
+/**
+ * v6 upgrade: build the document/block model (Milestone 2) for existing
+ * monolingual projects. Each project's segments are grouped by their
+ * `sourceMeta.blockIndex` into blocks under one document, and each segment is
+ * stamped with its `blockId`. XLIFF projects (no `sourceMeta`) are skipped —
+ * they have no document tree. Exported so the migration is testable directly.
+ */
+export async function migrateDocumentBlocks(tx: Transaction): Promise<void> {
+  const projects = (await tx.table('projects').toArray()) as Array<
+    Project & { bilingualMeta?: { format?: string } }
+  >
+  const segmentsTable = tx.table('segments')
+  const documentsTable = tx.table('documents')
+  const blocksTable = tx.table('blocks')
+  const now = new Date().toISOString()
+
+  for (const project of projects) {
+    if (project.bilingualMeta?.format === 'xliff12') continue
+    const segments = (await segmentsTable
+      .where('projectId')
+      .equals(project.id)
+      .toArray()) as Segment[]
+    if (!segments.some((s) => s.sourceMeta)) continue
+
+    const documentId = crypto.randomUUID()
+    const { blocks, segmentBlockIds } = buildBlocksFromSegments(segments, {
+      documentId,
+      projectId: project.id,
+    })
+    if (blocks.length === 0) continue
+
+    await documentsTable.put({
+      id: documentId,
+      projectId: project.id,
+      name: project.name,
+      sourceFormat: 'unknown',
+      createdAt: now,
+      updatedAt: now,
+    } satisfies DocumentEntity)
+    await blocksTable.bulkAdd(blocks)
+    for (const seg of segments) {
+      const blockId = segmentBlockIds.get(seg.id)
+      if (blockId) await segmentsTable.update(seg.id, { blockId })
+    }
+  }
+}
+
 class VerbalisDB extends Dexie {
   projects!: Table<Project>
   projectTemplates!: Table<ProjectTemplate>
@@ -48,6 +97,9 @@ class VerbalisDB extends Dexie {
   corpusTerms!: Table<CorpusTerm>
   corpusPacks!: Table<InstalledCorpusPack>
   versions!: Table<ProjectVersion>
+  documents!: Table<DocumentEntity>
+  blocks!: Table<Block>
+  assets!: Table<Asset>
 
   constructor() {
     super('verbalis')
@@ -115,6 +167,28 @@ class VerbalisDB extends Dexie {
       corpusPacks: 'id',
       versions: 'id, projectId, createdAt, [projectId+createdAt]',
     })
+    // v6: document/block model (Milestone 2). `documents` is one row per
+    // monolingual project; `blocks` carries source structure above the segments
+    // ([documentId+index] drives ordered reads); `assets` holds embedded images
+    // and the original file blob. The upgrade backfills existing projects from
+    // each segment's `sourceMeta.blockIndex`.
+    this.version(6)
+      .stores({
+        projects: 'id, name, updatedAt',
+        projectTemplates: 'projectId',
+        segments: 'id, projectId, index, status, [projectId+status], [projectId+index]',
+        tm: 'id, source, sourceLang, targetLang, projectId, corpusId',
+        glossary: 'id, term, projectId',
+        settings: '&key',
+        embeddings: 'id, tmId, model, [tmId+model]',
+        corpusTerms: 'id, corpusId',
+        corpusPacks: 'id',
+        versions: 'id, projectId, createdAt, [projectId+createdAt]',
+        documents: 'id, projectId',
+        blocks: 'id, documentId, projectId, [documentId+index]',
+        assets: 'id, documentId, projectId',
+      })
+      .upgrade(migrateDocumentBlocks)
   }
 }
 
