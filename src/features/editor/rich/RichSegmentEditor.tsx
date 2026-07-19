@@ -37,6 +37,8 @@ import './LinkNode'
 // Side-effect import: registers ChangeMarkNode so getRichNodes() includes it and
 // a targetRich carrying tracked changes parses in the live editor (Milestone 1).
 import './ChangeMarkNode'
+// Side-effect import: registers CommentMarkNode so getRichNodes() includes it.
+import './CommentMarkNode'
 import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 import { TrackedChangesPlugin } from './TrackedChangesPlugin'
@@ -96,6 +98,8 @@ export interface RichSegmentEditorProps {
   targetLang: string
   /** Whether on-device spell-check underlines are enabled. */
   spellEnabled: boolean
+  /** Display name attached to comments authored from the format toolbar. */
+  commentAuthor?: string
   registerHandle: (handle: SegmentEditorHandle | null) => void
   onFocus: () => void
   onConfirm: () => void
@@ -130,7 +134,7 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
         <div className="relative" ref={editorBoxRef}>
           {focused && !locked && (
             <div className="absolute bottom-full left-0 z-20 mb-1 flex flex-wrap items-center gap-1">
-              <FormatToolbar />
+              <FormatToolbar segmentId={props.segmentId} commentAuthor={props.commentAuthor} />
               <TagStrip source={source} inlineTags={inlineTags} />
             </div>
           )}
@@ -144,7 +148,14 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
                   setFocused(true)
                   props.onFocus()
                 }}
-                onBlur={() => setFocused(false)}
+                // Keep the focus-time toolbar mounted when focus moves to one of
+                // its own popovers (link / comment inputs live inside editorBox),
+                // so those inputs aren't unmounted the instant they gain focus.
+                onBlur={(e) => {
+                  const next = (e as unknown as FocusEvent).relatedTarget as Node | null
+                  if (next && editorBoxRef.current?.contains(next)) return
+                  setFocused(false)
+                }}
                 className="rsg-editor min-h-[2.5rem] w-full rounded-md border bg-transparent px-3 py-2 text-sm whitespace-pre-wrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                 style={{
                   borderColor: 'var(--color-border)',

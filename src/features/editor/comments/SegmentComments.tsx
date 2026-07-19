@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Check, RotateCcw, Trash2 } from 'lucide-react'
+import { Check, RotateCcw, Trash2, Reply } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import type { SegmentComment } from '@/core/types'
+import { relativeTime } from '../history/relativeTime'
+import {
+  groupThreads,
+  addRootComment,
+  addReply,
+  setThreadResolved,
+  deleteThread,
+  type CommentThread,
+} from './commentOps'
 
 interface SegmentCommentsProps {
   segmentId: string
@@ -13,36 +21,22 @@ interface SegmentCommentsProps {
   author?: string
 }
 
-/** Compact relative time ("just now", "5m", "3h", "2d"); falls back to a date. */
-function relativeTime(iso: string): string {
-  const then = new Date(iso).getTime()
-  if (Number.isNaN(then)) return ''
-  const diff = Date.now() - then
-  const min = Math.floor(diff / 60_000)
-  if (min < 1) return 'just now'
-  if (min < 60) return `${min}m`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr}h`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day}d`
-  return new Date(iso).toLocaleDateString()
-}
-
+/**
+ * Threaded comments for a segment (Phase 1.5). Each thread is a root comment
+ * (optionally anchored to a highlighted range in the target) plus replies.
+ * Anchored roots created from the format toolbar already exist here; this panel
+ * also supports plain, un-anchored segment-level comments and replies.
+ */
 export function SegmentComments({ segmentId, comments, author }: SegmentCommentsProps) {
   const [draft, setDraft] = useState('')
+  const threads = groupThreads(comments)
 
   async function handleAdd(e: FormEvent) {
     e.preventDefault()
     const body = draft.trim()
     if (!body) return
-    const comment: SegmentComment = {
-      id: crypto.randomUUID(),
-      body,
-      author: author?.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    }
     setDraft('')
-    await segmentRepo.addComment(segmentId, comment)
+    await addRootComment(segmentId, body, author)
   }
 
   return (
@@ -51,62 +45,10 @@ export function SegmentComments({ segmentId, comments, author }: SegmentComments
       style={{ borderColor: 'var(--color-border)', background: 'var(--color-fill-secondary)' }}
       data-testid={`segment-comments-${segmentId}`}
     >
-      {comments.length > 0 && (
-        <ul className="flex flex-col gap-1.5">
-          {comments.map((c) => (
-            <li
-              key={c.id}
-              className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm"
-              style={{
-                background: 'var(--color-surface)',
-                opacity: c.resolved ? 0.6 : 1,
-              }}
-            >
-              <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                <div
-                  className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
-                  style={{ color: 'var(--color-muted)' }}
-                >
-                  <span className="font-semibold truncate">{c.author || 'You'}</span>
-                  <span aria-hidden>·</span>
-                  <span className="tabular-nums">{relativeTime(c.createdAt)}</span>
-                  {c.resolved && <span aria-hidden>· resolved</span>}
-                </div>
-                <p
-                  className="whitespace-pre-wrap break-words"
-                  style={{
-                    color: 'var(--color-text)',
-                    textDecoration: c.resolved ? 'line-through' : undefined,
-                  }}
-                >
-                  {c.body}
-                </p>
-              </div>
-              <div className="flex items-center gap-0.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() =>
-                    void segmentRepo.updateComment(segmentId, c.id, { resolved: !c.resolved })
-                  }
-                  aria-label={c.resolved ? 'Reopen comment' : 'Resolve comment'}
-                  title={c.resolved ? 'Reopen comment' : 'Resolve comment'}
-                  className="inline-flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-[var(--color-fill)]"
-                  style={{ color: c.resolved ? 'var(--color-muted)' : 'var(--color-confirm)' }}
-                >
-                  {c.resolved ? <RotateCcw size={13} /> : <Check size={14} />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void segmentRepo.deleteComment(segmentId, c.id)}
-                  aria-label="Delete comment"
-                  title="Delete comment"
-                  className="inline-flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-[var(--color-fill)]"
-                  style={{ color: 'var(--color-error)' }}
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </li>
+      {threads.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {threads.map((thread) => (
+            <ThreadView key={thread.root.id} segmentId={segmentId} thread={thread} author={author} />
           ))}
         </ul>
       )}
@@ -134,5 +76,141 @@ export function SegmentComments({ segmentId, comments, author }: SegmentComments
         </div>
       </form>
     </div>
+  )
+}
+
+function CommentBubble({ c }: { c: SegmentComment }) {
+  return (
+    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+      <div
+        className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
+        style={{ color: 'var(--color-muted)' }}
+      >
+        <span className="font-semibold truncate">{c.author || 'You'}</span>
+        <span aria-hidden>·</span>
+        <span className="tabular-nums">{relativeTime(c.createdAt)}</span>
+      </div>
+      <p
+        className="whitespace-pre-wrap break-words"
+        style={{ color: 'var(--color-text)' }}
+      >
+        {c.body}
+      </p>
+    </div>
+  )
+}
+
+function ThreadView({
+  segmentId,
+  thread,
+  author,
+}: {
+  segmentId: string
+  thread: CommentThread
+  author?: string
+}) {
+  const { root, replies } = thread
+  const [reply, setReply] = useState('')
+  const [replying, setReplying] = useState(false)
+
+  async function submitReply(e: FormEvent) {
+    e.preventDefault()
+    const body = reply.trim()
+    if (!body) return
+    setReply('')
+    setReplying(false)
+    await addReply(segmentId, root.id, body, author)
+  }
+
+  return (
+    <li
+      className="flex flex-col gap-1.5 rounded-md px-2 py-1.5 text-sm"
+      style={{ background: 'var(--color-surface)', opacity: root.resolved ? 0.6 : 1 }}
+      data-testid={`comment-thread-${root.id}`}
+      data-resolved={root.resolved ? 'true' : 'false'}
+    >
+      {root.quote && (
+        <p
+          className="text-xs italic border-l-2 pl-2 line-clamp-2"
+          style={{ color: 'var(--color-muted)', borderColor: 'var(--color-accent)' }}
+        >
+          “{root.quote}”
+        </p>
+      )}
+      <div className="flex items-start gap-2">
+        <CommentBubble c={root} />
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => setReplying((v) => !v)}
+            aria-label="Reply"
+            title="Reply"
+            data-testid={`comment-reply-toggle-${root.id}`}
+            className="inline-flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-[var(--color-fill)]"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            <Reply size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => void setThreadResolved(segmentId, root, !root.resolved)}
+            aria-label={root.resolved ? 'Reopen thread' : 'Resolve thread'}
+            title={root.resolved ? 'Reopen thread' : 'Resolve thread'}
+            data-testid={`comment-resolve-${root.id}`}
+            className="inline-flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-[var(--color-fill)]"
+            style={{ color: root.resolved ? 'var(--color-muted)' : 'var(--color-confirm)' }}
+          >
+            {root.resolved ? <RotateCcw size={13} /> : <Check size={14} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => void deleteThread(segmentId, thread)}
+            aria-label="Delete thread"
+            title="Delete thread"
+            data-testid={`comment-delete-${root.id}`}
+            className="inline-flex items-center justify-center w-6 h-6 rounded transition-colors hover:bg-[var(--color-fill)]"
+            style={{ color: 'var(--color-error)' }}
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+
+      {replies.length > 0 && (
+        <ul className="flex flex-col gap-1.5 border-l pl-2" style={{ borderColor: 'var(--color-border)' }}>
+          {replies.map((r) => (
+            <li key={r.id} data-testid={`comment-reply-${r.id}`}>
+              <CommentBubble c={r} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {replying && (
+        <form onSubmit={submitReply} className="flex flex-col gap-1 pl-2">
+          <Textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="Reply…"
+            autoResize
+            rows={1}
+            autoFocus
+            aria-label="Reply"
+            data-testid={`comment-reply-input-${root.id}`}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault()
+                void submitReply(e)
+              }
+            }}
+          />
+          <div className="flex justify-end">
+            <Button type="submit" variant="tinted" size="sm" disabled={!reply.trim()}>
+              Reply
+            </Button>
+          </div>
+        </form>
+      )}
+    </li>
   )
 }

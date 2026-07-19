@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   SpellCheck,
   GitCompare,
+  MessageSquare,
   History as HistoryIcon,
   Users,
 } from 'lucide-react'
@@ -22,6 +23,7 @@ import { LookupPanel } from './lookup/LookupPanel'
 import { QAPanel } from './qa/QAPanel'
 import { SpellPanel } from './spell/SpellPanel'
 import { ChangesPanel } from './changes/ChangesPanel'
+import { CommentsPanel } from './comments/CommentsPanel'
 import { VersionHistoryPanel } from './history/VersionHistoryPanel'
 import { PeersPanel } from './peers/PeersPanel'
 import { useSidebarPanelStore, type SidebarTab } from './useSidebarPanelStore'
@@ -48,6 +50,7 @@ const TAB_ICONS: Record<SidebarTab, ReactNode> = {
   qa: <ShieldCheck size={13} />,
   spell: <SpellCheck size={13} />,
   changes: <GitCompare size={13} />,
+  comments: <MessageSquare size={13} />,
   history: <HistoryIcon size={13} />,
   peers: <Users size={13} />,
 }
@@ -309,6 +312,8 @@ export function SidebarPanel({
         )
       case 'changes':
         return <ChangesPanel projectId={projectId} />
+      case 'comments':
+        return <CommentsPanel projectId={projectId} />
       case 'history':
         return <VersionHistoryPanel projectId={projectId} />
       case 'peers':

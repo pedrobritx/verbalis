@@ -14,7 +14,7 @@ import type { EditorStage } from './useEditorModeStore'
 export const STAGE_TABS: Record<EditorStage, SidebarTab[]> = {
   prepare: ['tm', 'glossary', 'lookup'],
   translate: ['tm', 'glossary', 'mt', 'lookup'],
-  revise: ['qa', 'spell', 'changes', 'history'],
+  revise: ['qa', 'spell', 'changes', 'comments', 'history'],
 }
 
 /** Sidebar tab each stage opens on, so a phase lands on its primary panel. */
@@ -33,6 +33,7 @@ export const ALL_TABS: SidebarTab[] = [
   'qa',
   'spell',
   'changes',
+  'comments',
   'history',
 ]
 
@@ -45,6 +46,7 @@ export const TAB_LABELS: Record<SidebarTab, string> = {
   qa: 'QA',
   spell: 'Spell',
   changes: 'Changes',
+  comments: 'Comments',
   history: 'History',
   peers: 'Peers',
 }

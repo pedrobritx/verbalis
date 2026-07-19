@@ -358,6 +358,7 @@ export function SegmentRow({
                   inlineTags={inlineTags}
                   targetLang={targetLang}
                   spellEnabled={spellEnabled}
+                  commentAuthor={commentAuthor}
                   registerHandle={registerHandle}
                   onFocus={onFocus}
                   onConfirm={onConfirm}
