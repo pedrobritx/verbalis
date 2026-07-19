@@ -61,6 +61,19 @@ describe('segmentCrdt model', () => {
     expect(readSegment(doc, 'p1', 's1')?.comments).toEqual(seg.comments)
   })
 
+  it('round-trips anchored + threaded comment fields (parentId, anchorId, quote)', () => {
+    const doc = new Y.Doc()
+    const seg = makeSeg({
+      id: 's1',
+      comments: [
+        { id: 'r1', body: 'root', createdAt: 'x', anchorId: 'a1', quote: 'hello world' },
+        { id: 'x1', body: 'reply', createdAt: 'y', parentId: 'r1' },
+      ],
+    })
+    applyCreate(doc, seg)
+    expect(readSegment(doc, 'p1', 's1')?.comments).toEqual(seg.comments)
+  })
+
   it('patches only changed fields on update and clears undefined ones', () => {
     const doc = new Y.Doc()
     applyCreate(doc, makeSeg({ id: 's1', target: 'antigo', targetRich: '{}', locked: true }))

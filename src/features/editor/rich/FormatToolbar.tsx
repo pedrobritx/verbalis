@@ -16,10 +16,13 @@ import {
   Subscript,
   CaseUpper,
   Link as LinkIcon,
+  MessageSquarePlus,
 } from 'lucide-react'
 import { transformCase, CASE_LABELS, type CaseTransform } from '@/core/text/case'
 import { cn } from '@/lib/utils'
 import { $createLinkNode, $isLinkNode, LinkNode } from './LinkNode'
+import { $wrapSelectionAsComment, $removeCommentMarkByAnchor } from './comments'
+import { addRootComment } from '../comments/commentOps'
 
 interface MarkButton {
   format: TextFormatType
@@ -49,9 +52,16 @@ function $linkAncestor(node: LexicalNode | null): LinkNode | null {
   return null
 }
 
-export function FormatToolbar() {
+export function FormatToolbar({
+  segmentId,
+  commentAuthor,
+}: {
+  segmentId?: string
+  commentAuthor?: string
+}) {
   const [editor] = useLexicalComposerContext()
   const [active, setActive] = useState<ActiveFormats>({})
+  const [hasRange, setHasRange] = useState(false)
   const [caseOpen, setCaseOpen] = useState(false)
   const caseRef = useRef<HTMLDivElement | null>(null)
 
@@ -59,6 +69,11 @@ export function FormatToolbar() {
   const [linkUrl, setLinkUrl] = useState('')
   const [editingLink, setEditingLink] = useState(false)
   const linkRef = useRef<HTMLDivElement | null>(null)
+
+  const [commentOpen, setCommentOpen] = useState(false)
+  const [commentBody, setCommentBody] = useState('')
+  const [commentAnchor, setCommentAnchor] = useState<{ anchorId: string; quote: string } | null>(null)
+  const commentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
@@ -74,6 +89,7 @@ export function FormatToolbar() {
             superscript: sel.hasFormat('superscript'),
             link: !!link,
           })
+          setHasRange(!sel.isCollapsed())
         }
       })
     })
@@ -150,6 +166,54 @@ export function FormatToolbar() {
     })
     setLinkOpen(false)
   }
+
+  // Comment on the current selection: wrap it in an anchor highlight now (so the
+  // range is captured even if focus moves), then collect the comment body.
+  const openCommentPopover = () => {
+    if (!segmentId) return
+    const anchorId = crypto.randomUUID()
+    // Wrap and open inside the update so the pending DOM selection (e.g. a fresh
+    // Ctrl+A) is reconciled first; setState here just schedules a React update.
+    editor.update(() => {
+      const quote = $wrapSelectionAsComment(anchorId)
+      if (quote == null) return
+      setCommentAnchor({ anchorId, quote })
+      setCommentBody('')
+      setCommentOpen(true)
+    })
+  }
+
+  const submitComment = async () => {
+    const body = commentBody.trim()
+    if (!body || !segmentId || !commentAnchor) return
+    await addRootComment(segmentId, body, commentAuthor, commentAnchor)
+    setCommentOpen(false)
+    setCommentAnchor(null)
+    setCommentBody('')
+  }
+
+  const cancelComment = () => {
+    // Drop the just-created anchor highlight from the live editor.
+    if (commentAnchor) {
+      const anchorId = commentAnchor.anchorId
+      editor.update(() => {
+        $removeCommentMarkByAnchor(anchorId)
+      })
+    }
+    setCommentOpen(false)
+    setCommentAnchor(null)
+    setCommentBody('')
+  }
+
+  useEffect(() => {
+    if (!commentOpen) return
+    const onDown = (e: PointerEvent) => {
+      if (commentRef.current && !commentRef.current.contains(e.target as Node)) cancelComment()
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentOpen])
 
   return (
     <div
@@ -256,6 +320,83 @@ export function FormatToolbar() {
           </div>
         )}
       </div>
+
+      {segmentId && (
+        <div className="relative" ref={commentRef}>
+          <button
+            type="button"
+            aria-label="Comment on selection"
+            aria-haspopup="dialog"
+            aria-expanded={commentOpen}
+            disabled={!hasRange && !commentOpen}
+            title="Comment on selection"
+            data-testid="format-comment"
+            onClick={openCommentPopover}
+            className="inline-flex items-center justify-center w-7 h-7 rounded transition-colors hover:bg-[var(--color-fill)] disabled:opacity-40"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            <MessageSquarePlus size={14} />
+          </button>
+          {commentOpen && (
+            <div
+              role="dialog"
+              aria-label="New comment"
+              data-testid="format-comment-popover"
+              className="absolute left-0 z-30 mt-1 flex w-64 flex-col gap-2 rounded-md border p-2 shadow-md"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+            >
+              {commentAnchor?.quote && (
+                <p className="text-xs italic line-clamp-2" style={{ color: 'var(--color-muted)' }}>
+                  “{commentAnchor.quote}”
+                </p>
+              )}
+              <textarea
+                autoFocus
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault()
+                    void submitComment()
+                  } else if (e.key === 'Escape') {
+                    cancelComment()
+                  }
+                }}
+                rows={3}
+                placeholder="Add a comment…"
+                data-testid="format-comment-input"
+                className="w-full resize-none rounded border px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                style={{
+                  borderColor: 'var(--color-border)',
+                  background: 'var(--color-bg)',
+                  color: 'var(--color-text)',
+                }}
+              />
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={cancelComment}
+                  data-testid="format-comment-cancel"
+                  className="text-xs px-2 py-1 rounded transition-colors hover:bg-[var(--color-fill)]"
+                  style={{ color: 'var(--color-muted)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void submitComment()}
+                  disabled={!commentBody.trim()}
+                  data-testid="format-comment-apply"
+                  className="text-xs px-2 py-1 rounded transition-colors hover:opacity-80 disabled:opacity-40"
+                  style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
+                >
+                  Comment
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="relative" ref={caseRef}>
         <button

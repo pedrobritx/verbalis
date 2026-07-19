@@ -80,6 +80,9 @@ function commentToYMap(comment: SegmentComment): Y.Map<unknown> {
   if (comment.author !== undefined) m.set('author', comment.author)
   m.set('createdAt', comment.createdAt)
   if (comment.resolved !== undefined) m.set('resolved', comment.resolved)
+  if (comment.parentId !== undefined) m.set('parentId', comment.parentId)
+  if (comment.anchorId !== undefined) m.set('anchorId', comment.anchorId)
+  if (comment.quote !== undefined) m.set('quote', comment.quote)
   return m
 }
 
@@ -93,6 +96,12 @@ function yMapToComment(m: Y.Map<unknown>): SegmentComment {
   if (author !== undefined) comment.author = author
   const resolved = m.get('resolved') as boolean | undefined
   if (resolved !== undefined) comment.resolved = resolved
+  const parentId = m.get('parentId') as string | undefined
+  if (parentId !== undefined) comment.parentId = parentId
+  const anchorId = m.get('anchorId') as string | undefined
+  if (anchorId !== undefined) comment.anchorId = anchorId
+  const quote = m.get('quote') as string | undefined
+  if (quote !== undefined) comment.quote = quote
   return comment
 }
 
@@ -149,6 +158,9 @@ function reconcileComments(
     if (current.get('resolved') !== comment.resolved) {
       current.set('resolved', comment.resolved)
     }
+    if (current.get('parentId') !== comment.parentId) current.set('parentId', comment.parentId)
+    if (current.get('anchorId') !== comment.anchorId) current.set('anchorId', comment.anchorId)
+    if (current.get('quote') !== comment.quote) current.set('quote', comment.quote)
   })
 }
 

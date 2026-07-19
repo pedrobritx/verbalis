@@ -11,6 +11,7 @@ export type SidebarTab =
   | 'qa'
   | 'spell'
   | 'changes'
+  | 'comments'
   | 'history'
   | 'peers'
 

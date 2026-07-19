@@ -65,6 +65,19 @@ export interface SegmentComment {
   author?: string
   createdAt: string
   resolved?: boolean
+  /**
+   * Reply threading: the id of the root comment this is a reply to. Root
+   * comments leave this undefined. All additive/optional — no migration.
+   */
+  parentId?: string
+  /**
+   * Links a root comment to a highlighted text range in `targetRich` via the
+   * matching CommentMarkNode's anchor id. Undefined for plain, un-anchored
+   * segment-level comments (the legacy shape, still supported).
+   */
+  anchorId?: string
+  /** The text the comment was anchored to, kept for context in list views. */
+  quote?: string
 }
 
 export interface Segment {
