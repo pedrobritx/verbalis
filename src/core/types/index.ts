@@ -103,6 +103,12 @@ export interface Segment {
    */
   locked?: boolean
   sourceMeta?: SegmentSourceMeta
+  /**
+   * Links this segment to its structural {@link Block} in the document model
+   * (Milestone 2). Unindexed and additive; absent for XLIFF projects, which have
+   * no document tree. Set at import and by the v6 backfill.
+   */
+  blockId?: string
   bilingualMeta?: BilingualSegmentMeta
   note?: string
   comments?: SegmentComment[]

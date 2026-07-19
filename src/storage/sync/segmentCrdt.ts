@@ -46,6 +46,7 @@ const SCALAR_FIELDS = [
   'locked',
   'note',
   'sourceMeta',
+  'blockId',
   'bilingualMeta',
   'createdAt',
   'updatedAt',

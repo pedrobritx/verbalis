@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { projectTemplateRepo } from '@/storage/repositories/projectTemplateRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import { documentRepo, blockRepo } from '@/storage/repositories/documentRepo'
 import { detectType, segmentText, segmentDocx } from '@/core/segmentation'
 import type { ParsedSegment } from '@/core/segmentation'
+import { buildBlocksFromSegments } from '@/core/documents/fromSegments'
 import { parseXliff12 } from '@/core/bilingual/xliff12'
 import type { Segment } from '@/core/types'
 
@@ -111,6 +113,25 @@ export function useImportProject() {
           updatedAt: now,
         }))
 
+        // Build the document/block model above the segments and link them up.
+        const documentId = crypto.randomUUID()
+        const { blocks, segmentBlockIds } = buildBlocksFromSegments(segments, {
+          documentId,
+          projectId,
+        })
+        for (const seg of segments) {
+          const blockId = segmentBlockIds.get(seg.id)
+          if (blockId) seg.blockId = blockId
+        }
+        await documentRepo.create({
+          id: documentId,
+          projectId,
+          name,
+          sourceFormat: type,
+          createdAt: now,
+          updatedAt: now,
+        })
+        await blockRepo.bulkCreate(blocks)
         await segmentRepo.bulkCreate(segments)
         navigate(`/project/${projectId}`)
         return projectId
