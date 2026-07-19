@@ -20,6 +20,7 @@ import { useChangesStore } from './changes/useChangesStore'
 import { hasPendingChanges } from '@/core/changes/extract'
 import { usePreviewStore } from './preview/usePreviewStore'
 import { DocumentPreview } from './preview/DocumentPreview'
+import { ExportDocxButton } from './tools/ExportDocxButton'
 import { documentRepo } from '@/storage/repositories/documentRepo'
 import { EditorToolbar } from './tools/EditorToolbar'
 import { PeersPresenceChip } from './peers/PeersPresenceChip'
@@ -530,6 +531,7 @@ export default function EditorPage() {
                 Preview
               </button>
             )}
+            {hasDocument && <ExportDocxButton projectId={id} name={project?.name ?? ''} />}
           </div>
           <EditorToolbar
             stage={stage}
