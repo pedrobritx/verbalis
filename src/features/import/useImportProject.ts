@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { projectTemplateRepo } from '@/storage/repositories/projectTemplateRepo'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
-import { documentRepo, blockRepo } from '@/storage/repositories/documentRepo'
-import { detectType, segmentText, segmentDocx } from '@/core/segmentation'
+import { documentRepo, blockRepo, assetRepo } from '@/storage/repositories/documentRepo'
+import { detectType, segmentText } from '@/core/segmentation'
 import type { ParsedSegment } from '@/core/segmentation'
 import { buildBlocksFromSegments } from '@/core/documents/fromSegments'
+import { parseDocxDocument, type ParsedDocx } from '@/core/documents/docxImport'
 import { parseXliff12 } from '@/core/bilingual/xliff12'
 import type { Segment } from '@/core/types'
+import type { Block, Asset } from '@/core/documents/model'
 
 export interface ImportProjectInput {
   file: File
@@ -78,11 +80,15 @@ export function useImportProject() {
         }
 
         // Segmentation runs on the main thread. TXT/MD files are small; DOCX uses
-        // mammoth (also main-thread-only — see workers/parsing.worker.ts).
+        // mammoth (also main-thread-only — see workers/parsing.worker.ts). DOCX
+        // additionally yields a structured block tree (runs/tables/images).
+        const documentId = crypto.randomUUID()
         let parsed: ParsedSegment[]
+        let docx: ParsedDocx | null = null
         if (type === 'docx') {
           const buffer = await file.arrayBuffer()
-          parsed = await segmentDocx(buffer)
+          docx = await parseDocxDocument(buffer)
+          parsed = docx.segments
         } else {
           const content = await file.text()
           parsed = segmentText(content, type)
@@ -114,15 +120,60 @@ export function useImportProject() {
         }))
 
         // Build the document/block model above the segments and link them up.
-        const documentId = crypto.randomUUID()
-        const { blocks, segmentBlockIds } = buildBlocksFromSegments(segments, {
-          documentId,
-          projectId,
-        })
-        for (const seg of segments) {
-          const blockId = segmentBlockIds.get(seg.id)
-          if (blockId) seg.blockId = blockId
+        let blocks: Block[]
+        let assets: Asset[] = []
+        if (docx) {
+          // Preserve the DOCX-parsed blocks (with formatting runs / tables /
+          // images), keyed by their block index; map each segment to its block.
+          const blockIdByIndex = new Map<number, string>()
+          blocks = docx.blocks.map((pb) => {
+            const id = crypto.randomUUID()
+            blockIdByIndex.set(pb.blockIndex, id)
+            return {
+              id,
+              documentId,
+              projectId,
+              index: pb.blockIndex,
+              kind: pb.kind,
+              ...(pb.depth !== undefined ? { depth: pb.depth } : {}),
+              ...(pb.ordered !== undefined ? { ordered: pb.ordered } : {}),
+              ...(pb.sourceRuns ? { sourceRuns: pb.sourceRuns } : {}),
+              ...(pb.attrs ? { attrs: pb.attrs } : {}),
+            } satisfies Block
+          })
+          for (const seg of segments) {
+            const bi = seg.sourceMeta?.blockIndex
+            const blockId = bi !== undefined ? blockIdByIndex.get(bi) : undefined
+            if (blockId) seg.blockId = blockId
+          }
+          assets = docx.assets.map((a) => ({
+            id: a.id,
+            documentId,
+            projectId,
+            kind: 'image' as const,
+            mime: a.mime,
+            blob: a.blob,
+            name: a.name,
+          }))
+          // Keep the original .docx for future higher-fidelity re-processing.
+          assets.push({
+            id: crypto.randomUUID(),
+            documentId,
+            projectId,
+            kind: 'original',
+            mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            blob: file,
+            name: file.name,
+          })
+        } else {
+          const built = buildBlocksFromSegments(segments, { documentId, projectId })
+          blocks = built.blocks
+          for (const seg of segments) {
+            const blockId = built.segmentBlockIds.get(seg.id)
+            if (blockId) seg.blockId = blockId
+          }
         }
+
         await documentRepo.create({
           id: documentId,
           projectId,
@@ -132,6 +183,7 @@ export function useImportProject() {
           updatedAt: now,
         })
         await blockRepo.bulkCreate(blocks)
+        if (assets.length > 0) await assetRepo.bulkCreate(assets)
         await segmentRepo.bulkCreate(segments)
         navigate(`/project/${projectId}`)
         return projectId
