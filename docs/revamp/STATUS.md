@@ -24,7 +24,7 @@ Rules for autonomous sessions:
 | 2.3 | Document preview pane | M | 2.1 | done (PR #46) |
 | 2.4 | Clean DOCX export | M | 2.2, 2.3 | done (PR #47) |
 | 3.1 | Supabase bootstrap + Google/magic-link auth + PKCE | M | 0.1 | done (PR #48) |
-| 3.2 | Microsoft + Apple providers + account settings | S | 3.1 | in-review (PR #TBD) |
+| 3.2 | Microsoft + Apple providers + account settings | S | 3.1 | in-review (PR #50) |
 | 3.3 | Synced preferences/settings/layout | M | 3.1 | pending |
 | 3.4 | Personal term bank + TM sync | M | 3.3 | pending |
 | 4.1 | Cloud project schema + RLS + publish/join | M | 3.1 | pending |
