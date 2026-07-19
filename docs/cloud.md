@@ -11,10 +11,38 @@ This document is the one-time, human setup checklist. It is also the manual test
 matrix for the phases that touch the backend (Milestones 3–5), since vitest
 never talks to a real Supabase instance.
 
+## 0. This deployment
+
+The live Verbalis project is already provisioned:
+
+| | |
+| --- | --- |
+| Project ref | `qutcuzlppbjbsymowavc` (region `us-east-2`, Postgres 17) |
+| `VITE_SUPABASE_URL` | `https://qutcuzlppbjbsymowavc.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | `sb_publishable_c8YdrT2-abKdW1Kl7FDKyA_v5OwqLdY` (publishable — safe in the bundle) |
+
+These two values are also in `.env.example` — copy it to `.env.local` for local
+dev. **Never** commit the `sb_secret_...` service key; Verbalis is client-side
+and never uses it.
+
+Migrations `0001_profiles` and `0002_profiles_hardening` are already applied to
+this project (the security linter reports no outstanding issues). Remaining
+setup is the dashboard config in §4 (redirect URLs + providers) and, for
+production, the repository Variables in §1.
+
 ## 1. Environment variables
 
 Set these at build time (e.g. in the CI/deploy environment). Leaving
 `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` unset keeps the app local-only.
+
+**Production (GitHub Pages / `deploy.yml`)**: add them as repository **Variables**
+under *Settings → Secrets and variables → Actions → Variables* — `deploy.yml`
+reads `vars.VITE_SUPABASE_URL`, `vars.VITE_SUPABASE_ANON_KEY`, and
+`vars.VITE_AUTH_PROVIDERS`. Variables (not Secrets) are correct here: all three
+end up in the public client bundle. Until they are set, production keeps
+building the 100%-local app.
+
+**Local dev**: `cp .env.example .env.local` (git-ignored) and run `pnpm dev`.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
@@ -34,16 +62,22 @@ Set these at build time (e.g. in the CI/deploy environment). Leaving
 
 ## 3. Apply the database migrations
 
-Migrations live in `supabase/migrations/`. Apply them with the Supabase CLI:
+Migrations live in `supabase/migrations/`. **For this project they are already
+applied** (via the Supabase MCP). To reproduce on a fresh project, run the
+Supabase CLI:
 
 ```bash
 supabase link --project-ref <your-ref>
 supabase db push
 ```
 
-…or paste each file into the dashboard SQL editor in order. Phase 3.1 ships
-`0001_profiles.sql` (one profile row per user + owner-scoped RLS + a signup
-trigger that seeds the profile from provider metadata).
+…or paste each file into the dashboard SQL editor in order. They are idempotent
+and safe to re-run:
+
+- `0001_profiles.sql` — one profile row per user + owner-scoped RLS + a signup
+  trigger seeding the profile from provider metadata.
+- `0002_profiles_hardening.sql` — pins the trigger functions' `search_path` and
+  revokes their RPC EXECUTE grants (clears the database linter's SECURITY lints).
 
 ## 4. Configure Auth providers
 
