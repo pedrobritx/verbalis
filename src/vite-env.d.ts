@@ -5,6 +5,18 @@ declare const __APP_VERSION__: string
 declare const __BUILD_SHA__: string
 declare const __BUILD_TIME__: string
 
+interface ImportMetaEnv {
+  /** Supabase project URL. When unset, the app runs 100% local (no cloud UI). */
+  readonly VITE_SUPABASE_URL?: string
+  /** Supabase anon/publishable key, paired with VITE_SUPABASE_URL. */
+  readonly VITE_SUPABASE_ANON_KEY?: string
+  /** Comma-separated OAuth providers to offer, e.g. "google,azure,apple". */
+  readonly VITE_AUTH_PROVIDERS?: string
+}
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
 // nspell ships no types. Minimal surface used by the spell-check engine.
 declare module 'nspell' {
   interface NSpell {
