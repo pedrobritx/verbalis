@@ -40,6 +40,7 @@ import './ChangeMarkNode'
 import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 import { TrackedChangesPlugin } from './TrackedChangesPlugin'
+import { ChangeHoverCard } from './ChangeHoverCard'
 
 /** Initial-state builder: seed a paragraph from plain text, turning `{id}`
  *  placeholders into atomic InlineTagNodes (chips). */
@@ -165,6 +166,7 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
           {spellEnabled && !locked && (
             <SpellUnderlinePlugin targetLang={targetLang} containerRef={editorBoxRef} />
           )}
+          <ChangeHoverCard segmentId={props.segmentId} containerRef={editorBoxRef} />
         </div>
       </div>
       <HistoryPlugin />
