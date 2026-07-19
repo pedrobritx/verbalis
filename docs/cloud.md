@@ -127,3 +127,24 @@ With env configured and deployed:
 - [ ] **Sign out** returns to the signed-out state.
 - [ ] With env unset, the production bundle contains **no** Supabase chunk in the
       initial graph and the app behaves exactly as the local-only build.
+
+## 7. Manual verification (Phase 3.2)
+
+Adds Microsoft/Apple provider buttons and an **Account** settings section.
+
+- [ ] **Provider buttons follow `VITE_AUTH_PROVIDERS`**: set it to
+      `google,azure,apple` → all three "Continue with …" buttons appear (each with
+      its brand mark). Remove `apple` → the Apple button disappears without
+      breaking the dialog. A provider listed here but **not** configured in the
+      dashboard still renders, but 400s on click — only list configured ones.
+- [ ] Microsoft (`azure`) and Apple round-trip like Google once configured in §4.
+- [ ] **Settings → Account** appears only when the cloud is configured. Signed
+      out, it offers a **Sign in** button; signed in, it shows:
+  - [ ] an editable **Display name** that persists to the `profiles` row (reload,
+        or open on a second device once 3.3 sync lands, to confirm) and updates
+        the top-bar avatar/menu immediately;
+  - [ ] the **Linked sign-in methods** (Google / Microsoft / Apple / Email) for
+        the account;
+  - [ ] a **Sign out** button returning to the signed-out state.
+- [ ] With the cloud unset, the **Account** section is absent from Settings and no
+      Supabase code is loaded.

@@ -22,9 +22,25 @@ export interface AuthUser {
 /** OAuth providers Supabase Auth exposes that we surface as "Continue with". */
 export type OAuthProvider = 'google' | 'azure' | 'apple'
 
+/** One sign-in method linked to the account, shown in Account settings (3.2). */
+export interface LinkedIdentity {
+  /** Stable per-identity id (used only as a React key). */
+  id: string
+  /** Supabase provider id: `google` | `azure` | `apple` | `email` | … */
+  provider: string
+  /** Email associated with this identity, when the provider exposes one. */
+  email: string | null
+  /** ISO timestamp the identity was linked, when available. */
+  createdAt: string | null
+}
+
 interface AuthState {
   status: AuthStatus
   user: AuthUser | null
+  /** Editable account display name from the `profiles` row (null until loaded). */
+  profileDisplayName: string | null
+  /** Sign-in methods linked to the account (null until loaded). */
+  identities: LinkedIdentity[] | null
   /** Last auth error, surfaced in the sign-in dialog. */
   error: string | null
   /** Set after a magic-link email is dispatched, to show the "check inbox" note. */
@@ -32,6 +48,10 @@ interface AuthState {
   init: () => Promise<void>
   signInWithOAuth: (provider: OAuthProvider) => Promise<void>
   signInWithMagicLink: (email: string) => Promise<void>
+  /** Load the profile row + linked identities for the signed-in user (3.2). */
+  loadAccount: () => Promise<void>
+  /** Persist a new account display name to the `profiles` row (3.2). */
+  updateDisplayName: (name: string) => Promise<void>
   signOut: () => Promise<void>
   clearError: () => void
 }
@@ -59,12 +79,32 @@ function authRedirectTo(): string {
   return window.location.origin + window.location.pathname
 }
 
+/** Shape of a Supabase `UserIdentity` — narrowed to the fields the UI reads. */
+interface SupabaseIdentity {
+  identity_id?: string
+  id?: string
+  provider: string
+  identity_data?: { email?: string } | null
+  created_at?: string
+}
+
+function toLinkedIdentity(identity: SupabaseIdentity): LinkedIdentity {
+  return {
+    id: identity.identity_id ?? identity.id ?? identity.provider,
+    provider: identity.provider,
+    email: identity.identity_data?.email ?? null,
+    createdAt: identity.created_at ?? null,
+  }
+}
+
 // Guard so init() only ever subscribes once, even under StrictMode double-mount.
 let initStarted = false
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   status: isCloudConfigured() ? 'loading' : 'unconfigured',
   user: null,
+  profileDisplayName: null,
+  identities: null,
   error: null,
   magicLinkSentTo: null,
 
@@ -82,10 +122,62 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({
           user: toAuthUser(session?.user ?? null),
           status: session ? 'authenticated' : 'unauthenticated',
+          // Clear per-account state when the session ends; it reloads on demand.
+          ...(session ? {} : { profileDisplayName: null, identities: null }),
         })
       })
     } catch {
       set({ status: 'unauthenticated' })
+    }
+  },
+
+  loadAccount: async () => {
+    if (!isCloudConfigured()) return
+    const user = get().user
+    if (!user) return
+    try {
+      const supabase = await getSupabase()
+      const [profileResult, identityResult] = await Promise.all([
+        supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
+        supabase.auth.getUserIdentities(),
+      ])
+      const displayName =
+        (profileResult.data?.display_name as string | null | undefined) ?? null
+      const rawIdentities = (identityResult.data?.identities ?? []) as SupabaseIdentity[]
+      set((s) => ({
+        profileDisplayName: displayName,
+        identities: rawIdentities.map(toLinkedIdentity),
+        // Prefer the account's own display name in the top-bar menu once known.
+        user: s.user && displayName ? { ...s.user, displayName } : s.user,
+      }))
+    } catch {
+      // Non-fatal: leave whatever state we had; the settings UI still renders.
+    }
+  },
+
+  updateDisplayName: async (name) => {
+    const user = get().user
+    if (!user) return
+    const trimmed = name.trim()
+    const value = trimmed || null
+    set({ error: null })
+    try {
+      const supabase = await getSupabase()
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, display_name: value })
+      if (error) {
+        set({ error: error.message })
+        return
+      }
+      set((s) => ({
+        profileDisplayName: value,
+        // Reflect the change in the avatar/menu immediately; fall back to the
+        // provider name when the field is cleared.
+        user: s.user ? { ...s.user, displayName: value ?? s.user.displayName } : s.user,
+      }))
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Could not save your name.' })
     }
   },
 
@@ -126,7 +218,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Fall through: onAuthStateChange (or the next reload) reconciles state.
     }
-    set({ user: null, status: 'unauthenticated', magicLinkSentTo: null })
+    set({
+      user: null,
+      status: 'unauthenticated',
+      magicLinkSentTo: null,
+      profileDisplayName: null,
+      identities: null,
+    })
   },
 
   clearError: () => set({ error: null }),

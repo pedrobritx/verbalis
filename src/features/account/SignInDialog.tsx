@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { configuredProviders } from '@/storage/cloud/supabaseClient'
 import { useAuthStore, type OAuthProvider } from './useAuthStore'
+import { ProviderIcon } from './ProviderIcon'
 
 /** Human labels for the OAuth providers Supabase Auth exposes (D7). */
 const PROVIDER_LABEL: Record<string, string> = {
@@ -93,7 +94,11 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
                 disabled={busy !== null}
                 data-testid={`oauth-${provider}`}
               >
-                {busy === provider ? <Loader2 size={16} className="animate-spin" /> : null}
+                {busy === provider ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <ProviderIcon provider={provider} />
+                )}
                 {providerLabel(provider)}
               </Button>
             ))}
