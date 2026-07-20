@@ -4,6 +4,9 @@ import { createTransport } from './transport'
 import { codecForPassphrase, identityCodec, type PayloadCodec } from './crypto'
 import { getProfileSettings } from '@/storage/repositories/settingsRepo'
 import { shareRepo } from '@/storage/repositories/shareRepo'
+import { projectRepo } from '@/storage/repositories/projectRepo'
+import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
+import { useAuthStore } from '@/features/account/useAuthStore'
 
 /**
  * Owns the live {@link SyncSessionHandle} per shared project (Foundation F3).
@@ -37,17 +40,24 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
     return existing.handle
   }
 
-  const [doc, profile, codec] = await Promise.all([
+  const [doc, profile, codec, project] = await Promise.all([
     acquireProjectDoc(projectId),
     getProfileSettings(),
     resolveCodec(projectId),
+    projectRepo.getById(projectId),
   ])
+
+  // A signed-in cloud project syncs over Supabase Realtime; everything else
+  // keeps the same-machine BroadcastChannel (or Tauri LAN) transport (§4.2).
+  const signedIn = useAuthStore.getState().status === 'authenticated'
+  const cloudId =
+    signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
 
   const handle = startSyncSession({
     projectId,
     doc,
     displayName: profile.displayName || 'Anonymous',
-    transport: createTransport(projectId),
+    transport: createTransport(projectId, { cloudId }),
     codec,
   })
   active.set(projectId, { handle, refs: 1 })
