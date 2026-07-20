@@ -35,12 +35,19 @@ production, the repository Variables in §1.
 Set these at build time (e.g. in the CI/deploy environment). Leaving
 `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` unset keeps the app local-only.
 
-**Production (GitHub Pages / `deploy.yml`)**: add them as repository **Variables**
-under *Settings → Secrets and variables → Actions → Variables* — `deploy.yml`
-reads `vars.VITE_SUPABASE_URL`, `vars.VITE_SUPABASE_ANON_KEY`, and
-`vars.VITE_AUTH_PROVIDERS`. Variables (not Secrets) are correct here: all three
-end up in the public client bundle. Until they are set, production keeps
-building the 100%-local app.
+**Production (GitHub Pages / `deploy.yml`)**: add them under *Settings → Secrets
+and variables → Actions*. A repository **Variable** is the natural home (all
+three are public — they end up in the client bundle), but `deploy.yml` accepts
+either a Variable or a Secret via a fallback chain, and also accepts the URL
+under the unprefixed name `SUPABASE_URL`:
+
+- `VITE_SUPABASE_URL` ← `vars.VITE_SUPABASE_URL` → `secrets.VITE_SUPABASE_URL` → `secrets.SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` ← `vars.VITE_SUPABASE_ANON_KEY` → `secrets.VITE_SUPABASE_ANON_KEY`
+- `VITE_AUTH_PROVIDERS` ← `vars.VITE_AUTH_PROVIDERS` → `secrets.VITE_AUTH_PROVIDERS` (optional; defaults to `google`)
+
+Until they are set, production keeps building the 100%-local app. **Never** set
+a `VITE_`-prefixed secret key — only the publishable/anon key belongs in the
+build; the `sb_secret_...` key must never reach the client bundle.
 
 **Local dev**: `cp .env.example .env.local` (git-ignored) and run `pnpm dev`.
 
