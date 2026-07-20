@@ -39,14 +39,21 @@ jobs:
       - run: pnpm build
         env:
           BASE_PATH: ${{ github.event.inputs.base_path || '/' }}
-          # Optional cloud config (docs/cloud.md). Set these as repository
-          # Variables (Settings -> Secrets and variables -> Actions -> Variables)
-          # to enable the signed-in mode in production. Both are public by design
-          # (the anon key ships in the bundle and is gated by RLS). Leaving them
-          # unset builds the 100%-local app exactly as before.
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-          VITE_AUTH_PROVIDERS: ${{ vars.VITE_AUTH_PROVIDERS }}
+          # Cloud config for the signed-in mode (docs/cloud.md). These map your
+          # repository Secrets/Variables to the VITE_-prefixed vars Vite exposes
+          # to the client build. All are public by design (the anon key ships in
+          # the bundle and is gated by RLS), so a repository Variable is the more
+          # natural home, but the fallback chain also accepts a Secret and the
+          # unprefixed SUPABASE_URL name. Unset everywhere -> the build stays
+          # 100% local, exactly as before.
+          #
+          # SECURITY: the Supabase *secret* key (sb_secret_...) is deliberately
+          # NOT referenced here and must NEVER be exposed to the build or given a
+          # VITE_ prefix — it would leak into the public bundle. It is unused by
+          # this client-side app; keep it only for future server-side workflows.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_AUTH_PROVIDERS: ${{ vars.VITE_AUTH_PROVIDERS || secrets.VITE_AUTH_PROVIDERS }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
