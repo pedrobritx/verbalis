@@ -175,8 +175,20 @@ first.
       machine A → it does **not** appear on machine B (nor in `user_settings`).
 - [ ] **Local-only unaffected**: with the cloud unset, settings still persist
       locally and no `user_settings` request is ever made.
-- [ ] Sidebar **layout** sync is intentionally **not** in this phase — tracked as
-      Phase 3.3.1 (the layout store has no LWW timestamps yet).
+- [ ] Sidebar **layout** sync ships separately in Phase 3.3.1 (§8.1 below) — the
+      layout lives in a localStorage store, not Dexie.
+
+### 8.1 Sidebar layout (Phase 3.3.1)
+
+The sidebar layout (panel order + collapsed state) syncs through the same
+`user_settings` table under the `sidebar.layout` key, with the same LWW, but
+sourced from its zustand/localStorage store (not Dexie).
+
+- [ ] Reorder or collapse panels on **machine A** while signed in → sign in on
+      **machine B** (or reload it) and the layout arrives, applied live.
+- [ ] Change the layout on both devices → the **newer** change wins on both.
+- [ ] **Local-only unaffected**: signed out, the layout persists locally as
+      before and no `sidebar.layout` request is made.
 
 ## 9. Manual verification (Phase 3.4)
 

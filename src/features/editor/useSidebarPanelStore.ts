@@ -15,7 +15,7 @@ export type SidebarTab =
   | 'history'
   | 'peers'
 
-function defaultLayout(): Record<EditorStage, SidebarTab[]> {
+export function defaultLayout(): Record<EditorStage, SidebarTab[]> {
   return {
     prepare: [...STAGE_TABS.prepare],
     translate: [...STAGE_TABS.translate],
@@ -35,6 +35,12 @@ interface SidebarPanelState {
   layout: Record<EditorStage, SidebarTab[]>
   /** Per-panel collapsed state, shared across stages. */
   collapsed: Partial<Record<SidebarTab, boolean>>
+  /**
+   * Epoch-ms of the last layout/collapsed change (3.3.1). Drives last-write-wins
+   * when a signed-in device syncs its sidebar layout across machines. Persisted;
+   * transient fields (open/active tab) never bump it.
+   */
+  updatedAt: number
   toggle: () => void
   setOpen: (open: boolean) => void
   /**
@@ -62,6 +68,7 @@ export const useSidebarPanelStore = create<SidebarPanelState>()(
       tab: 'tm',
       layout: defaultLayout(),
       collapsed: {},
+      updatedAt: 0,
       toggle: () => set((s) => ({ open: !s.open })),
       setOpen: (open) => set({ open }),
       setTab: (tab) =>
@@ -70,23 +77,27 @@ export const useSidebarPanelStore = create<SidebarPanelState>()(
           const stage = stageForTab(tab)
           const cur = s.layout[stage]
           const layout = cur.includes(tab) ? s.layout : { ...s.layout, [stage]: [...cur, tab] }
-          return { tab, layout, collapsed: { ...s.collapsed, [tab]: false } }
+          return { tab, layout, collapsed: { ...s.collapsed, [tab]: false }, updatedAt: Date.now() }
         }),
-      setLayout: (stage, tabs) => set((s) => ({ layout: { ...s.layout, [stage]: tabs } })),
+      setLayout: (stage, tabs) =>
+        set((s) => ({ layout: { ...s.layout, [stage]: tabs }, updatedAt: Date.now() })),
       showPanel: (stage, tab) =>
         set((s) => {
           const cur = s.layout[stage]
           const layout = cur.includes(tab) ? s.layout : { ...s.layout, [stage]: [...cur, tab] }
-          return { tab, layout, collapsed: { ...s.collapsed, [tab]: false } }
+          return { tab, layout, collapsed: { ...s.collapsed, [tab]: false }, updatedAt: Date.now() }
         }),
       togglePanel: (stage, tab) =>
         set((s) => {
           const cur = s.layout[stage]
           const next = cur.includes(tab) ? cur.filter((t) => t !== tab) : [...cur, tab]
-          return { layout: { ...s.layout, [stage]: next } }
+          return { layout: { ...s.layout, [stage]: next }, updatedAt: Date.now() }
         }),
       toggleCollapsed: (tab) =>
-        set((s) => ({ collapsed: { ...s.collapsed, [tab]: !s.collapsed[tab] } })),
+        set((s) => ({
+          collapsed: { ...s.collapsed, [tab]: !s.collapsed[tab] },
+          updatedAt: Date.now(),
+        })),
       movePanel: (stage, tab, dir) =>
         set((s) => {
           const cur = [...s.layout[stage]]
@@ -94,15 +105,15 @@ export const useSidebarPanelStore = create<SidebarPanelState>()(
           const j = i + dir
           if (i < 0 || j < 0 || j >= cur.length) return {}
           ;[cur[i], cur[j]] = [cur[j], cur[i]]
-          return { layout: { ...s.layout, [stage]: cur } }
+          return { layout: { ...s.layout, [stage]: cur }, updatedAt: Date.now() }
         }),
       resetLayout: (stage) =>
-        set((s) => ({ layout: { ...s.layout, [stage]: [...STAGE_TABS[stage]] } })),
+        set((s) => ({ layout: { ...s.layout, [stage]: [...STAGE_TABS[stage]] }, updatedAt: Date.now() })),
     }),
     {
       name: 'verbalis.sidebar.layout',
       // Only the user's customisation is durable; open/active-tab are transient.
-      partialize: (s) => ({ layout: s.layout, collapsed: s.collapsed }),
+      partialize: (s) => ({ layout: s.layout, collapsed: s.collapsed, updatedAt: s.updatedAt }),
       // Backfill any stage missing from an older persisted shape so newly shipped
       // panels (e.g. 'lookup') and stages always have a sane default.
       merge: (persisted, current) => {
@@ -112,6 +123,7 @@ export const useSidebarPanelStore = create<SidebarPanelState>()(
           ...p,
           layout: { ...defaultLayout(), ...(p.layout ?? {}) },
           collapsed: p.collapsed ?? {},
+          updatedAt: p.updatedAt ?? 0,
         }
       },
     },
