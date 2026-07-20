@@ -4,6 +4,7 @@ import { installReverseBridge } from './reverseBridge'
 import {
   PresenceTracker,
   PRESENCE_HEARTBEAT_MS,
+  type CaretRange,
   type PeerPresence,
   type PresenceWire,
 } from './presence'
@@ -23,8 +24,8 @@ import type { PeerId, SyncMessage, SyncTransport } from './transport/types'
 export interface SyncSessionHandle {
   /** The local peer's id (stable for the session's lifetime). */
   readonly peerId: PeerId
-  /** Update which segment the local user is on; broadcasts presence. */
-  setActiveSegment(id: string | undefined): void
+  /** Update which segment (and caret within it) the local user is on; broadcasts presence. */
+  setActiveSegment(id: string | undefined, caret?: CaretRange): void
   /** Current remote peers. */
   getPeers(): PeerPresence[]
   /** Subscribe to roster changes; returns an unsubscribe. */
@@ -40,6 +41,14 @@ export interface SyncSessionOptions {
   transport: SyncTransport
   /** Payload codec (encryption). Defaults to identity (same-machine). */
   codec?: PayloadCodec
+  /** Stable cross-session identity for attribution (D8), if signed in. */
+  userId?: string
+}
+
+/** Two caret ranges are equal (both absent counts as equal). */
+function sameCaret(a: CaretRange | undefined, b: CaretRange | undefined): boolean {
+  if (!a || !b) return a === b
+  return a.anchor === b.anchor && a.focus === b.focus
 }
 
 const textEnc = new TextEncoder()
@@ -54,6 +63,7 @@ export function startSyncSession(opts: SyncSessionOptions): SyncSessionHandle {
 
   let displayName = opts.displayName
   let activeSegmentId: string | undefined
+  let caret: CaretRange | undefined
   let heartbeat: ReturnType<typeof setInterval> | null = null
   let destroyed = false
 
@@ -71,7 +81,7 @@ export function startSyncSession(opts: SyncSessionOptions): SyncSessionHandle {
   }
 
   const sendPresence = () => {
-    const wire: PresenceWire = { peerId, displayName, activeSegmentId }
+    const wire: PresenceWire = { peerId, displayName, userId: opts.userId, activeSegmentId, caret }
     void codec.encode(textEnc.encode(JSON.stringify(wire))).then((payload) => {
       if (!destroyed) transport.send({ kind: 'presence', from: peerId, payload })
     })
@@ -135,9 +145,11 @@ export function startSyncSession(opts: SyncSessionOptions): SyncSessionHandle {
 
   return {
     peerId,
-    setActiveSegment(id) {
-      if (id === activeSegmentId) return
+    setActiveSegment(id, nextCaret) {
+      const nc = id === undefined ? undefined : nextCaret
+      if (id === activeSegmentId && sameCaret(caret, nc)) return
       activeSegmentId = id
+      caret = nc
       sendPresence()
     },
     getPeers: () => presence.list(),

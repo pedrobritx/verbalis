@@ -2,7 +2,7 @@ import { acquireProjectDoc, releaseProjectDoc } from './docManager'
 import { startSyncSession, type SyncSessionHandle } from './syncSession'
 import { createTransport } from './transport'
 import { codecForPassphrase, identityCodec, type PayloadCodec } from './crypto'
-import { getProfileSettings } from '@/storage/repositories/settingsRepo'
+import { getProfileSettings, ensureLocalAuthor } from '@/storage/repositories/settingsRepo'
 import { shareRepo } from '@/storage/repositories/shareRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
@@ -43,18 +43,25 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
     return existing.handle
   }
 
-  const [doc, profile, codec, project] = await Promise.all([
+  const [doc, profile, codec, project, localAuthor] = await Promise.all([
     acquireProjectDoc(projectId),
     getProfileSettings(),
     resolveCodec(projectId),
     projectRepo.getById(projectId),
+    ensureLocalAuthor(),
   ])
 
   // A signed-in cloud project syncs over Supabase Realtime; everything else
   // keeps the same-machine BroadcastChannel (or Tauri LAN) transport (§4.2).
-  const signedIn = useAuthStore.getState().status === 'authenticated'
+  const auth = useAuthStore.getState()
+  const signedIn = auth.status === 'authenticated'
   const cloudId =
     signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
+
+  // Stable identity for presence attribution (§4.4, D8): the signed-in user id
+  // when available, else the device-local author id used for tracked changes —
+  // so a peer keeps the same identity across reconnects under new peerIds.
+  const userId = (signedIn ? auth.user?.id : undefined) ?? localAuthor.authorId
 
   const handle = startSyncSession({
     projectId,
@@ -62,6 +69,7 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
     displayName: profile.displayName || 'Anonymous',
     transport: createTransport(projectId, { cloudId }),
     codec,
+    userId,
   })
 
   // A signed-in cloud project also runs the Postgres persistence loop (§4.3):

@@ -10,13 +10,28 @@ import type { PeerId } from './transport/types'
  * the only thing that needs the CRDT.
  */
 
+/** A peer's caret / selection within its active segment, as plain-text offsets. */
+export interface CaretRange {
+  /** Selection anchor offset in the segment's plain target text. */
+  anchor: number
+  /** Selection focus (caret) offset; equals `anchor` for a collapsed caret. */
+  focus: number
+}
+
 export interface PeerPresence {
   peerId: PeerId
   displayName: string
   /** Deterministic accent colour derived from the peer id. */
   color: string
+  /**
+   * Stable cross-session identity (Supabase user id, or the local author id),
+   * so attribution survives a peer reconnecting under a fresh peerId (D8).
+   */
+  userId?: string
   /** The segment the peer is currently focused on, if any. */
   activeSegmentId?: string
+  /** The peer's caret / selection within {@link activeSegmentId}. */
+  caret?: CaretRange
   /** Epoch ms of the last presence we heard (or sent, for self). */
   lastSeen: number
   /** True for the local peer's own entry. */
@@ -27,7 +42,9 @@ export interface PeerPresence {
 export interface PresenceWire {
   peerId: PeerId
   displayName: string
+  userId?: string
   activeSegmentId?: string
+  caret?: CaretRange
 }
 
 /** Peers unheard-from for this long are considered gone. */
@@ -73,7 +90,9 @@ export class PresenceTracker {
       peerId: wire.peerId,
       displayName: wire.displayName,
       color: colorForPeer(wire.peerId),
+      userId: wire.userId,
       activeSegmentId: wire.activeSegmentId,
+      caret: wire.caret,
       lastSeen: now,
     })
   }

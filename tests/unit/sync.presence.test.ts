@@ -39,4 +39,15 @@ describe('presence tracker (F3)', () => {
     expect(colorForPeer('peer-x')).toBe(colorForPeer('peer-x'))
     expect(colorForPeer('peer-x')).toMatch(/^#[0-9a-f]{6}$/)
   })
+
+  it('carries the stable userId and caret through upsert (§4.4)', () => {
+    const t = new PresenceTracker('self')
+    t.upsert(
+      { peerId: 'a', displayName: 'Ana', userId: 'user-9', activeSegmentId: 's1', caret: { anchor: 2, focus: 5 } },
+      1000,
+    )
+    const [peer] = t.list(1000)
+    expect(peer.userId).toBe('user-9')
+    expect(peer.caret).toEqual({ anchor: 2, focus: 5 })
+  })
 })

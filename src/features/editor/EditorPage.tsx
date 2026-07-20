@@ -44,6 +44,8 @@ import { SplitSegmentDialog } from './segments/SplitSegmentDialog'
 import { SegmentHistoryDialog } from './history/SegmentHistoryDialog'
 import { useProjectCrdt } from './useProjectCrdt'
 import { useProjectSync } from './peers/useProjectSync'
+import { usePresenceStore } from './peers/usePresenceStore'
+import { segmentLease } from '@/storage/sync/lease'
 import { canJoin } from '@/core/segments/operations'
 import { buildSearchUrl } from '@/core/websearch/providers'
 import { useEditorSettings } from './useEditorSettings'
@@ -64,6 +66,11 @@ export default function EditorPage() {
   // Live LAN collaboration (Foundation F3): runs a peer sync session whenever the
   // project is shared, and lets presence follow the focused segment.
   const { setActiveSegment } = useProjectSync(id)
+  // Peer roster + our own peer id drive per-segment edit leases (§4.4): when a
+  // remote peer is on a segment, the lowest-peerId peer owns the edit and the
+  // rest see it read-only. Cheap to read here; only non-empty while shared.
+  const peers = usePresenceStore((s) => s.peers)
+  const selfPeerId = usePresenceStore((s) => s.selfPeerId)
   const profile = useLiveQuery(() => getProfileSettings(), [])
   const commentAuthor = profile?.displayName.trim() || undefined
   const [focusIndex, setFocusIndex] = useState(0)
@@ -112,6 +119,16 @@ export default function EditorPage() {
   useEffect(() => {
     setActiveSegment(activeSegmentId)
   }, [activeSegmentId, setActiveSegment])
+
+  // The remote peer (if any) holding a segment's edit lease against the local
+  // user — used to render that segment read-only with a "name is editing" chip.
+  const leaseHolderFor = useCallback(
+    (segmentId: string) => {
+      if (!selfPeerId || peers.length === 0) return undefined
+      return segmentLease(segmentId, selfPeerId, activeSegmentId, peers).heldBy
+    },
+    [peers, selfPeerId, activeSegmentId],
+  )
 
   // Derive status counts from the segments already in memory so the filter bar
   // doesn't re-scan the same rows from the database.
@@ -601,6 +618,7 @@ export default function EditorPage() {
                 targetLang={project.targetLang}
                 spellEnabled={spellEnabled}
                 commentAuthor={commentAuthor}
+                leaseLockedBy={leaseHolderFor(seg.id)}
                 onConfirm={() => confirm(originalIndex)}
                 onUnconfirm={() => unconfirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}

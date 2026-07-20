@@ -1,42 +1,40 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { setTarget, expectTargetText } from './helpers/richEditor'
+import { setTarget, expectTargetText, targetEditor } from './helpers/richEditor'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE = path.resolve(HERE, 'fixtures/sample.md')
 
 /**
- * F3 LAN collaboration, exercised at the browser level via the same-machine
- * BroadcastChannel transport: two tabs (same context → shared origin) open one
- * shared project, discover each other as peers, and see each other's edits live.
- * Presence specifically proves our sync path — Dexie alone does not exchange it.
+ * F3 LAN collaboration + §4.4 live-collab UX, exercised at the browser level via
+ * the same-machine BroadcastChannel transport: two tabs (same context → shared
+ * origin) open one shared project, discover each other as peers, see each other's
+ * edits live, and contend for per-segment edit leases. Presence specifically
+ * proves our sync path — Dexie alone does not exchange it.
  */
-test('two peers discover each other and sync edits over the LAN transport', async ({
-  context,
-}) => {
+
+/** Import the fixture in one tab, open it in a second, and share from both. */
+async function openSharedProjectInTwoTabs(
+  context: BrowserContext,
+): Promise<{ page1: Page; page2: Page }> {
   const page1 = await context.newPage()
   await page1.goto('/')
-
   await page1.getByRole('button', { name: 'Import file' }).click()
   await page1.setInputFiles('#import-file', FIXTURE)
   await expect(page1.locator('#import-name')).toHaveValue('sample')
   await page1.getByRole('button', { name: 'Import', exact: true }).click()
   await expect(page1).toHaveURL(/#\/project\//)
   await expect(page1.getByTestId('segment-list')).toBeVisible()
-  const projectUrl = page1.url()
 
-  // Second tab opens the same project.
   const page2 = await context.newPage()
-  await page2.goto(projectUrl)
+  await page2.goto(page1.url())
   await expect(page2.getByTestId('segment-list')).toBeVisible()
 
   // Enable sharing from the first tab; the flag is per-project, so the second
   // tab picks it up and both start a sync session.
   await page1.getByTestId('peers-presence-chip').click()
   await expect(page1.getByTestId('peers-panel')).toBeVisible()
-  // The toggle is a controlled checkbox that re-renders only after the async
-  // Dexie write lands, so click + assert instead of check() (which races it).
   await page1.getByTestId('peers-share-toggle').click()
   await expect(page1.getByTestId('peers-share-toggle')).toBeChecked()
 
@@ -48,7 +46,44 @@ test('two peers discover each other and sync edits over the LAN transport', asyn
   await expect(page1.getByTestId('peers-list').locator('li')).toHaveCount(1, { timeout: 10_000 })
   await expect(page2.getByTestId('peers-list').locator('li')).toHaveCount(1, { timeout: 10_000 })
 
+  return { page1, page2 }
+}
+
+test('two peers discover each other and sync edits over the LAN transport', async ({ context }) => {
+  const { page1, page2 } = await openSharedProjectInTwoTabs(context)
+
   // A live edit on tab 1 converges on tab 2.
   await setTarget(page1, 1, 'Synced across peers.')
   await expectTargetText(page2, 1, 'Synced across peers.', { timeout: 10_000 })
+})
+
+test('simultaneous entry yields one editor + one viewer, and the lease releases on blur', async ({
+  context,
+}) => {
+  const { page1, page2 } = await openSharedProjectInTwoTabs(context)
+
+  // Both peers enter the same segment at once (§4.4).
+  await targetEditor(page1, 1).click()
+  await targetEditor(page2, 1).click()
+
+  // The deterministic lowest-peerId tie-break demotes exactly one tab to a
+  // read-only viewer, shown by the "is editing" lease chip.
+  const chip1 = page1.getByTestId('lease-chip-1')
+  const chip2 = page2.getByTestId('lease-chip-1')
+  await expect(async () => {
+    expect((await chip1.count()) + (await chip2.count())).toBe(1)
+  }).toPass({ timeout: 10_000 })
+
+  const viewer = (await chip1.count()) ? page1 : page2
+  const owner = viewer === page1 ? page2 : page1
+
+  // One editor, one viewer: the viewer's target is read-only, the owner's is not.
+  await expect(targetEditor(viewer, 1)).toHaveAttribute('contenteditable', 'false')
+  await expect(targetEditor(owner, 1)).toHaveAttribute('contenteditable', 'true')
+
+  // The owner blurs the segment (moves to another) → the lease releases and the
+  // former viewer becomes the editor.
+  await targetEditor(owner, 0).click()
+  await expect(viewer.getByTestId('lease-chip-1')).toHaveCount(0, { timeout: 10_000 })
+  await expect(targetEditor(viewer, 1)).toHaveAttribute('contenteditable', 'true')
 })
