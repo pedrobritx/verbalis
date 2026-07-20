@@ -12,6 +12,22 @@ import type { CorpusTerm, InstalledCorpusPack } from '@/core/corpus/types'
 import type { DocumentEntity, Block, Asset } from '@/core/documents/model'
 import { buildBlocksFromSegments } from '@/core/documents/fromSegments'
 
+/** Which synced personal resource a tombstone belongs to (3.4). */
+export type SyncResource = 'glossary' | 'tm'
+
+/**
+ * A record that a personal row was deleted locally (3.4). Because the row itself
+ * is gone from its table, the sync needs this to push a soft-delete to the cloud
+ * so the deletion propagates (and doesn't resurrect) across devices. Only written
+ * while signed in; cleared once the delete has been pushed.
+ */
+export interface SyncTombstone {
+  resource: SyncResource
+  rowId: string
+  /** Epoch-ms of the deletion — its last-write-wins timestamp. */
+  deletedAt: number
+}
+
 export interface SettingsRow<T = unknown> {
   key: string
   value: T
@@ -107,6 +123,7 @@ class VerbalisDB extends Dexie {
   documents!: Table<DocumentEntity>
   blocks!: Table<Block>
   assets!: Table<Asset>
+  syncTombstones!: Table<SyncTombstone>
 
   constructor() {
     super('verbalis')
@@ -196,7 +213,48 @@ class VerbalisDB extends Dexie {
         assets: 'id, documentId, projectId',
       })
       .upgrade(migrateDocumentBlocks)
+
+    // v7: personal term-bank + TM cloud sync (ROADMAP §3.4). Index `updatedAt`
+    // on glossary/tm so the cursor-based reconciler can query rows changed since
+    // its last sync, and add the `syncTombstones` table so deletes propagate.
+    // The upgrade stamps a baseline `updatedAt` on existing rows so a signed-in
+    // device pushes them on first reconcile.
+    this.version(7)
+      .stores({
+        projects: 'id, name, updatedAt',
+        projectTemplates: 'projectId',
+        segments: 'id, projectId, index, status, [projectId+status], [projectId+index]',
+        tm: 'id, source, sourceLang, targetLang, projectId, corpusId, updatedAt',
+        glossary: 'id, term, projectId, updatedAt',
+        settings: '&key',
+        embeddings: 'id, tmId, model, [tmId+model]',
+        corpusTerms: 'id, corpusId',
+        corpusPacks: 'id',
+        versions: 'id, projectId, createdAt, [projectId+createdAt]',
+        documents: 'id, projectId',
+        blocks: 'id, documentId, projectId, [documentId+index]',
+        assets: 'id, documentId, projectId',
+        syncTombstones: '[resource+rowId], resource, deletedAt',
+      })
+      .upgrade(backfillSyncTimestamps)
   }
+}
+
+/**
+ * v7 upgrade: stamp a baseline `updatedAt` on existing glossary + personal TM
+ * rows (skipping corpus-seeded TM, which never syncs) so the first cloud
+ * reconcile has a timestamp to reason about. Uses a single `now` for the batch.
+ */
+export async function backfillSyncTimestamps(tx: Transaction): Promise<void> {
+  const now = Date.now()
+  const glossary = tx.table('glossary')
+  const tm = tx.table('tm')
+  await glossary.toCollection().modify((row: GlossaryEntry) => {
+    if (row.updatedAt === undefined) row.updatedAt = now
+  })
+  await tm.toCollection().modify((row: TMEntry) => {
+    if (row.updatedAt === undefined) row.updatedAt = now
+  })
 }
 
 export const db = new VerbalisDB()

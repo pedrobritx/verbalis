@@ -83,6 +83,12 @@ and safe to re-run:
   `updated_at` is client-supplied so per-key last-write-wins works across
   devices. Backs Phase 3.3; **MT API keys are never written here** (the sync
   allowlist lives in `src/storage/cloud/settingsSync.ts`).
+- `0004_personal_resources.sql` — the user's personal term bank + TM
+  (`personal_glossary` / `personal_tm`, each `id, user_id, updated_at, deleted,
+  payload jsonb`) + owner-scoped RLS. A generic cursor-based reconciler
+  (`src/storage/cloud/rowSync.ts`) syncs them with per-row LWW and soft-delete
+  tombstones. Backs Phase 3.4; **bundled corpora never sync** (corpus-seeded TM
+  carries a `corpusId` and is filtered out).
 
 ## 4. Configure Auth providers
 
@@ -171,3 +177,18 @@ first.
       locally and no `user_settings` request is ever made.
 - [ ] Sidebar **layout** sync is intentionally **not** in this phase — tracked as
       Phase 3.3.1 (the layout store has no LWW timestamps yet).
+
+## 9. Manual verification (Phase 3.4)
+
+Syncs the personal term bank + TM across a signed-in user's devices, with per-row
+LWW and tombstones. Apply `0004_personal_resources.sql` first.
+
+- [ ] Add glossary terms + TM entries on **machine A** while signed in. Sign in on
+      **machine B** → they arrive after the sign-in reconcile.
+- [ ] Edit the same term on both devices → the **newer** edit wins on both.
+- [ ] **Delete doesn't resurrect**: delete a term on A → after B syncs it's gone on
+      B and stays gone (a later sync never brings it back).
+- [ ] **Bundled corpora never sync**: install a terminology corpus → its TM rows do
+      **not** appear in `personal_tm`, and uninstalling on A doesn't touch B.
+- [ ] **Local-only unaffected**: signed out, glossary/TM work exactly as before and
+      no `personal_glossary`/`personal_tm` request is made (no tombstones written).

@@ -1,5 +1,6 @@
 import { db } from '@/storage/db'
 import type { TMEntry } from '@/core/types'
+import { recordTombstone, notifyResourceChange } from '@/storage/cloud/rowSyncState'
 
 export interface TMUpsertInput {
   source: string
@@ -9,14 +10,39 @@ export interface TMUpsertInput {
   projectId?: string
 }
 
+/** Stamp the sync clock on a row being written locally (3.4). */
+function stamped(entry: TMEntry): TMEntry {
+  return { ...entry, updatedAt: Date.now() }
+}
+
 export const tmRepo = {
   getAll: () => db.tm.toArray(),
   getById: (id: string) => db.tm.get(id),
-  create: (entry: TMEntry) => db.tm.add(entry),
-  update: (id: string, changes: Partial<TMEntry>) => db.tm.update(id, changes),
-  remove: (id: string) => db.tm.delete(id),
-  removeMany: (ids: string[]) => db.tm.bulkDelete(ids),
-  bulkAdd: (entries: TMEntry[]) => db.tm.bulkAdd(entries),
+  create: (entry: TMEntry) => {
+    const p = db.tm.add(stamped(entry))
+    notifyResourceChange('tm')
+    return p
+  },
+  update: (id: string, changes: Partial<TMEntry>) => {
+    const p = db.tm.update(id, { ...changes, updatedAt: Date.now() })
+    notifyResourceChange('tm')
+    return p
+  },
+  remove: async (id: string) => {
+    await recordTombstone('tm', id)
+    await db.tm.delete(id)
+    notifyResourceChange('tm')
+  },
+  removeMany: async (ids: string[]) => {
+    for (const id of ids) await recordTombstone('tm', id)
+    await db.tm.bulkDelete(ids)
+    notifyResourceChange('tm')
+  },
+  bulkAdd: (entries: TMEntry[]) => {
+    const p = db.tm.bulkAdd(entries.map(stamped))
+    notifyResourceChange('tm')
+    return p
+  },
   byLangPair: (sourceLang: string, targetLang: string) =>
     db.tm.where({ sourceLang, targetLang }).toArray(),
   findExact: (source: string, sourceLang: string, targetLang: string) =>
@@ -33,7 +59,9 @@ export const tmRepo = {
         target: input.target,
         date: now,
         projectId: input.projectId,
+        updatedAt: Date.now(),
       })
+      notifyResourceChange('tm')
       return existing.id
     }
     const id = crypto.randomUUID()
@@ -45,7 +73,9 @@ export const tmRepo = {
       targetLang: input.targetLang,
       projectId: input.projectId,
       date: now,
+      updatedAt: Date.now(),
     })
+    notifyResourceChange('tm')
     return id
   },
 }
