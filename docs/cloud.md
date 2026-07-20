@@ -104,6 +104,16 @@ and safe to re-run:
 - `0006_projects_helpers_private.sql` — moves the `is_project_member` /
   `has_project_role` RLS helpers into a non-API `private` schema so they are not
   reachable as PostgREST RPCs (clears the database linter). Apply after `0005`.
+- `0007_compaction.sql` — the `claim_compaction(project_id, expected_seq, state,
+  up_to_id)` RPC (SECURITY DEFINER, membership-checked): optimistically installs
+  a fresh compacted `ydoc_state` snapshot (guarded by the `seq` generation) and
+  prunes the subsumed `ydoc_updates` rows, so the append log stays bounded. Backs
+  Phase 4.3. Apply after `0006`. *(Numbering note: ROADMAP §4.3 sketched
+  `0005_compaction.sql`, but `0005`/`0006` were taken by the 4.1 project
+  migrations, so it ships as `0007`; and the RPC signature is widened from the
+  sketch's `(project_id, expected_seq)` to also carry the new snapshot + the
+  pruned-through id, so the whole compaction is one atomic, RLS-safe
+  transaction.)*
 
 > Note: the linter's "Leaked Password Protection Disabled" warning is unrelated
 > to these migrations — it's an optional **Authentication → Policies** toggle
@@ -224,3 +234,27 @@ LWW and tombstones. Apply `0004_personal_resources.sql` first.
       **not** appear in `personal_tm`, and uninstalling on A doesn't touch B.
 - [ ] **Local-only unaffected**: signed out, glossary/TM work exactly as before and
       no `personal_glossary`/`personal_tm` request is made (no tombstones written).
+
+## 10. Manual verification (Phase 4.3 — Postgres persistence loop)
+
+The persistence loop (`src/storage/cloud/ydocPersistence.ts`) makes Postgres the
+source of truth for a cloud project's Yjs doc: catch-up on open, debounced
+appends of local edits to `ydoc_updates`, and optimistic compaction into
+`ydoc_state` via `claim_compaction`. Realtime (§4.2) is only the low-latency
+channel. Apply `0007_compaction.sql` first. Two signed-in members, each having
+opened the same published cloud project:
+
+- [ ] **Catch-up on open**: member B opens the project → the doc arrives from
+      Postgres (`ydoc_state` + `ydoc_updates`) even with Realtime idle.
+- [ ] **Append**: member A edits → within ~½s a new `ydoc_updates` row appears,
+      `author_id = A`. B (reopened, or after a reconnect) sees the edit.
+- [ ] **Offline convergence**: take B offline, edit on both A (online) and B
+      (offline), bring B back and reopen → both docs converge, no edit lost
+      (Yjs replay is idempotent).
+- [ ] **Compaction bounds the log**: drive `ydoc_updates` past ~200 rows → a
+      client folds them into a new `ydoc_state` snapshot (its `seq` increments)
+      and the log shrinks. With two clients compacting at once, only one wins
+      (the `seq` guard) and the other no-ops — no lost updates.
+- [ ] **Local-only unaffected**: a project with no `cloud` link makes no
+      `ydoc_state`/`ydoc_updates` request; the BroadcastChannel/LAN path is
+      unchanged.

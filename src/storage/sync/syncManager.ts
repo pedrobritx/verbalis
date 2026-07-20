@@ -6,6 +6,7 @@ import { getProfileSettings } from '@/storage/repositories/settingsRepo'
 import { shareRepo } from '@/storage/repositories/shareRepo'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
+import { startYdocPersistence, type YdocPersistenceHandle } from '@/storage/cloud/ydocPersistence'
 import { useAuthStore } from '@/features/account/useAuthStore'
 
 /**
@@ -20,6 +21,8 @@ import { useAuthStore } from '@/features/account/useAuthStore'
 
 interface ActiveSync {
   handle: SyncSessionHandle
+  /** Postgres persistence loop, present only for a signed-in cloud project. */
+  persistence: YdocPersistenceHandle | null
   refs: number
 }
 
@@ -60,7 +63,21 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
     transport: createTransport(projectId, { cloudId }),
     codec,
   })
-  active.set(projectId, { handle, refs: 1 })
+
+  // A signed-in cloud project also runs the Postgres persistence loop (§4.3):
+  // Realtime is latency, Postgres is truth. Catch-up converges the doc with the
+  // cloud on open; local edits are appended debounced. Additive — nothing loads
+  // for local-only projects, and a catch-up failure (offline) never blocks edit.
+  let persistence: YdocPersistenceHandle | null = null
+  if (cloudId) {
+    persistence = await startYdocPersistence(cloudId, doc)
+    void persistence?.catchUp().catch(() => {
+      // Non-fatal: Dexie + the local Yjs doc stay authoritative; a later
+      // catch-up (reopen / reconnect, §4.4) reconciles via replay.
+    })
+  }
+
+  active.set(projectId, { handle, persistence, refs: 1 })
   return handle
 }
 
@@ -70,6 +87,7 @@ export function stopProjectSync(projectId: string): void {
   if (!entry) return
   entry.refs -= 1
   if (entry.refs > 0) return
+  entry.persistence?.destroy()
   entry.handle.destroy()
   releaseProjectDoc(projectId)
   active.delete(projectId)
