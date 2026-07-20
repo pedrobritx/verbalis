@@ -43,6 +43,9 @@ import { InlineTagChip } from './InlineTagChip'
 import { SpellUnderlinePlugin } from './SpellUnderlinePlugin'
 import { TrackedChangesPlugin } from './TrackedChangesPlugin'
 import { ChangeHoverCard } from './ChangeHoverCard'
+import { RemoteCaretOverlay } from './RemoteCaretOverlay'
+import { selectionToCaretRange } from './richOffsets'
+import type { CaretRange } from '@/storage/sync/presence'
 
 /** Initial-state builder: seed a paragraph from plain text, turning `{id}`
  *  placeholders into atomic InlineTagNodes (chips). */
@@ -77,6 +80,7 @@ function insertInlineTag(editor: LexicalEditor, tagId: string, kind: InlineTagKi
 }
 
 const SAVE_DELAY_MS = 300
+const CARET_THROTTLE_MS = 100
 
 export interface RichSegmentEditorProps {
   segmentId: string
@@ -101,6 +105,9 @@ export interface RichSegmentEditorProps {
   /** Display name attached to comments authored from the format toolbar. */
   commentAuthor?: string
   registerHandle: (handle: SegmentEditorHandle | null) => void
+  /** Report the local caret as plain-text offsets while focused (§4.4.1); the
+   *  focused segment's editor is the only one given this, so presence follows it. */
+  onCaret?: (caret: CaretRange) => void
   onFocus: () => void
   onConfirm: () => void
   onToggleReviewed: () => void
@@ -178,6 +185,7 @@ export function RichSegmentEditor(props: RichSegmentEditorProps) {
             <SpellUnderlinePlugin targetLang={targetLang} containerRef={editorBoxRef} />
           )}
           <ChangeHoverCard segmentId={props.segmentId} containerRef={editorBoxRef} />
+          <RemoteCaretOverlay segmentId={props.segmentId} containerRef={editorBoxRef} />
         </div>
       </div>
       <HistoryPlugin />
@@ -198,6 +206,10 @@ function EditorLogic(props: RichSegmentEditorProps) {
   const lastSavedPlainRef = useRef(props.initialPlain)
   const lastSavedRichRef = useRef<string | undefined>(props.initialRich)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Throttle presence caret reports so a burst of selection changes / keystrokes
+  // sends at most one every CARET_THROTTLE_MS.
+  const caretTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingCaretRef = useRef<CaretRange | null>(null)
 
   // Reflect lock changes onto the editor's editability after mount.
   useEffect(() => {
@@ -244,14 +256,30 @@ function EditorLogic(props: RichSegmentEditorProps) {
 
     const setSelection = useEditorSelectionStore.getState().setText
 
+    const reportCaret = (caret: CaretRange) => {
+      pendingCaretRef.current = caret
+      if (caretTimerRef.current) return
+      caretTimerRef.current = setTimeout(() => {
+        caretTimerRef.current = null
+        const c = pendingCaretRef.current
+        pendingCaretRef.current = null
+        if (c) propsRef.current.onCaret?.(c)
+      }, CARET_THROTTLE_MS)
+    }
+
     const unregisters = [
       editor.registerUpdateListener(({ editorState, prevEditorState }) => {
-        // Mirror the current text selection to the Lookup panel (cheap read).
+        // Mirror the current text selection to the Lookup panel (cheap read), and
+        // report the caret for remote-cursor presence when this editor is focused
+        // (only the focused segment is given `onCaret`, §4.4.1).
         editorState.read(() => {
           const sel = $getSelection()
-          if ($isRangeSelection(sel) && !sel.isCollapsed()) {
-            const text = sel.getTextContent()
-            if (text.trim()) setSelection(text)
+          if ($isRangeSelection(sel)) {
+            if (!sel.isCollapsed()) {
+              const text = sel.getTextContent()
+              if (text.trim()) setSelection(text)
+            }
+            if (propsRef.current.onCaret) reportCaret(selectionToCaretRange(sel))
           }
         })
         // Skip selection-only changes (node tree unchanged).
@@ -360,6 +388,7 @@ function EditorLogic(props: RichSegmentEditorProps) {
 
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      if (caretTimerRef.current) clearTimeout(caretTimerRef.current)
       unregisters.forEach((u) => u())
       propsRef.current.registerHandle(null)
     }
