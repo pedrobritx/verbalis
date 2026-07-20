@@ -15,6 +15,7 @@ registerPWA()
 if (isCloudConfigured()) {
   void import('./storage/cloud/settingsSync').then((m) => m.startSettingsSync())
   void import('./storage/cloud/rowSync').then((m) => m.startRowSync())
+  void import('./features/editor/layoutSync').then((m) => m.startLayoutSync())
 }
 
 // Exchange an OAuth / magic-link `?code=` and strip it before the hash router
