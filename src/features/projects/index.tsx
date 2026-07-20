@@ -11,11 +11,14 @@ import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { ImportDialog } from '@/features/import/ImportDialog'
 import { useShortcutsStore } from '@/features/shortcuts/useShortcutsStore'
 import { ProjectCard } from './ProjectCard'
+import { OpenFromCloudButton } from './cloud/CloudControls'
+import { OpenCloudProjectDialog } from './cloud/OpenCloudProjectDialog'
 
 type SortKey = 'updated' | 'name'
 
 export default function ProjectsPage() {
   const [importOpen, setImportOpen] = useState(false)
+  const [cloudOpen, setCloudOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('updated')
   const openShortcuts = useShortcutsStore((s) => s.setOpen)
@@ -43,10 +46,13 @@ export default function ProjectsPage() {
             : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`
         }
         actions={
-          <Button onClick={() => setImportOpen(true)}>
-            <FilePlus />
-            Import file
-          </Button>
+          <div className="flex items-center gap-2">
+            <OpenFromCloudButton onClick={() => setCloudOpen(true)} />
+            <Button onClick={() => setImportOpen(true)}>
+              <FilePlus />
+              Import file
+            </Button>
+          </div>
         }
       />
 
@@ -92,6 +98,7 @@ export default function ProjectsPage() {
       )}
 
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <OpenCloudProjectDialog open={cloudOpen} onOpenChange={setCloudOpen} />
 
       <BrandFooter />
     </div>

@@ -96,6 +96,19 @@ and safe to re-run:
   (`src/storage/cloud/rowSync.ts`) syncs them with per-row LWW and soft-delete
   tombstones. Backs Phase 3.4; **bundled corpora never sync** (corpus-seeded TM
   carries a `corpusId` and is filtered out).
+- `0005_projects.sql` — cloud (collaborative) projects: `projects`,
+  `project_members` (role enum `project_manager`/`translator`/`revisor`),
+  `ydoc_state` (compacted Yjs snapshot) and append-only `ydoc_updates`
+  (author-stamped), all behind member-scoped RLS, plus a private
+  `project-files` storage bucket. Backs Phase 4.1.
+- `0006_projects_helpers_private.sql` — moves the `is_project_member` /
+  `has_project_role` RLS helpers into a non-API `private` schema so they are not
+  reachable as PostgREST RPCs (clears the database linter). Apply after `0005`.
+
+> Note: the linter's "Leaked Password Protection Disabled" warning is unrelated
+> to these migrations — it's an optional **Authentication → Policies** toggle
+> (HaveIBeenPwned checks) that only affects email/password signups, which
+> Verbalis does not use. Enable it if you like; it changes nothing here.
 
 ## 4. Configure Auth providers
 
