@@ -26,7 +26,7 @@ Rules for autonomous sessions:
 | 3.1 | Supabase bootstrap + Google/magic-link auth + PKCE | M | 0.1 | done (PR #48) |
 | 3.2 | Microsoft + Apple providers + account settings | S | 3.1 | done (PR #50) |
 | 3.3 | Synced preferences/settings/layout | M | 3.1 | done (PR #51) |
-| 3.3.1 | Sidebar layout sync (deferred from 3.3) | S | 3.3 | in-review (PR #TBD) |
+| 3.3.1 | Sidebar layout sync (deferred from 3.3) | S | 3.3 | in-review (PR #53) |
 | 3.4 | Personal term bank + TM sync | M | 3.3 | done (PR #52) |
 | 4.1 | Cloud project schema + RLS + publish/join | M | 3.1 | pending |
 | 4.2 | SupabaseRealtimeTransport + chunking | M | 4.1 | pending |
