@@ -4,6 +4,7 @@ import { Check, Eye, Lock, MessageSquare, Pencil } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import type { Segment } from '@/core/types'
+import type { PeerPresence } from '@/storage/sync/presence'
 import { StatusPill } from './StatusPill'
 import { SegmentComments } from './comments/SegmentComments'
 import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
@@ -60,6 +61,8 @@ interface SegmentRowProps {
   spellEnabled: boolean
   /** Display name attached to comments this user adds. */
   commentAuthor?: string
+  /** A remote peer holding this segment's edit lease (§4.4) — read-only + chip. */
+  leaseLockedBy?: PeerPresence
   onConfirm: () => void
   /** Revert a confirmed (translated) segment back to draft. */
   onUnconfirm: () => void
@@ -83,6 +86,7 @@ export function SegmentRow({
   targetLang,
   spellEnabled,
   commentAuthor,
+  leaseLockedBy,
   onConfirm,
   onUnconfirm,
   onToggleReviewed,
@@ -99,6 +103,10 @@ export function SegmentRow({
   const [commentsOpen, setCommentsOpen] = useState(false)
   const commentCount = segment.comments?.length ?? 0
   const locked = !!segment.locked
+  // A remote peer holding the lease makes the target read-only for us, on top of
+  // any persistent segment lock. Kept separate from `locked` so it only gates
+  // editing (not the lock toggle / confirm chrome).
+  const editLocked = locked || !!leaseLockedBy
   const openSplit = useSegmentOpsStore((s) => s.openSplit)
   const openHistory = useSegmentHistoryStore((s) => s.open)
   const isCode = segment.sourceMeta?.kind === 'code'
@@ -332,6 +340,21 @@ export function SegmentRow({
           </div>
 
           <div className="flex flex-col gap-1 min-w-0">
+            {leaseLockedBy && (
+              <span
+                className="inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                style={{ background: `${leaseLockedBy.color}22`, color: leaseLockedBy.color }}
+                data-testid={`lease-chip-${segment.index}`}
+                title={`${leaseLockedBy.displayName || 'A peer'} is editing this segment`}
+              >
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ background: leaseLockedBy.color }}
+                />
+                {leaseLockedBy.displayName || 'A peer'} is editing
+              </span>
+            )}
             {useRich ? (
               <Suspense
                 fallback={
@@ -352,7 +375,7 @@ export function SegmentRow({
                   externalPlain={segment.target}
                   externalRich={segment.targetRich}
                   status={segment.status}
-                  locked={locked}
+                  locked={editLocked}
                   isBilingual={isBilingual}
                   canJoinNext={canJoinNext}
                   source={segment.source}
@@ -401,13 +424,13 @@ export function SegmentRow({
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
                 onSelect={(e) => captureTextareaSelection(e.currentTarget)}
-                readOnly={locked}
+                readOnly={editLocked}
                 autoResize
                 placeholder={locked ? 'Locked' : 'Translation…'}
                 rows={1}
                 data-testid={`target-${segment.index}`}
                 aria-describedby={`seg-${segment.index}-counter`}
-                style={locked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
+                style={editLocked ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
               />
             )}
             <SegmentCounter

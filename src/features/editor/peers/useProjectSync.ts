@@ -24,6 +24,7 @@ export function useProjectSync(projectId: string | undefined): {
 
   const setShared = usePresenceStore((s) => s.setShared)
   const setPeers = usePresenceStore((s) => s.setPeers)
+  const setSelfPeerId = usePresenceStore((s) => s.setSelfPeerId)
   const reset = usePresenceStore((s) => s.reset)
   const handleRef = useRef<SyncSessionHandle | null>(null)
 
@@ -43,6 +44,7 @@ export function useProjectSync(projectId: string | undefined): {
         return
       }
       handleRef.current = handle
+      setSelfPeerId(handle.peerId)
       unsub = handle.subscribe(setPeers)
     })
 
@@ -51,9 +53,10 @@ export function useProjectSync(projectId: string | undefined): {
       unsub?.()
       handleRef.current = null
       setPeers([])
+      setSelfPeerId(undefined)
       stopProjectSync(projectId)
     }
-  }, [projectId, shared, setPeers])
+  }, [projectId, shared, setPeers, setSelfPeerId])
 
   useEffect(() => () => reset(), [reset])
 

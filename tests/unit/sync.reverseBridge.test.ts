@@ -1,8 +1,10 @@
 import 'fake-indexeddb/auto'
 import * as Y from 'yjs'
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { createEditor, $getRoot, $createParagraphNode, $createTextNode } from 'lexical'
 import { db } from '@/storage/db'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
+import { RICH_NAMESPACE, getRichNodes, richStateToPlain } from '@/core/editor/richText'
 import {
   __resetBridgeForTest,
   installSegmentBridge,
@@ -11,6 +13,20 @@ import {
 import { installReverseBridge } from '@/storage/sync/reverseBridge'
 import { ORIGIN_REMOTE, getSegmentsMap, seedFromDexie } from '@/storage/sync/segmentCrdt'
 import type { Segment } from '@/core/types'
+
+/** A valid serialized Lexical target state whose plain derivation is `text`. */
+function richFor(text: string): string {
+  const editor = createEditor({ namespace: RICH_NAMESPACE, nodes: getRichNodes(), onError: () => {} })
+  editor.update(
+    () => {
+      const p = $createParagraphNode()
+      p.append($createTextNode(text))
+      $getRoot().append(p)
+    },
+    { discrete: true },
+  )
+  return JSON.stringify(editor.getEditorState().toJSON())
+}
 
 /** Flush pending microtasks + the reverse bridge's async Dexie writes. */
 const tick = () => new Promise((r) => setTimeout(r, 0))
@@ -90,6 +106,35 @@ describe('Yjs→Dexie reverse bridge (F3)', () => {
     Y.applyUpdate(local, Y.encodeStateAsUpdate(remote, before2), ORIGIN_REMOTE)
     await tick()
     expect(await segmentRepo.getById('s1')).toBeUndefined()
+    detach()
+  })
+
+  it('drops a stale targetRich when it no longer derives to the merged plain target (§4.4)', async () => {
+    const detach = installReverseBridge(local, 'p1')
+    const remote = new Y.Doc()
+    // Seed a segment whose targetRich is consistent with its plain target.
+    seedFromDexie(remote, 'p1', [makeSeg({ id: 's1', target: 'abc', targetRich: richFor('abc') })])
+    Y.applyUpdate(local, Y.encodeStateAsUpdate(remote), ORIGIN_REMOTE)
+    await tick()
+    // Guard is a no-op while they agree.
+    expect((await segmentRepo.getById('s1'))?.targetRich).toBeTruthy()
+
+    // A concurrent merge lands a new plain target on the char-level Y.Text but
+    // leaves the (now-stale) targetRich scalar untouched — the mismatch case.
+    const before = Y.encodeStateVector(local)
+    const rtext = getSegmentsMap(remote).get('s1')!.get('target') as Y.Text
+    remote.transact(() => {
+      rtext.delete(0, rtext.length)
+      rtext.insert(0, 'xyz')
+    })
+    Y.applyUpdate(local, Y.encodeStateAsUpdate(remote, before), ORIGIN_REMOTE)
+    await tick()
+
+    const row = await segmentRepo.getById('s1')
+    expect(row?.target).toBe('xyz')
+    // The stale rich was dropped so the editor rebuilds it from the plain truth.
+    expect(row?.targetRich).toBeUndefined()
+    expect(richStateToPlain(row?.targetRich)).toBe('')
     detach()
   })
 

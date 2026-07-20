@@ -1,5 +1,6 @@
 import * as Y from 'yjs'
 import { db } from '@/storage/db'
+import { richStateToPlain } from '@/core/editor/richText'
 import { getSegmentsMap, readSegment, ORIGIN_DEXIE } from './segmentCrdt'
 import { withMirrorSuppressed } from './bridge'
 
@@ -68,9 +69,19 @@ async function reconcile(
   await withMirrorSuppressed(async () => {
     for (const id of changed) {
       const seg = readSegment(doc, projectId, id)
+      if (!seg) continue
+      // Stale-LWW guard (ROADMAP §4.4, risk #5): `target` (the char-level Y.Text)
+      // and `targetRich` are separate CRDT fields, so a concurrent merge can land
+      // a `targetRich` that no longer derives to the merged plain `target`. Plain
+      // is merge-critical and authoritative — when they disagree, drop the stale
+      // rich so the editor rebuilds it from plain rather than showing text that
+      // contradicts the source of truth.
+      if (seg.targetRich !== undefined && richStateToPlain(seg.targetRich) !== seg.target) {
+        seg.targetRich = undefined
+      }
       // `put` carries the doc's own `updatedAt`, so peers converge on one value
       // (last-writer-wins) instead of each bumping their own timestamp.
-      if (seg) await db.segments.put(seg)
+      await db.segments.put(seg)
     }
     for (const id of removed) {
       await db.segments.delete(id)
