@@ -1,5 +1,6 @@
 import { db } from '@/storage/db'
 import type { GlossaryEntry } from '@/core/types'
+import { recordTombstone, notifyResourceChange } from '@/storage/cloud/rowSyncState'
 
 export interface GlossaryUpsertInput {
   term: string
@@ -13,15 +14,49 @@ function normalizeTerm(term: string): string {
   return term.normalize('NFC').toLowerCase().trim()
 }
 
+/** Stamp the sync clock on a row being written locally (3.4). */
+function stamped<T extends { updatedAt?: number }>(entry: T): T {
+  return { ...entry, updatedAt: Date.now() }
+}
+
+/** Record tombstones for deleted rows, then fan out one change. */
+async function tombstoneAndNotify(ids: string[]): Promise<void> {
+  for (const id of ids) await recordTombstone('glossary', id)
+  notifyResourceChange('glossary')
+}
+
 export const glossaryRepo = {
   getAll: () => db.glossary.toArray(),
   getById: (id: string) => db.glossary.get(id),
-  create: (entry: GlossaryEntry) => db.glossary.add(entry),
-  update: (id: string, changes: Partial<GlossaryEntry>) => db.glossary.update(id, changes),
-  remove: (id: string) => db.glossary.delete(id),
-  removeMany: (ids: string[]) => db.glossary.bulkDelete(ids),
-  bulkAdd: (entries: GlossaryEntry[]) => db.glossary.bulkAdd(entries),
-  bulkPut: (entries: GlossaryEntry[]) => db.glossary.bulkPut(entries),
+  create: (entry: GlossaryEntry) => {
+    const p = db.glossary.add(stamped(entry))
+    notifyResourceChange('glossary')
+    return p
+  },
+  update: (id: string, changes: Partial<GlossaryEntry>) => {
+    const p = db.glossary.update(id, { ...changes, updatedAt: Date.now() })
+    notifyResourceChange('glossary')
+    return p
+  },
+  remove: async (id: string) => {
+    await recordTombstone('glossary', id)
+    await db.glossary.delete(id)
+    notifyResourceChange('glossary')
+  },
+  removeMany: async (ids: string[]) => {
+    await db.glossary.bulkDelete(ids)
+    await tombstoneAndNotify(ids)
+  },
+  bulkAdd: (entries: GlossaryEntry[]) => {
+    const p = db.glossary.bulkAdd(entries.map(stamped))
+    notifyResourceChange('glossary')
+    return p
+  },
+  bulkPut: (entries: GlossaryEntry[]) => {
+    const p = db.glossary.bulkPut(entries.map(stamped))
+    notifyResourceChange('glossary')
+    return p
+  },
   byProject: (projectId: string) => db.glossary.where({ projectId }).toArray(),
   // Returns entries available in a given project: project-scoped + unassigned (global).
   byProjectOrGlobal: async (projectId: string): Promise<GlossaryEntry[]> => {
@@ -51,7 +86,9 @@ export const glossaryRepo = {
         definition: input.definition || existing.definition,
         translations: merged,
         notes: input.notes ?? existing.notes,
+        updatedAt: Date.now(),
       })
+      notifyResourceChange('glossary')
       return existing.id
     }
     const id = crypto.randomUUID()
@@ -62,7 +99,9 @@ export const glossaryRepo = {
       translations: input.translations,
       notes: input.notes,
       projectId: input.projectId,
+      updatedAt: Date.now(),
     })
+    notifyResourceChange('glossary')
     return id
   },
 }

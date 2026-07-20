@@ -149,8 +149,15 @@ export interface TMEntry {
   projectId?: string
   date: string
   // Set when this entry was seeded from a bundled terminology corpus, so the
-  // pack (and only its entries) can be removed cleanly on uninstall.
+  // pack (and only its entries) can be removed cleanly on uninstall. Corpus-seeded
+  // rows are excluded from cloud sync (3.4) — only the user's own TM syncs.
   corpusId?: string
+  /**
+   * Epoch-ms of the last local write, stamped by `tmRepo` (3.4). Drives per-row
+   * last-write-wins when a signed-in device reconciles its personal TM with the
+   * cloud. Optional for backward compatibility; the Dexie v7 upgrade backfills it.
+   */
+  updatedAt?: number
 }
 
 export interface TMMatch {
@@ -167,6 +174,12 @@ export interface GlossaryEntry {
   translations: Record<string, string>
   notes?: string
   projectId?: string
+  /**
+   * Epoch-ms of the last local write, stamped by `glossaryRepo` (3.4). Drives
+   * per-row last-write-wins when a signed-in device reconciles its personal term
+   * bank with the cloud. Optional; the Dexie v7 upgrade backfills it.
+   */
+  updatedAt?: number
 }
 
 export type MTProviderId = 'mymemory' | 'ollama' | 'claude' | 'libretranslate'

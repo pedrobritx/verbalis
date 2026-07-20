@@ -8,12 +8,13 @@ import { isCloudConfigured } from './storage/cloud/supabaseClient'
 
 registerPWA()
 
-// Start the background settings reconciler (ROADMAP §3.3) only when the cloud is
-// configured, and load its code (and the auth store it drives) lazily so the
-// local-only bundle is unchanged. It pulls on sign-in and pushes allowlisted
-// preference changes; Dexie stays the read path throughout.
+// Start the background cloud reconcilers (ROADMAP §3.3 settings, §3.4 personal
+// term bank + TM) only when the cloud is configured, loading their code (and the
+// auth store they drive) lazily so the local-only bundle is unchanged. They pull
+// on sign-in and push changes in the background; Dexie stays the read path.
 if (isCloudConfigured()) {
   void import('./storage/cloud/settingsSync').then((m) => m.startSettingsSync())
+  void import('./storage/cloud/rowSync').then((m) => m.startRowSync())
 }
 
 // Exchange an OAuth / magic-link `?code=` and strip it before the hash router
