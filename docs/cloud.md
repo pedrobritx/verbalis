@@ -78,6 +78,11 @@ and safe to re-run:
   trigger seeding the profile from provider metadata.
 - `0002_profiles_hardening.sql` — pins the trigger functions' `search_path` and
   revokes their RPC EXECUTE grants (clears the database linter's SECURITY lints).
+- `0003_user_settings.sql` — per-user, per-key synced preferences
+  (`user_settings(user_id, key, value jsonb, updated_at)`) + owner-scoped RLS.
+  `updated_at` is client-supplied so per-key last-write-wins works across
+  devices. Backs Phase 3.3; **MT API keys are never written here** (the sync
+  allowlist lives in `src/storage/cloud/settingsSync.ts`).
 
 ## 4. Configure Auth providers
 
@@ -148,3 +153,21 @@ Adds Microsoft/Apple provider buttons and an **Account** settings section.
   - [ ] a **Sign out** button returning to the signed-out state.
 - [ ] With the cloud unset, the **Account** section is absent from Settings and no
       Supabase code is loaded.
+
+## 8. Manual verification (Phase 3.3)
+
+Syncs an allowlist of preferences (editor prefs, lookup defaults, spell-check)
+to `user_settings` with per-key last-write-wins. Apply `0003_user_settings.sql`
+first.
+
+- [ ] Sign in on **machine A**, change an editor preference (e.g. toggle
+      auto-propagate) and a lookup/spell default. Sign in on **machine B** with
+      the same account → the changed values arrive after the sign-in pull.
+- [ ] Change the same key on both devices while offline, then reconnect → the
+      **newer** edit wins on both (per-key LWW), no crash.
+- [ ] **MT provider settings never sync**: set a Claude/LibreTranslate API key on
+      machine A → it does **not** appear on machine B (nor in `user_settings`).
+- [ ] **Local-only unaffected**: with the cloud unset, settings still persist
+      locally and no `user_settings` request is ever made.
+- [ ] Sidebar **layout** sync is intentionally **not** in this phase — tracked as
+      Phase 3.3.1 (the layout store has no LWW timestamps yet).
