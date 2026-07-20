@@ -4,6 +4,9 @@ export interface BilingualProjectMeta {
   datatype?: string
 }
 
+/** Role a member holds on a cloud project (ROADMAP §4.1, D8). */
+export type ProjectRole = 'project_manager' | 'translator' | 'revisor'
+
 export interface Project {
   id: string
   name: string
@@ -12,6 +15,13 @@ export interface Project {
   createdAt: string
   updatedAt: string
   bilingualMeta?: BilingualProjectMeta
+  /**
+   * Cloud publication link (ROADMAP §4.1). Present once the project is published
+   * to — or opened from — Supabase; absent for local-only projects. `id` is the
+   * cloud `projects` row id; `role` is this user's role in it. Additive and
+   * unindexed: local-only projects never carry it.
+   */
+  cloud?: { id: string; role: ProjectRole }
 }
 
 /**
