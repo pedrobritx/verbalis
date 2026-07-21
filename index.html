@@ -9,12 +9,47 @@
     <link rel="apple-touch-icon" href="%BASE_URL%icons/apple-touch-icon.png" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0d0f10" />
+
+    <!-- Theme colour follows the system scheme (dark shell / light paper). -->
+    <meta name="theme-color" content="#0d0f10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#faf8f3" media="(prefers-color-scheme: light)" />
+
+    <title>Verbalis — local-first CAT tool</title>
     <meta
       name="description"
       content="Verbalis — a local-first, privacy-first CAT tool for professional translators. Your files, translation memory and glossaries stay in your browser. Built for security-sensitive work with industry XLIFF / TMX / TBX interoperability."
     />
-    <title>Verbalis — local-first CAT tool</title>
+    <meta
+      name="keywords"
+      content="CAT tool, translation, translation memory, XLIFF, TMX, TBX, local-first, privacy, offline, translator, PWA, glossary, terminology"
+    />
+    <meta name="author" content="Pedro Brito" />
+    <link rel="canonical" href="https://verbalis.britx.me/" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Slack, …) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Verbalis" />
+    <meta property="og:title" content="Verbalis — local-first CAT tool" />
+    <meta
+      property="og:description"
+      content="A local-first, privacy-first CAT tool for professional translators. Your files, TM and glossaries never leave your browser — yet it round-trips XLIFF, TMX, TBX and DOCX."
+    />
+    <meta property="og:url" content="https://verbalis.britx.me/" />
+    <meta property="og:image" content="https://verbalis.britx.me/icons/icon-512.png" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Verbalis — local-first CAT tool" />
+    <meta
+      name="twitter:description"
+      content="A local-first, privacy-first CAT tool for professional translators. Nothing leaves your browser."
+    />
+    <meta name="twitter:image" content="https://verbalis.britx.me/icons/icon-512.png" />
+
+    <!-- iOS standalone / installable PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Verbalis" />
   </head>
   <body>
     <div id="root"></div>
