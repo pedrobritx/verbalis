@@ -87,6 +87,29 @@ describe('versionRepo', () => {
     expect(seg?.targetRich).toBeUndefined()
   })
 
+  it('stamps a stable authorId on every capture (unified attribution, §5.3)', async () => {
+    await segmentRepo.bulkCreate([makeSeg({ id: 's1', target: 'x' })])
+    const v1 = await versionRepo.saveNamed('p1', 'v1', doc)
+    const v2 = await versionRepo.saveNamed('p1', 'v2', doc)
+    expect(v1!.authorId).toBeTruthy()
+    // Same local identity across captures (the id marks/comments/presence use).
+    expect(v2!.authorId).toBe(v1!.authorId)
+  })
+
+  it('signOff records a labeled approval version stamped with the signer (§5.3)', async () => {
+    await segmentRepo.bulkCreate([makeSeg({ id: 's1', target: 'x', status: 'translated' })])
+    const v = await versionRepo.signOff('p1', doc)
+    expect(v!.kind).toBe('named')
+    expect(v!.label).toMatch(/Approved by/)
+    expect(v!.approval).toBeTruthy()
+    expect(v!.approval!.authorId).toBe(v!.authorId)
+    expect(v!.approval!.at).toBe(v!.createdAt)
+
+    // A plain named version carries no approval.
+    const plain = await versionRepo.saveNamed('p1', 'plain', doc)
+    expect(plain!.approval).toBeUndefined()
+  })
+
   it('maybeAutoSnapshot throttles to one per window', async () => {
     await segmentRepo.bulkCreate([makeSeg({ id: 's1' })])
     const first = await versionRepo.maybeAutoSnapshot('p1', doc)

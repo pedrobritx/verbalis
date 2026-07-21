@@ -36,3 +36,8 @@ export function useCanResolveChanges(): boolean {
 export function useForcesSuggesting(): boolean {
   return useWorkflowStore((s) => forcesSuggesting(s.role, s.stage))
 }
+
+/** Whether the current role may perform review actions incl. sign-off (revisor / PM). */
+export function useCanReview(): boolean {
+  return useWorkflowStore((s) => workflowCapabilities(s.role, s.stage, 'translated').canReview)
+}
