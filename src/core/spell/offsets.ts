@@ -21,6 +21,31 @@ export interface MappedRange {
   localEnd: number
 }
 
+export interface MappedOffset {
+  key: string
+  localOffset: number
+}
+
+/**
+ * Locate a single plain-text `offset` on a text node, for painting a remote
+ * peer's caret (ROADMAP §4.4.1). Returns the first text span that contains the
+ * offset (a boundary between two text spans resolves to the end of the earlier
+ * one — the same screen position), or null when it lands on a non-text node
+ * (a tag chip) or past the end — the overlay simply skips that frame.
+ */
+export function mapOffsetToNode(spans: NodeSpan[], offset: number): MappedOffset | null {
+  if (offset < 0) return null
+  let acc = 0
+  for (const span of spans) {
+    const spanEnd = acc + span.length
+    if (span.isText && offset >= acc && offset <= spanEnd) {
+      return { key: span.key, localOffset: offset - acc }
+    }
+    acc = spanEnd
+  }
+  return null
+}
+
 /**
  * Locate `[start, end)` within the ordered node spans. Returns the containing
  * text node with node-local offsets, or null when the token lands in / spans a

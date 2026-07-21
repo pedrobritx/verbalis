@@ -87,3 +87,14 @@ test('simultaneous entry yields one editor + one viewer, and the lease releases 
   await expect(viewer.getByTestId('lease-chip-1')).toHaveCount(0, { timeout: 10_000 })
   await expect(targetEditor(viewer, 1)).toHaveAttribute('contenteditable', 'true')
 })
+
+test("a peer's caret renders as a live remote cursor in the other tab", async ({ context }) => {
+  const { page1, page2 } = await openSharedProjectInTwoTabs(context)
+
+  // Tab 1 edits segment 1, reporting its caret through presence (§4.4.1).
+  await targetEditor(page1, 1).click()
+  await page1.keyboard.type('hi')
+
+  // Tab 2, which is not on that segment, paints tab 1's remote caret + name label.
+  await expect(page2.getByTestId('remote-caret').first()).toBeAttached({ timeout: 10_000 })
+})

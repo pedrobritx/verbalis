@@ -46,6 +46,7 @@ import { useProjectCrdt } from './useProjectCrdt'
 import { useProjectSync } from './peers/useProjectSync'
 import { usePresenceStore } from './peers/usePresenceStore'
 import { segmentLease } from '@/storage/sync/lease'
+import type { CaretRange } from '@/storage/sync/presence'
 import { canJoin } from '@/core/segments/operations'
 import { buildSearchUrl } from '@/core/websearch/providers'
 import { useEditorSettings } from './useEditorSettings'
@@ -119,6 +120,16 @@ export default function EditorPage() {
   useEffect(() => {
     setActiveSegment(activeSegmentId)
   }, [activeSegmentId, setActiveSegment])
+
+  // Report the focused editor's caret to presence (§4.4.1) against the segment
+  // it belongs to. A ref keeps the callback stable so only the focused row it is
+  // passed to re-renders, not every row on each caret move.
+  const activeSegmentIdRef = useRef<string | undefined>(undefined)
+  activeSegmentIdRef.current = activeSegmentId
+  const reportCaret = useCallback(
+    (caret: CaretRange) => setActiveSegment(activeSegmentIdRef.current, caret),
+    [setActiveSegment],
+  )
 
   // The remote peer (if any) holding a segment's edit lease against the local
   // user — used to render that segment read-only with a "name is editing" chip.
@@ -619,6 +630,7 @@ export default function EditorPage() {
                 spellEnabled={spellEnabled}
                 commentAuthor={commentAuthor}
                 leaseLockedBy={leaseHolderFor(seg.id)}
+                onCaret={originalIndex === focusIndex ? reportCaret : undefined}
                 onConfirm={() => confirm(originalIndex)}
                 onUnconfirm={() => unconfirm(originalIndex)}
                 onToggleReviewed={() => toggleReviewed(originalIndex)}

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { shareRepo } from '@/storage/repositories/shareRepo'
 import { startProjectSync, stopProjectSync } from '@/storage/sync/syncManager'
 import type { SyncSessionHandle } from '@/storage/sync/syncSession'
+import type { CaretRange } from '@/storage/sync/presence'
 import { usePresenceStore } from './usePresenceStore'
 
 /**
@@ -14,7 +15,7 @@ import { usePresenceStore } from './usePresenceStore'
  * It also exposes `setActiveSegment` so presence can follow the user's focus.
  */
 export function useProjectSync(projectId: string | undefined): {
-  setActiveSegment: (id: string | undefined) => void
+  setActiveSegment: (id: string | undefined, caret?: CaretRange) => void
 } {
   const share = useLiveQuery(
     () => (projectId ? shareRepo.get(projectId) : undefined),
@@ -60,8 +61,8 @@ export function useProjectSync(projectId: string | undefined): {
 
   useEffect(() => () => reset(), [reset])
 
-  const setActiveSegment = useCallback((id: string | undefined) => {
-    handleRef.current?.setActiveSegment(id)
+  const setActiveSegment = useCallback((id: string | undefined, caret?: CaretRange) => {
+    handleRef.current?.setActiveSegment(id, caret)
   }, [])
 
   return { setActiveSegment }

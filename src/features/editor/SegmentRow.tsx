@@ -4,7 +4,7 @@ import { Check, Eye, Lock, MessageSquare, Pencil } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import type { Segment } from '@/core/types'
-import type { PeerPresence } from '@/storage/sync/presence'
+import type { CaretRange, PeerPresence } from '@/storage/sync/presence'
 import { StatusPill } from './StatusPill'
 import { SegmentComments } from './comments/SegmentComments'
 import { SegmentActionsMenu } from './segments/SegmentActionsMenu'
@@ -63,6 +63,8 @@ interface SegmentRowProps {
   commentAuthor?: string
   /** A remote peer holding this segment's edit lease (§4.4) — read-only + chip. */
   leaseLockedBy?: PeerPresence
+  /** Report the local caret for remote-cursor presence (§4.4.1); focused row only. */
+  onCaret?: (caret: CaretRange) => void
   onConfirm: () => void
   /** Revert a confirmed (translated) segment back to draft. */
   onUnconfirm: () => void
@@ -87,6 +89,7 @@ export function SegmentRow({
   spellEnabled,
   commentAuthor,
   leaseLockedBy,
+  onCaret,
   onConfirm,
   onUnconfirm,
   onToggleReviewed,
@@ -384,6 +387,7 @@ export function SegmentRow({
                   spellEnabled={spellEnabled}
                   commentAuthor={commentAuthor}
                   registerHandle={registerHandle}
+                  onCaret={onCaret}
                   onFocus={onFocus}
                   onConfirm={onConfirm}
                   onToggleReviewed={onToggleReviewed}
