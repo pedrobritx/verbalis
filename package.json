@@ -19,6 +19,7 @@
     "tauri:build": "tauri build"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.17.1",
     "@lexical/react": "^0.45.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",

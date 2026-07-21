@@ -23,14 +23,20 @@ describe('AddonsPage (§6.2)', () => {
     expect(screen.getByTestId('addon-qa.double_space')).toBeInTheDocument()
     expect(screen.getByTestId('addon-format.xliff')).toBeInTheDocument()
     expect(screen.getByTestId('addon-connector.gdrive')).toBeInTheDocument()
+    expect(screen.getByTestId('addon-connector.onedrive')).toBeInTheDocument()
   })
 
-  it('the Google Drive connector is toggleable', () => {
+  it('the storage connectors are toggleable', () => {
     render(<AddonsPage />)
-    const toggle = screen.getByTestId('addon-toggle-connector.gdrive') as HTMLInputElement
-    expect(toggle.checked).toBe(true)
-    fireEvent.click(toggle)
+    const gdrive = screen.getByTestId('addon-toggle-connector.gdrive') as HTMLInputElement
+    expect(gdrive.checked).toBe(true)
+    fireEvent.click(gdrive)
     expect(extensionRegistry.isEnabled('connector.gdrive')).toBe(false)
+
+    const onedrive = screen.getByTestId('addon-toggle-connector.onedrive') as HTMLInputElement
+    expect(onedrive.checked).toBe(true)
+    fireEvent.click(onedrive)
+    expect(extensionRegistry.isEnabled('connector.onedrive')).toBe(false)
   })
 
   it('toggling a QA addon flips its registry enablement', () => {

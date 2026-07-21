@@ -59,6 +59,10 @@ jobs:
           # gated by the console's authorised-origins allow-list). Unset -> the
           # Drive buttons stay hidden.
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID || secrets.VITE_GOOGLE_CLIENT_ID }}
+          # OneDrive connector (Phase 6.4) — pure client OAuth via MSAL, independent
+          # of Supabase. An Azure AD Web/SPA client id is public by design (gated by
+          # the app registration's redirect-URI allow-list). Unset -> hidden.
+          VITE_MS_CLIENT_ID: ${{ vars.VITE_MS_CLIENT_ID || secrets.VITE_MS_CLIENT_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

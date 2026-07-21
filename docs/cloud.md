@@ -363,3 +363,49 @@ With `VITE_GOOGLE_CLIENT_ID` set:
       the "From Google Drive" and "Save to Drive" buttons.
 - [ ] **Unset ⇒ absent**: with `VITE_GOOGLE_CLIENT_ID` unset the buttons never
       appear and `dist` contains no `gsi/client` reference in the entry chunk.
+
+## 14. OneDrive connector (Phase 6.4)
+
+Like the Drive connector, OneDrive is **pure client OAuth** — via
+`@azure/msal-browser` (`loginPopup`, so no redirect interplay with the
+HashRouter) against Microsoft Graph with the delegated **`Files.ReadWrite`**
+scope. It does **not** use Supabase, so it works for 100%-local users too. MSAL
+caches its token in `sessionStorage`; nothing is persisted to Dexie. The library
+loads only when the user first reaches for OneDrive (dynamic import — off the
+initial bundle).
+
+### One-time setup (Azure Portal)
+
+1. Go to **Microsoft Entra ID → App registrations → New registration** at
+   <https://portal.azure.com/>.
+2. **Supported account types**: "Accounts in any organizational directory and
+   personal Microsoft accounts" (so personal OneDrive works).
+3. **Redirect URI**: platform **Single-page application (SPA)**, add the exact
+   origins the app runs on, e.g. `http://localhost:5173` and
+   `https://verbalis.britx.me`. (MSAL's `loginPopup` returns to the page origin;
+   no custom redirect path is needed.)
+4. **API permissions → Add a permission → Microsoft Graph → Delegated →
+   `Files.ReadWrite`** (and the implicit `User.Read`). Grant/consent as needed.
+5. Copy the **Application (client) ID** into `VITE_MS_CLIENT_ID` (build-time env;
+   see §1). In `deploy.yml` add it as a repo **Variable** like the others.
+
+Leaving `VITE_MS_CLIENT_ID` unset keeps the OneDrive buttons hidden — MSAL is
+never loaded and the connector code stays out of the initial bundle.
+
+### Manual verification
+
+With `VITE_MS_CLIENT_ID` set:
+
+- [ ] **Addon listed**: the Add-ons page shows **OneDrive** under *Storage
+      connectors* with Network / API key / Files permission chips and a working
+      on/off toggle.
+- [ ] **Import from OneDrive**: in the Import dialog, **From OneDrive** opens the
+      Microsoft login popup, then a file list; picking a
+      `.docx`/`.txt`/`.md`/XLIFF imports it as a new project.
+- [ ] **Save to OneDrive**: on a monolingual project, **Save to OneDrive** uploads
+      the exported `.docx` to your OneDrive root (visible at
+      <https://onedrive.live.com/>) and shows a "Saved to OneDrive" confirmation.
+- [ ] **Disable hides it**: turning the addon off on the Add-ons page hides both
+      the "From OneDrive" and "Save to OneDrive" buttons.
+- [ ] **Unset ⇒ absent**: with `VITE_MS_CLIENT_ID` unset the buttons never appear
+      and `@azure/msal-browser` stays out of the entry chunk (its own lazy chunk).

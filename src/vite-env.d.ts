@@ -19,6 +19,12 @@ interface ImportMetaEnv {
    * the connector works for 100%-local users too.
    */
   readonly VITE_GOOGLE_CLIENT_ID?: string
+  /**
+   * Microsoft (Azure AD) app client id for the OneDrive storage connector
+   * (Phase 6.4). Pure client OAuth via `@azure/msal-browser` `loginPopup`
+   * (independent of Supabase). When unset, the OneDrive affordances stay hidden.
+   */
+  readonly VITE_MS_CLIENT_ID?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv
