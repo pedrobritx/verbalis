@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { History, RotateCcw, Save } from 'lucide-react'
+import { History, RotateCcw, Save, BadgeCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { versionRepo } from '@/storage/repositories/versionRepo'
+import { useCanReview } from '../workflow/useWorkflowStore'
 import { relativeTime } from './relativeTime'
 
 interface VersionHistoryPanelProps {
@@ -19,8 +20,12 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
   const versions = useLiveQuery(() => versionRepo.listByProject(projectId), [projectId])
   const [label, setLabel] = useState('')
   const [saving, setSaving] = useState(false)
+  const [signingOff, setSigningOff] = useState(false)
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [restoringId, setRestoringId] = useState<string | null>(null)
+  // Sign-off is a review action — revisor / project_manager only (§5.3). A
+  // local-only project resolves to PM-of-self, so it's always available there.
+  const canReview = useCanReview()
 
   async function handleSave() {
     setSaving(true)
@@ -29,6 +34,15 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
       setLabel('')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleSignOff() {
+    setSigningOff(true)
+    try {
+      await versionRepo.signOff(projectId)
+    } finally {
+      setSigningOff(false)
     }
   }
 
@@ -61,17 +75,35 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
           className="rounded-md border px-2 py-1.5 text-sm bg-transparent"
           style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
         />
-        <Button
-          type="submit"
-          variant="tinted"
-          size="sm"
-          disabled={saving}
-          data-testid="save-version"
-          className="self-start"
-        >
-          <Save size={14} className="mr-1.5" />
-          Save version
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="submit"
+            variant="tinted"
+            size="sm"
+            disabled={saving}
+            data-testid="save-version"
+            className="self-start"
+          >
+            <Save size={14} className="mr-1.5" />
+            Save version
+          </Button>
+          {canReview && (
+            <Button
+              type="button"
+              variant="bordered"
+              size="sm"
+              disabled={signingOff}
+              onClick={() => void handleSignOff()}
+              data-testid="sign-off"
+              title="Record an approval milestone for the project"
+              className="self-start"
+              style={{ color: 'var(--color-accent)' }}
+            >
+              <BadgeCheck size={14} className="mr-1.5" />
+              Sign off
+            </Button>
+          )}
+        </div>
       </form>
 
       {!versions || versions.length === 0 ? (
@@ -96,9 +128,17 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
             >
               <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                 <span
-                  className="text-sm font-medium truncate"
-                  style={{ color: v.kind === 'named' ? 'var(--color-text)' : 'var(--color-muted)' }}
+                  className="flex items-center gap-1 text-sm font-medium truncate"
+                  style={{
+                    color: v.approval
+                      ? 'var(--color-accent)'
+                      : v.kind === 'named'
+                        ? 'var(--color-text)'
+                        : 'var(--color-muted)',
+                  }}
+                  data-testid={v.approval ? 'version-approval' : undefined}
                 >
+                  {v.approval && <BadgeCheck size={13} className="shrink-0" />}
                   {v.label || (v.kind === 'auto' ? 'Auto-saved' : 'Untitled version')}
                 </span>
                 <span

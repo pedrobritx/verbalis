@@ -151,6 +151,17 @@ export interface ProjectVersion {
   segmentCount: number
   /** Display name of the local identity that captured the version, if set. */
   author?: string
+  /**
+   * Stable author id (from `profile.identity`) that captured the version — the
+   * same identity used by tracked-change marks, comments, and presence, so
+   * attribution is unified across the app (ROADMAP §5.3, D8).
+   */
+  authorId?: string
+  /**
+   * Set on a revisor/PM **sign-off** version: who approved the project and when.
+   * Its presence marks the version as an approval milestone in the timeline.
+   */
+  approval?: { authorId: string; authorName: string; at: string }
   createdAt: string
 }
 
