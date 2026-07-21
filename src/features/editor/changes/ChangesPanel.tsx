@@ -4,6 +4,7 @@ import { Check, X, GitCompare, Eye, EyeOff } from 'lucide-react'
 import { versionRepo } from '@/storage/repositories/versionRepo'
 import { colorForAuthor } from '@/core/history/authorColor'
 import { useEditorActionsStore } from '../useEditorActionsStore'
+import { useCanResolveChanges } from '../workflow/useWorkflowStore'
 import { useChangesStore } from './useChangesStore'
 import { DiffText } from '../history/DiffText'
 import { relativeTime } from '../history/relativeTime'
@@ -82,6 +83,9 @@ export function ChangesPanel({ projectId }: ChangesPanelProps) {
 function SuggestionsView({ projectId }: ChangesPanelProps) {
   const pending = useLiveQuery(() => listPendingChanges(projectId), [projectId])
   const actions = useEditorActionsStore((s) => s.actions)
+  // Only a revisor / project_manager may accept or reject (§5.2). Everyone else
+  // sees the suggestions read-only. Local-only projects resolve to PM → allowed.
+  const canResolve = useCanResolveChanges()
 
   if (!pending) {
     return (
@@ -113,30 +117,33 @@ function SuggestionsView({ projectId }: ChangesPanelProps) {
         <span>
           {pending.length} pending suggestion{pending.length === 1 ? '' : 's'}
         </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => void resolveProjectAll(projectId, 'accept')}
-            data-testid="suggestions-accept-all"
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-[var(--color-fill)]"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            <Check size={13} /> Accept all
-          </button>
-          <button
-            onClick={() => void resolveProjectAll(projectId, 'reject')}
-            data-testid="suggestions-reject-all"
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-[var(--color-fill)]"
-            style={{ color: 'var(--color-error)' }}
-          >
-            <X size={13} /> Reject all
-          </button>
-        </div>
+        {canResolve && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => void resolveProjectAll(projectId, 'accept')}
+              data-testid="suggestions-accept-all"
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-[var(--color-fill)]"
+              style={{ color: 'var(--color-accent)' }}
+            >
+              <Check size={13} /> Accept all
+            </button>
+            <button
+              onClick={() => void resolveProjectAll(projectId, 'reject')}
+              data-testid="suggestions-reject-all"
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-[var(--color-fill)]"
+              style={{ color: 'var(--color-error)' }}
+            >
+              <X size={13} /> Reject all
+            </button>
+          </div>
+        )}
       </div>
 
       {pending.map((c) => (
         <SuggestionRow
           key={c.id}
           change={c}
+          canResolve={canResolve}
           onJump={() => actions?.jumpToSegment(c.segmentIndex + 1)}
         />
       ))}
@@ -144,7 +151,15 @@ function SuggestionsView({ projectId }: ChangesPanelProps) {
   )
 }
 
-function SuggestionRow({ change, onJump }: { change: PendingChange; onJump: () => void }) {
+function SuggestionRow({
+  change,
+  canResolve,
+  onJump,
+}: {
+  change: PendingChange
+  canResolve: boolean
+  onJump: () => void
+}) {
   const color = colorForAuthor(change.authorName)
   const isInsert = change.type === 'insert'
   const resolve = (action: ResolveAction) =>
@@ -189,24 +204,26 @@ function SuggestionRow({ change, onJump }: { change: PendingChange; onJump: () =
         {change.text}
       </p>
 
-      <div className="flex items-center gap-1.5">
-        <button
-          onClick={() => resolve('accept')}
-          data-testid={`suggestion-accept-${change.id}`}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:opacity-80"
-          style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
-        >
-          <Check size={13} /> Accept
-        </button>
-        <button
-          onClick={() => resolve('reject')}
-          data-testid={`suggestion-reject-${change.id}`}
-          className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors hover:bg-[var(--color-fill)]"
-          style={{ borderColor: 'var(--color-border)', color: 'var(--color-error)' }}
-        >
-          <X size={13} /> Reject
-        </button>
-      </div>
+      {canResolve && (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => resolve('accept')}
+            data-testid={`suggestion-accept-${change.id}`}
+            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:opacity-80"
+            style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
+          >
+            <Check size={13} /> Accept
+          </button>
+          <button
+            onClick={() => resolve('reject')}
+            data-testid={`suggestion-reject-${change.id}`}
+            className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors hover:bg-[var(--color-fill)]"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-error)' }}
+          >
+            <X size={13} /> Reject
+          </button>
+        </div>
+      )}
     </div>
   )
 }

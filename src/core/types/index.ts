@@ -7,6 +7,9 @@ export interface BilingualProjectMeta {
 /** Role a member holds on a cloud project (ROADMAP §4.1, D8). */
 export type ProjectRole = 'project_manager' | 'translator' | 'revisor'
 
+/** Project-level workflow stage that gates editing per role (ROADMAP §5.2). */
+export type WorkflowStage = 'translation' | 'review' | 'final'
+
 export interface Project {
   id: string
   name: string
@@ -18,10 +21,11 @@ export interface Project {
   /**
    * Cloud publication link (ROADMAP §4.1). Present once the project is published
    * to — or opened from — Supabase; absent for local-only projects. `id` is the
-   * cloud `projects` row id; `role` is this user's role in it. Additive and
-   * unindexed: local-only projects never carry it.
+   * cloud `projects` row id; `role` is this user's role in it. `stage`/`deadline`
+   * carry the §5.2 workflow snapshot read on open. Additive and unindexed:
+   * local-only projects never carry it (they are "PM-of-self", fully permissive).
    */
-  cloud?: { id: string; role: ProjectRole }
+  cloud?: { id: string; role: ProjectRole; stage?: WorkflowStage; deadline?: string | null }
 }
 
 /**

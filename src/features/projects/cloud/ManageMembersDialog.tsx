@@ -12,7 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Project, ProjectRole } from '@/core/types'
+import type { Project, ProjectRole, WorkflowStage } from '@/core/types'
 import type { ProjectMember } from '@/storage/cloud/members'
 import type * as MembersModule from '@/storage/cloud/members'
 import { useAuthStore } from '@/features/account/useAuthStore'
@@ -30,6 +30,12 @@ const ROLE_LABEL: Record<ProjectRole, string> = {
   project_manager: 'Project manager',
   translator: 'Translator',
   revisor: 'Revisor',
+}
+const STAGES: WorkflowStage[] = ['translation', 'review', 'final']
+const STAGE_LABEL: Record<WorkflowStage, string> = {
+  translation: 'Translation',
+  review: 'Review',
+  final: 'Final',
 }
 
 export function ManageMembersDialog({
@@ -51,6 +57,11 @@ export function ManageMembersDialog({
   const [busy, setBusy] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<ProjectRole>('translator')
+  const [stage, setStage] = useState<WorkflowStage>(project.cloud?.stage ?? 'translation')
+
+  useEffect(() => {
+    setStage(project.cloud?.stage ?? 'translation')
+  }, [project.cloud?.stage])
 
   const loadCtx = async (): Promise<{ client: SupabaseClient; m: typeof MembersModule }> => {
     const [{ getSupabase }, m] = await Promise.all([
@@ -123,6 +134,22 @@ export function ManageMembersDialog({
       return 'reload'
     })
 
+  const changeStage = async (next: WorkflowStage) => {
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const { changeProjectStage } = await import('@/storage/cloud/projectCloud')
+      await changeProjectStage(project.id, next)
+      setStage(next)
+      setNotice(`Workflow stage set to ${STAGE_LABEL[next].toLowerCase()}.`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not change the stage.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -172,6 +199,34 @@ export function ManageMembersDialog({
             </Button>
           </form>
         )}
+
+        <div
+          className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
+          style={{ borderColor: 'var(--color-border)' }}
+          data-testid="stage-control"
+        >
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+            Workflow stage
+          </span>
+          {isManager ? (
+            <Select
+              value={stage}
+              disabled={busy}
+              onChange={(e) => void changeStage(e.target.value as WorkflowStage)}
+              data-testid="workflow-stage"
+            >
+              {STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {STAGE_LABEL[s]}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Badge variant="outline" style={{ color: 'var(--color-muted)' }} data-testid="workflow-stage-readonly">
+              {STAGE_LABEL[stage]}
+            </Badge>
+          )}
+        </div>
 
         {members === null ? (
           <div className="flex items-center justify-center gap-2 py-6" style={{ color: 'var(--color-muted)' }}>

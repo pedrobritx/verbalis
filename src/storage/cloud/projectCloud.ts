@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import * as Y from 'yjs'
 import { db } from '@/storage/db'
-import type { Project, ProjectRole, Segment } from '@/core/types'
+import type { Project, ProjectRole, Segment, WorkflowStage } from '@/core/types'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { acquireProjectDoc, releaseProjectDoc } from '@/storage/sync/docManager'
 import { readAllSegments } from '@/storage/sync/segmentCrdt'
@@ -35,6 +35,8 @@ interface ProjectRowSelect {
   source_lang: string
   target_lang: string
   owner_id: string
+  stage?: WorkflowStage
+  deadline?: string | null
 }
 
 function toSummary(r: ProjectRowSelect): CloudProjectSummary {
@@ -107,11 +109,16 @@ export async function fetchCloudProject(
   client: SupabaseClient,
   cloudId: string,
   userId: string,
-): Promise<{ summary: CloudProjectSummary; role: ProjectRole } | null> {
+): Promise<{
+  summary: CloudProjectSummary
+  role: ProjectRole
+  stage: WorkflowStage
+  deadline: string | null
+} | null> {
   const [projectRes, memberRes] = await Promise.all([
     client
       .from('projects')
-      .select('id,name,source_lang,target_lang,owner_id')
+      .select('id,name,source_lang,target_lang,owner_id,stage,deadline')
       .eq('id', cloudId)
       .maybeSingle(),
     client
@@ -126,7 +133,17 @@ export async function fetchCloudProject(
   const row = projectRes.data as ProjectRowSelect | null
   if (!row) return null
   const role = (memberRes.data as { role: ProjectRole } | null)?.role ?? 'translator'
-  return { summary: toSummary(row), role }
+  return { summary: toSummary(row), role, stage: row.stage ?? 'translation', deadline: row.deadline ?? null }
+}
+
+/** Set a cloud project's workflow stage (project_manager-only, enforced by RLS). */
+export async function setCloudProjectStage(
+  client: SupabaseClient,
+  cloudId: string,
+  stage: WorkflowStage,
+): Promise<void> {
+  const { error } = await client.from('projects').update({ stage }).eq('id', cloudId)
+  if (error) throw new Error(error.message)
 }
 
 /** The compacted Yjs snapshot for a cloud project, or null when unseeded. */
@@ -216,7 +233,7 @@ export async function openCloudProject(cloudId: string): Promise<string | null> 
     targetLang: meta.summary.targetLang,
     createdAt: now,
     updatedAt: now,
-    cloud: { id: cloudId, role: meta.role },
+    cloud: { id: cloudId, role: meta.role, stage: meta.stage, deadline: meta.deadline },
   }
 
   let segments: Segment[] = []
@@ -232,4 +249,24 @@ export async function openCloudProject(cloudId: string): Promise<string | null> 
     if (segments.length > 0) await db.segments.bulkAdd(segments)
   })
   return localId
+}
+
+/**
+ * Advance a cloud project's workflow stage (project_manager-only, §5.2). Writes
+ * Postgres — RLS rejects a non-PM — then patches the local `project.cloud.stage`
+ * so the editor's role gating updates immediately. No-op / null when the cloud is
+ * off or the project isn't cloud-linked.
+ */
+export async function changeProjectStage(
+  projectId: string,
+  stage: WorkflowStage,
+): Promise<WorkflowStage | null> {
+  if (!isCloudConfigured()) return null
+  const project = await projectRepo.getById(projectId)
+  if (!project?.cloud) return null
+
+  const client = await getSupabase()
+  await setCloudProjectStage(client, project.cloud.id, stage)
+  await projectRepo.update(projectId, { cloud: { ...project.cloud, stage } })
+  return stage
 }

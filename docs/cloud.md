@@ -125,6 +125,12 @@ and safe to re-run:
   §5.1 sketched `0006_member_policies.sql`, but `0006`/`0007` were taken, so it ships as
   `0008`; invite resolves the email inside the RPC rather than via a client-side profiles
   lookup, keeping emails/ids server-side.)*
+- `0009_workflow.sql` — adds a `project_stage` enum + `projects.stage`
+  (default `translation`) and `projects.deadline`, gating role-based editing (§5.2).
+  Writes are project_manager-only through the existing `projects_update` policy —
+  no new policy. Backs Phase 5.2. Apply after `0008`. *(Numbering note: ROADMAP
+  §5.2 sketched `0007_workflow.sql`, but `0007`/`0008` were taken, so it ships as
+  `0009`.)*
 
 > Note: the linter's "Leaked Password Protection Disabled" warning is unrelated
 > to these migrations — it's an optional **Authentication → Policies** toggle
@@ -293,3 +299,23 @@ a second signed-in account:
       project_manager" (surfaced as an error in the dialog).
 - [ ] **Local-only unaffected**: a project with no `cloud` link shows no Members
       button; a signed-out / unconfigured build never loads the members chunk.
+
+## 12. Manual verification (Phase 5.2 — Role-gated editing workflow)
+
+Role gates editing per workflow stage (`core/workflow/rules.ts`), the stage being
+`projects.stage` set by a PM in the Members dialog. Apply `0009_workflow.sql`
+first. With a project_manager, a translator, and a revisor on one cloud project:
+
+- [ ] **PM sets the stage**: in Members, the manager moves the project through
+      Translation → Review → Final; a non-PM sees the stage read-only.
+- [ ] **Translator forced to suggest in review**: with the stage on *Review*, the
+      translator's edit-mode toggle is locked to **Suggesting** (disabled) and
+      typing produces tracked suggestions, not direct edits.
+- [ ] **Accept/reject is reviewer-only**: the translator sees suggestions but **no**
+      Accept/Reject (panel buttons hidden, hover card suppressed); the revisor and
+      the PM see and can resolve them.
+- [ ] **Final locks editing**: in *Final*, translator + revisor can't edit; only the
+      PM can (e.g. to reopen by moving the stage back).
+- [ ] **Local-only unchanged**: a project with no cloud link behaves as
+      "PM-of-self" — direct editing, suggesting, and accept/reject all available,
+      exactly as before roles existed.
