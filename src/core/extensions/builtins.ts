@@ -112,11 +112,27 @@ export const FORMAT_EXTENSION_MANIFESTS: ExtensionManifest[] = [
   },
 ]
 
-/** Every built-in manifest, in catalogue order (MT, then QA, then formats). */
+/** Storage connectors as addons (ROADMAP §6.3/§6.4). Pure client OAuth, so they
+ *  work for local-only users too; disabling one hides its import/export
+ *  affordances. `credentials` = it holds an OAuth token in memory. */
+export const CONNECTOR_EXTENSION_MANIFESTS: ExtensionManifest[] = [
+  {
+    id: 'connector.gdrive',
+    name: 'Google Drive',
+    version: '1.0.0',
+    kinds: ['storage-connector'],
+    permissions: ['network', 'credentials', 'filesystem'],
+    builtIn: true,
+    description: 'Import files from and save exports to Google Drive.',
+  },
+]
+
+/** Every built-in manifest, in catalogue order (MT, QA, formats, connectors). */
 export const BUILTIN_MANIFESTS: ExtensionManifest[] = [
   ...MT_EXTENSION_MANIFESTS,
   ...QA_EXTENSION_MANIFESTS,
   ...FORMAT_EXTENSION_MANIFESTS,
+  ...CONNECTOR_EXTENSION_MANIFESTS,
 ]
 
 let registered = false

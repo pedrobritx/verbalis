@@ -12,6 +12,13 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string
   /** Comma-separated OAuth providers to offer, e.g. "google,azure,apple". */
   readonly VITE_AUTH_PROVIDERS?: string
+  /**
+   * Google OAuth client id for the Drive storage connector (Phase 6.3). When
+   * unset, the Drive "From cloud" / "Save to cloud" affordances stay hidden.
+   * Pure client OAuth (Google Identity Services) — independent of Supabase, so
+   * the connector works for 100%-local users too.
+   */
+  readonly VITE_GOOGLE_CLIENT_ID?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

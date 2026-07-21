@@ -12,6 +12,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { LANGUAGE_OPTIONS } from '@/core/i18n/languages'
+import { HardDriveUpload } from 'lucide-react'
+import { ConnectorFilePicker } from '@/extensions/connectors/ConnectorFilePicker'
+import type { ConnectorFile, StorageConnector } from '@/extensions/connectors/types'
+import { isGdriveAvailable } from '@/extensions/connectors/gdrive/config'
 import { useImportProject } from './useImportProject'
 
 interface ImportDialogProps {
@@ -19,9 +23,17 @@ interface ImportDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+const IMPORTABLE_EXTENSIONS = ['.txt', '.md', '.markdown', '.docx', '.xlf', '.xliff', '.mqxliff']
+
 function stripExtension(filename: string): string {
   const i = filename.lastIndexOf('.')
   return i > 0 ? filename.slice(0, i) : filename
+}
+
+/** True when a cloud file is one of the formats the import flow understands. */
+function isImportable(file: ConnectorFile): boolean {
+  const n = file.name.toLowerCase()
+  return IMPORTABLE_EXTENSIONS.some((ext) => n.endsWith(ext))
 }
 
 function isBilingual(file: File | null): boolean {
@@ -36,12 +48,29 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const [sourceLang, setSourceLang] = useState('en')
   const [targetLang, setTargetLang] = useState('es')
   const [file, setFile] = useState<File | null>(null)
+  const [connector, setConnector] = useState<StorageConnector | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const gdrive = isGdriveAvailable()
 
   function reset() {
     setName('')
     setSourceLang('en')
     setTargetLang('es')
     setFile(null)
+    setPickerOpen(false)
+  }
+
+  function acceptPickedFile(f: File) {
+    setFile(f)
+    if (!name) setName(stripExtension(f.name))
+  }
+
+  async function openDrivePicker() {
+    // The Drive connector (GIS + REST) is loaded only on demand, so it never
+    // weighs on the initial bundle.
+    const { gdriveConnector } = await import('@/extensions/connectors/gdrive')
+    setConnector(gdriveConnector)
+    setPickerOpen(true)
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -72,6 +101,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     !isImporting
 
   return (
+    <>
     <Dialog
       open={open}
       onOpenChange={(o) => {
@@ -98,8 +128,25 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
               type="file"
               accept=".txt,.md,.docx,.xlf,.xliff,.mqxliff,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/xml,text/xml"
               onChange={handleFileChange}
-              required
+              required={!file}
             />
+            {gdrive && (
+              <Button
+                type="button"
+                variant="plain"
+                className="w-fit"
+                onClick={() => void openDrivePicker()}
+                data-testid="import-from-gdrive"
+              >
+                <HardDriveUpload size={14} />
+                From Google Drive
+              </Button>
+            )}
+            {file && (
+              <p className="text-xs" style={{ color: 'var(--color-muted)' }} data-testid="import-selected-file">
+                Selected: {file.name}
+              </p>
+            )}
           </div>
 
           <div className="grid gap-1.5">
@@ -180,5 +227,16 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
         </form>
       </DialogContent>
     </Dialog>
+
+    {connector && (
+      <ConnectorFilePicker
+        connector={connector}
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        accept={isImportable}
+        onPick={acceptPickedFile}
+      />
+    )}
+    </>
   )
 }

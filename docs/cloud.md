@@ -319,3 +319,47 @@ first. With a project_manager, a translator, and a revisor on one cloud project:
 - [ ] **Local-only unchanged**: a project with no cloud link behaves as
       "PM-of-self" — direct editing, suggesting, and accept/reject all available,
       exactly as before roles existed.
+
+## 13. Google Drive connector (Phase 6.3)
+
+The Drive connector is **pure client OAuth** via Google Identity Services (GIS)
+— it does **not** use Supabase, so it works for 100%-local users too. It uses
+the narrow `drive.file` scope (only files the app creates or the user explicitly
+opens through the Google picker/consent), which avoids Google's restricted-scope
+verification burden. The access token lives in memory only (gone on reload).
+
+### One-time setup (Google Cloud console)
+
+1. Create (or reuse) a project at <https://console.cloud.google.com/>.
+2. **APIs & Services → Library** → enable the **Google Drive API**.
+3. **APIs & Services → OAuth consent screen** → configure (External is fine for
+   testing; add yourself as a test user). Add the scope
+   `https://www.googleapis.com/auth/drive.file`.
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID →
+   Web application**. Under *Authorised JavaScript origins* add the exact
+   origins the app runs on, e.g. `http://localhost:5173` and
+   `https://verbalis.britx.me`. (No redirect URI is needed — GIS uses the token
+   flow, not a redirect.)
+5. Copy the client id into `VITE_GOOGLE_CLIENT_ID` (build-time env; see §1). In
+   `deploy.yml` add it as a repo **Variable** the same way as the Supabase vars.
+
+Leaving `VITE_GOOGLE_CLIENT_ID` unset keeps the Drive buttons hidden — no GIS
+script is loaded and the connector code stays out of the initial bundle.
+
+### Manual verification
+
+With `VITE_GOOGLE_CLIENT_ID` set:
+
+- [ ] **Addon listed**: the Add-ons page shows **Google Drive** under *Storage
+      connectors* with Network / API key / Files permission chips and a working
+      on/off toggle.
+- [ ] **Import from Drive**: in the Import dialog, **From Google Drive** opens the
+      Google consent popup, then a file list; picking a `.docx`/`.txt`/`.md`/XLIFF
+      imports it as a new project exactly as a local file would.
+- [ ] **Save to Drive**: on a monolingual project, **Save to Drive** uploads the
+      exported `.docx` to your Drive (visible in <https://drive.google.com/>) and
+      shows a "Saved to Drive" confirmation.
+- [ ] **Disable hides it**: turning the addon off on the Add-ons page hides both
+      the "From Google Drive" and "Save to Drive" buttons.
+- [ ] **Unset ⇒ absent**: with `VITE_GOOGLE_CLIENT_ID` unset the buttons never
+      appear and `dist` contains no `gsi/client` reference in the entry chunk.

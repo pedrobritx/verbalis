@@ -33,10 +33,15 @@ const SECTIONS: { title: string; kinds: ExtensionKind[]; hint: string }[] = [
     kinds: ['import-format', 'export-format'],
     hint: 'File formats Verbalis can read and write.',
   },
+  {
+    title: 'Storage connectors',
+    kinds: ['storage-connector'],
+    hint: 'Cloud drives to import from and save to. Disabling one hides its buttons.',
+  },
 ]
 
 /** Kinds the user can turn on/off here (their enablement is enforced elsewhere). */
-const TOGGLEABLE_KINDS = new Set<ExtensionKind>(['mt-provider', 'qa-rule'])
+const TOGGLEABLE_KINDS = new Set<ExtensionKind>(['mt-provider', 'qa-rule', 'storage-connector'])
 
 const PERMISSION_LABEL: Record<ExtensionPermission, string> = {
   network: 'Network',
