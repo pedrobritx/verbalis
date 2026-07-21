@@ -54,6 +54,11 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_AUTH_PROVIDERS: ${{ vars.VITE_AUTH_PROVIDERS || secrets.VITE_AUTH_PROVIDERS }}
+          # Google Drive connector (Phase 6.3) — pure client OAuth, independent of
+          # Supabase. Public by design (a Web OAuth client id is not a secret; it is
+          # gated by the console's authorised-origins allow-list). Unset -> the
+          # Drive buttons stay hidden.
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID || secrets.VITE_GOOGLE_CLIENT_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

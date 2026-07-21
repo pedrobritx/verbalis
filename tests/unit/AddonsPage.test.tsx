@@ -11,16 +11,26 @@ describe('AddonsPage (§6.2)', () => {
     registerBuiltinExtensions()
   })
 
-  it('lists everything pluggable: MT providers, QA rules, and formats', () => {
+  it('lists everything pluggable: MT providers, QA rules, formats, connectors', () => {
     render(<AddonsPage />)
     // A section per kind.
     expect(screen.getByTestId('addons-section-mt-provider')).toBeInTheDocument()
     expect(screen.getByTestId('addons-section-qa-rule')).toBeInTheDocument()
     expect(screen.getByTestId('addons-section-import-format')).toBeInTheDocument()
+    expect(screen.getByTestId('addons-section-storage-connector')).toBeInTheDocument()
     // Representative entries of each kind.
     expect(screen.getByTestId('addon-mt.claude')).toBeInTheDocument()
     expect(screen.getByTestId('addon-qa.double_space')).toBeInTheDocument()
     expect(screen.getByTestId('addon-format.xliff')).toBeInTheDocument()
+    expect(screen.getByTestId('addon-connector.gdrive')).toBeInTheDocument()
+  })
+
+  it('the Google Drive connector is toggleable', () => {
+    render(<AddonsPage />)
+    const toggle = screen.getByTestId('addon-toggle-connector.gdrive') as HTMLInputElement
+    expect(toggle.checked).toBe(true)
+    fireEvent.click(toggle)
+    expect(extensionRegistry.isEnabled('connector.gdrive')).toBe(false)
   })
 
   it('toggling a QA addon flips its registry enablement', () => {
