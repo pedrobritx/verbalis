@@ -17,6 +17,8 @@ export const EDITOR_SETTINGS_KEY = 'editor.prefs'
 export const PROFILE_SETTINGS_KEY = 'profile.identity'
 export const WEB_SEARCH_SETTINGS_KEY = 'websearch.providers'
 export const SPELL_SETTINGS_KEY = 'spell.dicts'
+/** Disabled extension ids (ROADMAP §6.1). Device-local; not in the 3.3 sync allowlist. */
+export const EXTENSIONS_SETTINGS_KEY = 'extensions.disabled'
 
 /** On-device spell-check. The active dictionary follows the project target lang. */
 export interface SpellSettings {

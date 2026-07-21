@@ -5,8 +5,14 @@ import './styles/globals.css'
 import { registerPWA } from './pwa/register'
 import { maybeHandleAuthRedirect } from './storage/cloud/authBootstrap'
 import { isCloudConfigured } from './storage/cloud/supabaseClient'
+import { registerExtensions, startExtensionRegistry } from './features/addons/registryPersistence'
 
 registerPWA()
+
+// Register the built-in extension manifests (MT providers, §6.1) before render so
+// the registry is populated for the MT panel, then hydrate enablement + persist.
+registerExtensions()
+void startExtensionRegistry()
 
 // Start the background cloud reconcilers (ROADMAP §3.3 settings, §3.4 personal
 // term bank + TM) only when the cloud is configured, loading their code (and the

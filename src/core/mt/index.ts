@@ -1,4 +1,5 @@
 import type { MTProviderId, MTSettings } from '@/core/types'
+import { extensionRegistry } from '@/core/extensions/registry'
 import { ollamaProvider } from './ollama'
 import { claudeProvider } from './claude'
 import { libreTranslateProvider } from './libretranslate'
@@ -27,6 +28,25 @@ export const MT_PROVIDERS: Record<MTProviderId, MTProvider> = {
   libretranslate: libreTranslateProvider as MTProvider,
 }
 
+/** The extension-registry manifest id for each MT provider (ROADMAP §6.1). */
+export const MT_EXTENSION_ID: Record<MTProviderId, string> = {
+  mymemory: 'mt.mymemory',
+  ollama: 'mt.ollama',
+  claude: 'mt.claude',
+  libretranslate: 'mt.libretranslate',
+}
+
+/**
+ * Whether a provider's built-in extension is enabled. Defaults to enabled when
+ * the manifest isn't registered yet (e.g. before startup or in a unit test that
+ * doesn't register built-ins), so behaviour is unchanged until an addon is
+ * explicitly disabled from the Add-ons page.
+ */
+export function isProviderExtensionEnabled(id: MTProviderId): boolean {
+  const extId = MT_EXTENSION_ID[id]
+  return !extensionRegistry.has(extId) || extensionRegistry.isEnabled(extId)
+}
+
 export function getProviderSettings(id: MTProviderId, settings: MTSettings): ProviderSettings {
   switch (id) {
     case 'mymemory':
@@ -41,11 +61,14 @@ export function getProviderSettings(id: MTProviderId, settings: MTSettings): Pro
 }
 
 export function enabledProviders(settings: MTSettings): MTProviderId[] {
+  // A provider is available only when its user setting is on AND its built-in
+  // extension is enabled in the registry (§6.1) — disabling the addon removes it.
   const ids: MTProviderId[] = []
-  if (settings.mymemory.enabled) ids.push('mymemory')
-  if (settings.ollama.enabled) ids.push('ollama')
-  if (settings.claude.enabled) ids.push('claude')
-  if (settings.libretranslate.enabled) ids.push('libretranslate')
+  if (settings.mymemory.enabled && isProviderExtensionEnabled('mymemory')) ids.push('mymemory')
+  if (settings.ollama.enabled && isProviderExtensionEnabled('ollama')) ids.push('ollama')
+  if (settings.claude.enabled && isProviderExtensionEnabled('claude')) ids.push('claude')
+  if (settings.libretranslate.enabled && isProviderExtensionEnabled('libretranslate'))
+    ids.push('libretranslate')
   return ids
 }
 
