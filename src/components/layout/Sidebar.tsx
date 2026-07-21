@@ -1,8 +1,44 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { PanelLeftClose, PanelLeft, Info, BookOpen } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from './navItems'
+
+interface SidebarLinkProps {
+  to: string
+  icon: LucideIcon
+  label: string
+  end?: boolean
+  collapsed: boolean
+}
+
+/** A single sidebar entry — one source of truth for the active-state styling
+ * shared by the primary nav and the pinned Guide / About links. The active
+ * background uses `--color-accent-subtle` so it adapts to the light theme
+ * instead of hardcoding the dark-theme accent. */
+function SidebarLink({ to, icon: Icon, label, end, collapsed }: SidebarLinkProps) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 px-2 py-2 rounded text-sm transition-colors',
+          isActive ? 'font-medium' : 'hover:opacity-80',
+        )
+      }
+      style={({ isActive }) => ({
+        color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
+        background: isActive ? 'var(--color-accent-subtle)' : 'transparent',
+      })}
+    >
+      <Icon size={16} className="shrink-0" />
+      {!collapsed && <span className="truncate">{label}</span>}
+    </NavLink>
+  )
+}
 
 export function Sidebar() {
   const { pathname } = useLocation()
@@ -35,53 +71,15 @@ export function Sidebar() {
       }}
     >
       <nav className="flex flex-col gap-0.5 p-2 flex-1">
-        {NAV_ITEMS.map(({ to, icon: Icon, label, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 px-2 py-2 rounded text-sm transition-colors',
-                isActive
-                  ? 'font-medium'
-                  : 'hover:opacity-80',
-              )
-            }
-            style={({ isActive }) => ({
-              color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
-              background: isActive ? 'rgba(0,194,204,0.08)' : 'transparent',
-            })}
-          >
-            <Icon size={16} className="shrink-0" />
-            {!collapsed && <span className="truncate">{label}</span>}
-          </NavLink>
+        {NAV_ITEMS.map(({ to, icon, label, end }) => (
+          <SidebarLink key={to} to={to} icon={icon} label={label} end={end} collapsed={collapsed} />
         ))}
       </nav>
 
-      <NavLink
-        to="/guide"
-        className="flex items-center gap-3 px-2 py-2 mx-2 rounded text-sm transition-colors hover:opacity-80"
-        style={({ isActive }) => ({
-          color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
-          background: isActive ? 'rgba(0,194,204,0.08)' : 'transparent',
-        })}
-      >
-        <BookOpen size={16} className="shrink-0" />
-        {!collapsed && <span className="truncate">Translation guide</span>}
-      </NavLink>
-
-      <NavLink
-        to="/about"
-        className="flex items-center gap-3 px-2 py-2 mx-2 rounded text-sm transition-colors hover:opacity-80"
-        style={({ isActive }) => ({
-          color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
-          background: isActive ? 'rgba(0,194,204,0.08)' : 'transparent',
-        })}
-      >
-        <Info size={16} className="shrink-0" />
-        {!collapsed && <span className="truncate">About & License</span>}
-      </NavLink>
+      <div className="flex flex-col gap-0.5 px-2">
+        <SidebarLink to="/guide" icon={BookOpen} label="Translation guide" collapsed={collapsed} />
+        <SidebarLink to="/about" icon={Info} label="About & License" collapsed={collapsed} />
+      </div>
 
       <button
         onClick={() => setCollapsed(c => !c)}

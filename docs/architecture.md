@@ -39,20 +39,28 @@ src/
 └── workers/      — Web Workers via Comlink
 ```
 
-## Storage Schema (v3)
+## Storage Schema (v7)
 
-| Table | Indexes |
-|---|---|
-| projects | id, name, updatedAt |
-| segments | id, projectId, index, status |
-| tm | id, source, sourceLang, targetLang, projectId, corpusId |
-| glossary | id, term, projectId |
-| settings | &key |
-| embeddings | id, tmId, model, [tmId+model] |
-| corpusTerms | id, corpusId |
-| corpusPacks | id |
+| Table | Indexes | Since |
+|---|---|---|
+| projects | id, name, updatedAt | v1 |
+| segments | id, projectId, index, status, [projectId+status], [projectId+index] | v1 (compound idx v4) |
+| tm | id, source, sourceLang, targetLang, projectId, corpusId, updatedAt | v1 |
+| glossary | id, term, projectId, updatedAt | v1 |
+| settings | &key | v2 |
+| embeddings | id, tmId, model, [tmId+model] | v2 |
+| corpusTerms | id, corpusId | v3 |
+| corpusPacks | id | v3 |
+| projectTemplates | projectId | v4 |
+| versions | id, projectId, createdAt, [projectId+createdAt] | v5 |
+| documents | id, projectId | v6 |
+| blocks | id, documentId, projectId, [documentId+index] | v6 |
+| assets | id, documentId, projectId | v6 |
+| syncTombstones | [resource+rowId], resource, deletedAt | v7 |
 
-Migrations are handled by Dexie's versioning system (`this.version(N).stores(...)`). Always increment, never modify existing version blocks. v3 adds the bundled-corpora tables and a `corpusId` index on `tm` (so TM entries seeded from a corpus can be removed when the pack is uninstalled).
+Migrations are handled by Dexie's versioning system (`this.version(N).stores(...)`). Always increment, never modify existing version blocks. Notable steps: v3 adds the bundled-corpora tables + a `corpusId` index on `tm`; v4 adds compound segment indexes and moves the XLIFF template blob to its own table; v5 adds version snapshots; v6 adds the document/block model (backfilled from `sourceMeta.blockIndex`); v7 adds `updatedAt` indexes on `tm`/`glossary` and the `syncTombstones` table for the personal-resource cloud reconciler.
+
+> The v2 "Translation IDE" revamp (tracked changes, comments, accounts, real-time collaboration, roles, extensions and connectors) is delivered on top of this foundation and recorded milestone-by-milestone in [`docs/revamp/STATUS.md`](revamp/STATUS.md) and [`docs/revamp/ROADMAP.md`](revamp/ROADMAP.md); the optional cloud layer is documented in [`docs/cloud.md`](cloud.md).
 
 ## Deployment
 

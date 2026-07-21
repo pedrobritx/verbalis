@@ -11,6 +11,8 @@
   --color-fill-secondary: rgba(255, 255, 255, 0.04);
   --color-accent: #00c2cc;
   --color-accent-fill: rgba(0, 194, 204, 0.16);
+  /* Subtler accent wash for active nav rows / toggles (fill is for badges). */
+  --color-accent-subtle: rgba(0, 194, 204, 0.08);
   --color-confirm: #30d158;
   --color-warning: #ff9f0a;
   --color-error: #ff453a;
@@ -78,6 +80,7 @@
   --color-fill-secondary: rgba(28, 26, 23, 0.03);
   --color-accent: #008089;
   --color-accent-fill: rgba(0, 128, 137, 0.14);
+  --color-accent-subtle: rgba(0, 128, 137, 0.08);
   --color-confirm: #1f7234;
   --color-warning: #b62a00;
   --color-error: #c10012;

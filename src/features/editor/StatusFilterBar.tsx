@@ -55,7 +55,7 @@ export function StatusFilterBar({ counts }: StatusFilterBarProps) {
             style={{
               borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
               color: isActive ? 'var(--color-accent)' : 'var(--color-muted)',
-              background: isActive ? 'rgba(0,194,204,0.08)' : 'transparent',
+              background: isActive ? 'var(--color-accent-subtle)' : 'transparent',
             }}
           >
             <span>{f.label}</span>
