@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import type { StatusCounts } from '@/storage/repositories/segmentRepo'
 import type { Project } from '@/core/types'
 import { useProjectDialogsStore, type ProjectDialogKind } from './useProjectDialogsStore'
-import { CloudBadge, PublishCloudButton } from './cloud/CloudControls'
+import { CloudBadge, PublishCloudButton, ManageMembersButton } from './cloud/CloudControls'
 
 export function formatRelative(iso: string): string {
   const then = new Date(iso).getTime()
@@ -103,6 +103,7 @@ export function ProjectCard({ project, counts }: { project: Project; counts?: St
 
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
         <PublishCloudButton project={project} />
+        <ManageMembersButton project={project} />
         <ActionButton label="Edit project" onClick={() => act('edit')}>
           <Pencil size={16} />
         </ActionButton>

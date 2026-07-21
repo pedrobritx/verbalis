@@ -1,10 +1,15 @@
-import { useState } from 'react'
-import { Cloud, UploadCloud, Loader2 } from 'lucide-react'
+import { lazy, Suspense, useState } from 'react'
+import { Cloud, UploadCloud, Loader2, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Project } from '@/core/types'
 import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
 import { useAuthStore } from '@/features/account/useAuthStore'
+
+// The members dialog (and its cloud logic) loads only when actually opened.
+const ManageMembersDialog = lazy(() =>
+  import('./ManageMembersDialog').then((m) => ({ default: m.ManageMembersDialog })),
+)
 
 /**
  * Cloud-project controls for the projects list (ROADMAP §4.1). All self-gate on
@@ -59,6 +64,33 @@ export function PublishCloudButton({ project }: { project: Project }) {
     >
       {busy ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
     </button>
+  )
+}
+
+/** Card action: manage a published project's members. Shown once cloud-linked. */
+export function ManageMembersButton({ project }: { project: Project }) {
+  const status = useAuthStore((s) => s.status)
+  const [open, setOpen] = useState(false)
+  if (!isCloudConfigured() || !project.cloud || status !== 'authenticated') return null
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Manage members"
+        title="Manage members"
+        onClick={() => setOpen(true)}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-[var(--color-fill)]"
+        style={{ color: 'var(--color-muted)' }}
+        data-testid="manage-members"
+      >
+        <Users size={16} />
+      </button>
+      {open && (
+        <Suspense fallback={null}>
+          <ManageMembersDialog project={project} open={open} onOpenChange={setOpen} />
+        </Suspense>
+      )}
+    </>
   )
 }
 

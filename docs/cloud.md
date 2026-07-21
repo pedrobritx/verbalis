@@ -114,6 +114,17 @@ and safe to re-run:
   sketch's `(project_id, expected_seq)` to also carry the new snapshot + the
   pruned-through id, so the whole compaction is one atomic, RLS-safe
   transaction.)*
+- `0008_member_policies.sql` — member management: adds `profiles.email` (backfilled
+  + seeded on signup) and a co-member `profiles` SELECT policy (`private.shares_project`);
+  switches `project_members` update/delete to **project_manager-only** (insert still
+  allows the owner's publish self-seed); a `enforce_min_one_pm` trigger that blocks
+  removing or demoting a project's **last** manager; and the `invite_member(project_id,
+  email, role)` RPC (SECURITY DEFINER, PM-checked) that resolves the email to a user id
+  and upserts the membership (returns NULL when no account has that email — no
+  enumeration surface). Backs Phase 5.1. Apply after `0007`. *(Numbering note: ROADMAP
+  §5.1 sketched `0006_member_policies.sql`, but `0006`/`0007` were taken, so it ships as
+  `0008`; invite resolves the email inside the RPC rather than via a client-side profiles
+  lookup, keeping emails/ids server-side.)*
 
 > Note: the linter's "Leaked Password Protection Disabled" warning is unrelated
 > to these migrations — it's an optional **Authentication → Policies** toggle
@@ -258,3 +269,27 @@ opened the same published cloud project:
 - [ ] **Local-only unaffected**: a project with no `cloud` link makes no
       `ydoc_state`/`ydoc_updates` request; the BroadcastChannel/LAN path is
       unchanged.
+
+## 11. Manual verification (Phase 5.1 — Members & roles)
+
+Member management for a published cloud project via the **Members** dialog on the
+project card (`ManageMembersDialog` → `src/storage/cloud/members.ts`). Apply
+`0008_member_policies.sql` first. Needs the project owner (a project_manager) plus
+a second signed-in account:
+
+- [ ] **PM invites**: as the manager, open Members → invite the second account's
+      email as *translator*, then again as *revisor* → they appear in the roster
+      with the chosen role, and can open the project.
+- [ ] **Unknown email**: inviting an email with no Verbalis account yet shows the
+      "no account uses that email" notice (the RPC returns NULL) — no row added.
+- [ ] **Non-PM read-only**: signed in as the translator, the Members dialog shows
+      the roster without role dropdowns / remove / invite. A hand-crafted
+      `update`/`delete`/`invite_member` against `project_members` is **rejected by
+      the server** (PM-only RLS + the RPC's PM check).
+- [ ] **Change role / remove**: the manager changes a member's role and removes a
+      member → both reflect immediately for that member.
+- [ ] **Last manager protected**: the manager tries to demote or remove the only
+      project_manager → the server raises "a project must keep at least one
+      project_manager" (surfaced as an error in the dialog).
+- [ ] **Local-only unaffected**: a project with no `cloud` link shows no Members
+      button; a signed-out / unconfigured build never loads the members chunk.
