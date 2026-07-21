@@ -22,7 +22,7 @@ const MODES: Array<{ id: EditMode; label: string; icon: typeof PenLine; hint: st
  * In suggesting mode, typing and deleting in the rich editor become tracked
  * changes attributed to the local author.
  */
-export function EditModeToggle() {
+export function EditModeToggle({ forced = false }: { forced?: boolean }) {
   const editMode = useEditorModeStore((s) => s.editMode)
   const setEditMode = useEditorModeStore((s) => s.setEditMode)
 
@@ -31,8 +31,10 @@ export function EditModeToggle() {
       role="radiogroup"
       aria-label="Edit mode"
       data-testid="edit-mode-toggle"
+      data-forced={forced ? 'true' : undefined}
+      title={forced ? 'Your role must suggest changes at this workflow stage' : undefined}
       className="inline-flex items-center gap-1 self-start rounded-full border p-1"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', opacity: forced ? 0.7 : 1 }}
     >
       {MODES.map(({ id, label, icon: Icon, hint }) => {
         const isActive = editMode === id
@@ -42,12 +44,15 @@ export function EditModeToggle() {
             type="button"
             role="radio"
             aria-checked={isActive}
-            title={hint}
+            // When the workflow forces suggesting, the toggle is locked to it.
+            disabled={forced}
+            title={forced ? 'Your role must suggest changes at this workflow stage' : hint}
             data-testid={`edit-mode-${id}`}
             onClick={() => setEditMode(id)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-footnote transition-colors',
               isActive ? 'font-semibold' : 'hover:bg-[var(--color-fill)]',
+              forced && 'cursor-not-allowed',
             )}
             style={{
               background: isActive ? 'var(--color-accent-fill)' : 'transparent',

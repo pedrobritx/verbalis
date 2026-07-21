@@ -6,6 +6,7 @@ import {
   listCloudProjects,
   fetchCloudProject,
   fetchYdocState,
+  setCloudProjectStage,
 } from '@/storage/cloud/projectCloud'
 import { decodeBytea } from '@/storage/cloud/bytea'
 
@@ -71,6 +72,20 @@ function makeClient() {
         },
         select() {
           return selectBuilder(rows)
+        },
+        update(patch: Record<string, unknown>) {
+          const filters: [string, unknown][] = []
+          const builder = {
+            eq(col: string, val: unknown) {
+              filters.push([col, val])
+              return builder
+            },
+            then(onFulfilled: (v: { error: null }) => unknown, onRejected?: () => unknown) {
+              for (const r of applyFilters(rows, filters)) Object.assign(r, patch)
+              return Promise.resolve({ error: null }).then(onFulfilled, onRejected)
+            },
+          }
+          return builder
         },
       }
     },
@@ -175,6 +190,23 @@ describe('listCloudProjects / fetchCloudProject / fetchYdocState', () => {
     const { client } = makeClient()
     expect(await fetchCloudProject(client, 'missing', 'user-1')).toBeNull()
     expect(await fetchYdocState(client, 'missing')).toBeNull()
+  })
+
+  it('reads the workflow stage (defaulting to translation) and updates it (§5.2)', async () => {
+    const { client, tables } = makeClient()
+    await insertCloudProject(client, {
+      name: 'Doc A',
+      sourceLang: 'en',
+      targetLang: 'pt',
+      ownerId: 'user-1',
+      state: STATE,
+    })
+    // Unset stage in the row defaults to 'translation'.
+    expect((await fetchCloudProject(client, 'cloud-1', 'user-1'))?.stage).toBe('translation')
+
+    await setCloudProjectStage(client, 'cloud-1', 'review')
+    expect((tables.projects[0] as { stage?: string }).stage).toBe('review')
+    expect((await fetchCloudProject(client, 'cloud-1', 'user-1'))?.stage).toBe('review')
   })
 
   it('defaults role to translator when membership is absent', async () => {

@@ -1,6 +1,7 @@
 import { useEffect, useState, type RefObject } from 'react'
 import { Check, X } from 'lucide-react'
 import { resolveSegmentChange } from '../changes/resolveOps'
+import { useCanResolveChanges } from '../workflow/useWorkflowStore'
 import type { ResolveAction } from './resolve'
 
 interface CardState {
@@ -26,6 +27,9 @@ export function ChangeHoverCard({
   containerRef: RefObject<HTMLElement | null>
 }) {
   const [card, setCard] = useState<CardState | null>(null)
+  // Accept/reject is a review action (§5.2): only offer the hover card to a
+  // revisor / project_manager. Local-only projects resolve to PM → shown.
+  const canResolve = useCanResolveChanges()
 
   useEffect(() => {
     const container = containerRef.current
@@ -69,7 +73,7 @@ export function ChangeHoverCard({
     return () => document.removeEventListener('keydown', onKey)
   }, [card])
 
-  if (!card) return null
+  if (!card || !canResolve) return null
 
   const resolve = (action: ResolveAction) => {
     void resolveSegmentChange(segmentId, card.changeId, action)

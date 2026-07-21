@@ -13,6 +13,8 @@ import { MobileSidebarSheet } from './MobileSidebarSheet'
 import { StatusFilterBar } from './StatusFilterBar'
 import { StageSwitcher } from './StageSwitcher'
 import { EditModeToggle } from './EditModeToggle'
+import { useWorkflowStore, useForcesSuggesting } from './workflow/useWorkflowStore'
+import { effectiveRoleStage } from '@/core/workflow/rules'
 import { useSidebarPanelStore } from './useSidebarPanelStore'
 import { useEditorModeStore } from './useEditorModeStore'
 import { useEditorActionsStore } from './useEditorActionsStore'
@@ -92,6 +94,10 @@ export default function EditorPage() {
   const reviewMode = useEditorModeStore((s) => s.reviewMode)
   const stage = useEditorModeStore((s) => s.stage)
   const statusFilter = useEditorModeStore((s) => s.statusFilter)
+  const setEditMode = useEditorModeStore((s) => s.setEditMode)
+  const setWorkflow = useWorkflowStore((s) => s.set)
+  const resetWorkflow = useWorkflowStore((s) => s.reset)
+  const forceSuggest = useForcesSuggesting()
   const showMarks = useChangesStore((s) => s.showMarks)
   const previewOpen = usePreviewStore((s) => s.open)
   const togglePreview = usePreviewStore((s) => s.toggle)
@@ -111,6 +117,20 @@ export default function EditorPage() {
   useEffect(() => {
     editorHandles.current[focusIndex]?.focus()
   }, [focusIndex])
+
+  // Publish this project's effective role + workflow stage (§5.2) so the toggle
+  // and changes UI gate editing. Local-only projects resolve to PM-of-self, so
+  // nothing is restricted. Runs above the early returns to keep hook order stable.
+  useEffect(() => {
+    const { role, stage: wfStage } = effectiveRoleStage(project?.cloud)
+    setWorkflow(role, wfStage)
+    return () => resetWorkflow()
+  }, [project?.cloud?.role, project?.cloud?.stage, setWorkflow, resetWorkflow])
+
+  // A translator in the review stage may only suggest — pin the edit mode.
+  useEffect(() => {
+    if (forceSuggest) setEditMode('suggesting')
+  }, [forceSuggest, setEditMode])
 
   // Broadcast which segment the local user is on, so peers' presence follows.
   // This must run unconditionally — above the early returns below — so the hook
@@ -542,7 +562,7 @@ export default function EditorPage() {
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <StageSwitcher />
-            <EditModeToggle />
+            <EditModeToggle forced={forceSuggest} />
             {hasDocument && (
               <button
                 type="button"
