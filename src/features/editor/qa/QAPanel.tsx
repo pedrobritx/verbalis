@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { runQA } from '@/core/qa/checks'
 import { QA_RULE_LABELS, type QAIssue } from '@/core/qa/types'
+import { effectiveQaRules } from '@/core/qa/registryRules'
+import { extensionRegistry } from '@/core/extensions/registry'
 import { useProjectSegments } from '../useProjectSegments'
 import { useGlossaryCache } from '../glossary/useGlossaryCache'
 import { useEditorSettings } from '../useEditorSettings'
@@ -46,10 +48,22 @@ export function QAPanel({ projectId, targetLang }: QAPanelProps) {
   const settings = useEditorSettings()
   const actions = useEditorActionsStore((s) => s.actions)
 
+  // Re-run when a QA addon is toggled on the Add-ons page (§6.2).
+  const registryVersion = useSyncExternalStore(
+    (cb) => extensionRegistry.subscribe(cb),
+    () => extensionRegistry.getDisabledIds().join(','),
+    () => '',
+  )
+
   const issues = useMemo(() => {
     if (!segments) return []
-    return runQA(segments, glossary ?? [], { targetLang, rules: settings.qaRules })
-  }, [segments, glossary, targetLang, settings.qaRules])
+    // Registry-disabled rules are removed from the effective toggles.
+    return runQA(segments, glossary ?? [], {
+      targetLang,
+      rules: effectiveQaRules(settings.qaRules),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segments, glossary, targetLang, settings.qaRules, registryVersion])
 
   if (!segments) {
     return (

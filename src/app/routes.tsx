@@ -16,6 +16,7 @@ const TerminologyPage = lazyWithRetry(() => import('@/features/terminology'), 't
 const CorporaPage = lazyWithRetry(() => import('@/features/corpora'), 'corpora')
 const GuidePage = lazyWithRetry(() => import('@/features/guide'), 'guide')
 const SettingsPage = lazyWithRetry(() => import('@/features/settings'), 'settings')
+const AddonsPage = lazyWithRetry(() => import('@/features/addons/AddonsPage'), 'addons')
 const AboutPage = lazyWithRetry(() => import('@/features/about'), 'about')
 
 function RouteFallback() {
@@ -39,6 +40,7 @@ export function AppRoutes() {
           <Route path="/corpora" element={<CorporaPage />} />
           <Route path="/guide" element={<GuidePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/addons" element={<AddonsPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </Suspense>
