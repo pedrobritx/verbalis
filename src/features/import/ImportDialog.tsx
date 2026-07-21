@@ -16,6 +16,7 @@ import { HardDriveUpload } from 'lucide-react'
 import { ConnectorFilePicker } from '@/extensions/connectors/ConnectorFilePicker'
 import type { ConnectorFile, StorageConnector } from '@/extensions/connectors/types'
 import { isGdriveAvailable } from '@/extensions/connectors/gdrive/config'
+import { isOnedriveAvailable } from '@/extensions/connectors/onedrive/config'
 import { useImportProject } from './useImportProject'
 
 interface ImportDialogProps {
@@ -51,6 +52,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const [connector, setConnector] = useState<StorageConnector | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const gdrive = isGdriveAvailable()
+  const onedrive = isOnedriveAvailable()
 
   function reset() {
     setName('')
@@ -70,6 +72,13 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     // weighs on the initial bundle.
     const { gdriveConnector } = await import('@/extensions/connectors/gdrive')
     setConnector(gdriveConnector)
+    setPickerOpen(true)
+  }
+
+  async function openOnedrivePicker() {
+    // MSAL + the Graph layer load only on demand, off the initial bundle.
+    const { onedriveConnector } = await import('@/extensions/connectors/onedrive')
+    setConnector(onedriveConnector)
     setPickerOpen(true)
   }
 
@@ -130,17 +139,33 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
               onChange={handleFileChange}
               required={!file}
             />
-            {gdrive && (
-              <Button
-                type="button"
-                variant="plain"
-                className="w-fit"
-                onClick={() => void openDrivePicker()}
-                data-testid="import-from-gdrive"
-              >
-                <HardDriveUpload size={14} />
-                From Google Drive
-              </Button>
+            {(gdrive || onedrive) && (
+              <div className="flex flex-wrap gap-2">
+                {gdrive && (
+                  <Button
+                    type="button"
+                    variant="plain"
+                    className="w-fit"
+                    onClick={() => void openDrivePicker()}
+                    data-testid="import-from-gdrive"
+                  >
+                    <HardDriveUpload size={14} />
+                    From Google Drive
+                  </Button>
+                )}
+                {onedrive && (
+                  <Button
+                    type="button"
+                    variant="plain"
+                    className="w-fit"
+                    onClick={() => void openOnedrivePicker()}
+                    data-testid="import-from-onedrive"
+                  >
+                    <HardDriveUpload size={14} />
+                    From OneDrive
+                  </Button>
+                )}
+              </div>
             )}
             {file && (
               <p className="text-xs" style={{ color: 'var(--color-muted)' }} data-testid="import-selected-file">

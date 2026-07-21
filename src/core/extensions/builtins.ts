@@ -125,6 +125,15 @@ export const CONNECTOR_EXTENSION_MANIFESTS: ExtensionManifest[] = [
     builtIn: true,
     description: 'Import files from and save exports to Google Drive.',
   },
+  {
+    id: 'connector.onedrive',
+    name: 'OneDrive',
+    version: '1.0.0',
+    kinds: ['storage-connector'],
+    permissions: ['network', 'credentials', 'filesystem'],
+    builtIn: true,
+    description: 'Import files from and save exports to Microsoft OneDrive.',
+  },
 ]
 
 /** Every built-in manifest, in catalogue order (MT, QA, formats, connectors). */
