@@ -98,7 +98,7 @@ export function TrackedChangesPlugin({ locked }: { locked?: boolean }) {
       ),
     ]
     return () => unregister.forEach((u) => u())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [editor])
 
   return null

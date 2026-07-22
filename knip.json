@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/workers/*.worker.ts",
+    "index.html",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "vitest.config.ts",
+    "eslint.config.js",
+    "scripts/*.mjs",
+    "tests/**/*.{test,spec}.{ts,tsx}"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/vite-env.d.ts"],
+  "ignoreBinaries": ["tauri"],
+  "ignoreDependencies": [
+    "geist",
+    "dictionary-en",
+    "dictionary-en-gb",
+    "dictionary-pt",
+    "dictionary-pt-pt",
+    "@vitest/coverage-v8"
+  ]
+}

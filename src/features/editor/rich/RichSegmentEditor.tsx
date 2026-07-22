@@ -392,7 +392,7 @@ function EditorLogic(props: RichSegmentEditorProps) {
       unregisters.forEach((u) => u())
       propsRef.current.registerHandle(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [editor])
 
   // When the DB target diverges from what we last saved, an external action
