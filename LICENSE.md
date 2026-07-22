@@ -49,7 +49,7 @@ If you are an Organization (any entity larger than one person), please contact
 the Author to arrange terms. Pricing is set individually and scaled to the size
 and nature of your use:
 
-- **Email:** pedrohbrito@me.com
+- **Email:** pedrobritx@gmail.com
 - **GitHub:** <https://github.com/pedrobritx>
 - **LinkedIn:** <https://www.linkedin.com/in/pedrobritx/>
 

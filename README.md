@@ -100,7 +100,7 @@ license — see [`LICENSE.md`](LICENSE.md):
   **credit the developer** and keep the link back to this project.
 - **Organizations — get in touch.** Any team or company larger than one person
   needs a commercial license. Pricing is set individually and fairly —
-  contact **pedrohbrito@me.com**.
+  contact **pedrobritx@gmail.com**.
 
 ---
 
