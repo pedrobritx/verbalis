@@ -6,9 +6,9 @@
 > from the scope, decisions, or invariants recorded here. Scope changes require the project
 > owner's approval and a PR that edits this file explicitly.
 >
-> Product context lives in [`docs/vision/`](../vision/) (Overview, Product Vision, Product
+> Product context lives in [`docs/history/vision/`](../history/vision/) (Overview, Product Vision, Product
 > Features, UX Vision, Architecture Vision). Current-system context lives in
-> [`docs/architecture.md`](../architecture.md) and [`docs/roadmap-professional-features.md`](../roadmap-professional-features.md).
+> [`docs/architecture.md`](../architecture.md) and [`docs/history/roadmap-professional-features.md`](../history/roadmap-professional-features.md).
 
 ## 1. Context
 

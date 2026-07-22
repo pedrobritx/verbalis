@@ -83,17 +83,17 @@ DOCX import uses `mammoth.convertToHtml`, then a small DOM walker (`src/core/seg
 
 ## Phase Roadmap
 
-| Phase | Scope                                                                                                                                                                                    |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Foundation — scaffold, CI/CD, PWA, app shell ✅                                                                                                                                          |
-| 1     | TXT + MD import, segmentation, side-by-side editor ✅                                                                                                                                    |
-| 2     | Translation Memory — store, exact/fuzzy match, TMX import/export ✅                                                                                                                      |
-| 3     | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅                                                                                                   |
-| 4     | DOCX import, command palette, review modes ✅                                                                                                                                            |
-| 5     | PWA hardening, offline edge cases, update notification ✅                                                                                                                                |
-| 6     | AI integrations (Ollama, Claude, LibreTranslate), semantic TM ✅                                                                                                                         |
-| 7+    | Project-level exports, terminology extraction, collaborative TM                                                                                                                          |
-| 8+    | Professional CAT features — rich editor, segment handling, versioning, LAN collaboration, document standards. See [`roadmap-professional-features.md`](roadmap-professional-features.md) |
+| Phase | Scope                                                                                                                                                                                                    |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Foundation — scaffold, CI/CD, PWA, app shell ✅                                                                                                                                                          |
+| 1     | TXT + MD import, segmentation, side-by-side editor ✅                                                                                                                                                    |
+| 2     | Translation Memory — store, exact/fuzzy match, TMX import/export ✅                                                                                                                                      |
+| 3     | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅                                                                                                                   |
+| 4     | DOCX import, command palette, review modes ✅                                                                                                                                                            |
+| 5     | PWA hardening, offline edge cases, update notification ✅                                                                                                                                                |
+| 6     | AI integrations (Ollama, Claude, LibreTranslate), semantic TM ✅                                                                                                                                         |
+| 7+    | Project-level exports, terminology extraction, collaborative TM                                                                                                                                          |
+| 8+    | Professional CAT features — rich editor, segment handling, versioning, LAN collaboration, document standards. See [`history/roadmap-professional-features.md`](history/roadmap-professional-features.md) |
 
 ## Phase 5 — PWA Layer
 
