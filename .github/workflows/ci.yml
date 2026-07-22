@@ -30,6 +30,7 @@ jobs:
       - run: pnpm generate-icons
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm format:check
       - run: pnpm test:unit
       - run: pnpm build
       # Regression guard for the cloud path (ROADMAP §3.1): build once with the
