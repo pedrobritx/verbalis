@@ -4,6 +4,7 @@ import { History, RotateCcw, Save, BadgeCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { versionRepo } from '@/storage/repositories/versionRepo'
 import { useCanReview } from '../workflow/useWorkflowStore'
+import { useLocalAuthor } from '../useLocalAuthor'
 import { relativeTime } from './relativeTime'
 
 interface VersionHistoryPanelProps {
@@ -26,11 +27,14 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
   // Sign-off is a review action — revisor / project_manager only (§5.3). A
   // local-only project resolves to PM-of-self, so it's always available there.
   const canReview = useCanReview()
+  // Account-aware name (account name when signed in, else the device-local one)
+  // so versions and sign-offs are attributed consistently across the app.
+  const { authorName } = useLocalAuthor()
 
   async function handleSave() {
     setSaving(true)
     try {
-      await versionRepo.saveNamed(projectId, label)
+      await versionRepo.saveNamed(projectId, label, undefined, authorName)
       setLabel('')
     } finally {
       setSaving(false)
@@ -40,7 +44,7 @@ export function VersionHistoryPanel({ projectId }: VersionHistoryPanelProps) {
   async function handleSignOff() {
     setSigningOff(true)
     try {
-      await versionRepo.signOff(projectId)
+      await versionRepo.signOff(projectId, undefined, authorName)
     } finally {
       setSigningOff(false)
     }

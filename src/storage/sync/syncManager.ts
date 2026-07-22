@@ -8,6 +8,7 @@ import { projectRepo } from '@/storage/repositories/projectRepo'
 import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
 import { startYdocPersistence, type YdocPersistenceHandle } from '@/storage/cloud/ydocPersistence'
 import { useAuthStore } from '@/features/account/useAuthStore'
+import { resolveDisplayName, PEER_NAME_FALLBACK } from '@/features/account/displayName'
 
 /**
  * Owns the live {@link SyncSessionHandle} per shared project (Foundation F3).
@@ -66,7 +67,9 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
   const handle = startSyncSession({
     projectId,
     doc,
-    displayName: profile.displayName || 'Anonymous',
+    // Signed-in peers present under their account name automatically; local-only
+    // peers use their device name, else "Anonymous".
+    displayName: resolveDisplayName(profile.displayName, auth, PEER_NAME_FALLBACK),
     transport: createTransport(projectId, { cloudId }),
     codec,
     userId,
