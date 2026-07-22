@@ -17,9 +17,7 @@ export const TAG_KIND_PRESENTATION: Record<InlineTagKind, { glyph: string; label
 
 const PLACEHOLDER_RE = /\{(\d+)\}/g
 
-export type TagTextPart =
-  | { type: 'text'; value: string }
-  | { type: 'tag'; id: string }
+export type TagTextPart = { type: 'text'; value: string } | { type: 'tag'; id: string }
 
 /**
  * Split a placeholder-carrying string into ordered text and tag parts. The

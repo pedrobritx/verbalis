@@ -8,20 +8,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        filled:
-          'bg-[var(--color-accent)] text-white shadow-sm hover:opacity-90',
+        filled: 'bg-[var(--color-accent)] text-white shadow-sm hover:opacity-90',
         tinted:
           'bg-[var(--color-accent-fill)] text-[var(--color-accent)] hover:bg-[color-mix(in_srgb,var(--color-accent)_22%,transparent)]',
-        gray:
-          'bg-[var(--color-fill)] text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]',
+        gray: 'bg-[var(--color-fill)] text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]',
         bordered:
           'border border-[var(--color-border)] bg-transparent text-[var(--color-text)] hover:bg-[var(--color-fill)]',
-        plain:
-          'bg-transparent text-[var(--color-accent)] hover:bg-[var(--color-fill)]',
-        destructive:
-          'bg-[var(--color-error)] text-white shadow-sm hover:opacity-90',
-        link:
-          'text-[var(--color-accent)] underline-offset-4 hover:underline',
+        plain: 'bg-transparent text-[var(--color-accent)] hover:bg-[var(--color-fill)]',
+        destructive: 'bg-[var(--color-error)] text-white shadow-sm hover:opacity-90',
+        link: 'text-[var(--color-accent)] underline-offset-4 hover:underline',
       },
       size: {
         md: 'h-11 px-4 text-callout [&_svg]:size-[18px]',
@@ -39,8 +34,7 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 

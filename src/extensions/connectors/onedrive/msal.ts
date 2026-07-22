@@ -19,7 +19,8 @@ let appPromise: Promise<PublicClientApplication> | null = null
 
 async function getApp(): Promise<PublicClientApplication> {
   const clientId = msalClientId()
-  if (!clientId) throw new ConnectorError(CONNECTOR_ONEDRIVE_ID, 'auth', 'Microsoft client id not configured')
+  if (!clientId)
+    throw new ConnectorError(CONNECTOR_ONEDRIVE_ID, 'auth', 'Microsoft client id not configured')
   if (appPromise) return appPromise
   appPromise = (async () => {
     const { PublicClientApplication } = await import('@azure/msal-browser')

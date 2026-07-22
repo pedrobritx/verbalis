@@ -3,7 +3,12 @@ import { groupByNormalizedSource, repeatedIndices } from '@/core/segments/repeti
 import { buildPattern, previewReplace } from '@/core/segments/findReplace'
 import type { Segment, SegmentStatus } from '@/core/types'
 
-function seg(index: number, source: string, target = '', status: SegmentStatus = 'translated'): Segment {
+function seg(
+  index: number,
+  source: string,
+  target = '',
+  status: SegmentStatus = 'translated',
+): Segment {
   return {
     id: `s${index}`,
     projectId: 'p1',
@@ -38,7 +43,11 @@ describe('find & replace', () => {
   })
 
   it('honors whole-word matching', () => {
-    const rows = previewReplace([seg(0, 'x', 'color and colorful')], { find: 'color', wholeWord: true }, 'colour')
+    const rows = previewReplace(
+      [seg(0, 'x', 'color and colorful')],
+      { find: 'color', wholeWord: true },
+      'colour',
+    )
     expect(rows[0].after).toBe('colour and colorful')
     expect(rows[0].count).toBe(1)
   })
@@ -46,7 +55,8 @@ describe('find & replace', () => {
   it('is case-insensitive by default and case-sensitive on request', () => {
     expect(previewReplace([seg(0, 'x', 'Color color')], { find: 'color' }, 'X')[0].count).toBe(2)
     expect(
-      previewReplace([seg(0, 'x', 'Color color')], { find: 'color', caseSensitive: true }, 'X')[0].count,
+      previewReplace([seg(0, 'x', 'Color color')], { find: 'color', caseSensitive: true }, 'X')[0]
+        .count,
     ).toBe(1)
   })
 

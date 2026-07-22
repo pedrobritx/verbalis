@@ -13,10 +13,11 @@ everything else — so the rest can be picked up one slice at a time.
 
 **Verbalis is in excellent health.** ~30,900 lines across 309 TS/TSX files, a
 clean feature/core/storage separation, `tsc -b` passes, and **717/717 unit tests
-+ ~29 e2e tests are green**. There are **zero** `TODO`/`FIXME`/`HACK` markers,
-only 5 `console.*` calls, and disciplined code-splitting keeps the optional
-cloud/AI/DOCX code out of the initial bundle. This is not a codebase that needs
-rescuing — it needs *organising and finishing touches*.
+
+- ~29 e2e tests are green**. There are **zero** `TODO`/`FIXME`/`HACK` markers,
+  only 5 `console.*` calls, and disciplined code-splitting keeps the optional
+  cloud/AI/DOCX code out of the initial bundle. This is not a codebase that needs
+  rescuing — it needs _organising and finishing touches_.
 
 The findings below are therefore mostly **polish, tooling, and documentation**,
 not structural rework. They are ranked by value ÷ risk so the highest-leverage,
@@ -24,18 +25,18 @@ lowest-danger items come first.
 
 ### Health snapshot
 
-| Signal | Value | Notes |
-|---|---|---|
-| Source size | ~30,900 LOC / 309 files | Well-factored |
-| Unit tests | 717 passing / 118 files | Excellent coverage of `core/*` + `storage/*` |
-| E2E tests | ~29 (Playwright) | Cover the real user journeys |
-| Typecheck | ✅ clean | Strict mode |
-| `TODO`/`FIXME`/`HACK` | 0 | — |
-| `console.*` | 5 | Acceptable; a couple could be dropped |
-| `any` / `ts-ignore` | 22 | Mostly legit (markdown/docx AST walkers) |
-| Dexie schema | v7 | Migrations are additive & tested |
-| Linter | ❌ none | See §3.1 |
-| Bundler | Vite 6, aggressive lazy chunks | Cloud/AI/DOCX all code-split |
+| Signal                | Value                          | Notes                                        |
+| --------------------- | ------------------------------ | -------------------------------------------- |
+| Source size           | ~30,900 LOC / 309 files        | Well-factored                                |
+| Unit tests            | 717 passing / 118 files        | Excellent coverage of `core/*` + `storage/*` |
+| E2E tests             | ~29 (Playwright)               | Cover the real user journeys                 |
+| Typecheck             | ✅ clean                       | Strict mode                                  |
+| `TODO`/`FIXME`/`HACK` | 0                              | —                                            |
+| `console.*`           | 5                              | Acceptable; a couple could be dropped        |
+| `any` / `ts-ignore`   | 22                             | Mostly legit (markdown/docx AST walkers)     |
+| Dexie schema          | v7                             | Migrations are additive & tested             |
+| Linter                | ❌ none                        | See §3.1                                     |
+| Bundler               | Vite 6, aggressive lazy chunks | Cloud/AI/DOCX all code-split                 |
 
 ---
 
@@ -75,7 +76,7 @@ tests):
 
 **3.1 Add a linter (and wire it into CI).**
 There is no ESLint config, no `lint` script, and no eslint dependency. The code
-is consistent today (clearly hand-disciplined), but nothing *enforces* it — no
+is consistent today (clearly hand-disciplined), but nothing _enforces_ it — no
 guard against unused vars/imports, `react-hooks/exhaustive-deps` mistakes,
 floating promises, or accidental `console.log`s. Add a flat-config ESLint
 (`typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`)
@@ -84,8 +85,7 @@ plus a `pnpm lint` step in `ci.yml`. Low risk, compounding value.
 **3.2 Pin the package manager.**
 `package.json` has no `packageManager` field, and its `pnpm.onlyBuiltDependencies`
 lives in the location **pnpm 11 no longer reads** (it warns and ignores it), while
-CI pins `pnpm/action-setup@v3` to v9. So a fresh local checkout (corepack → pnpm
-11) and CI (pnpm 9) resolve builds differently. Add `"packageManager": "pnpm@9.x"`
+CI pins `pnpm/action-setup@v3` to v9. So a fresh local checkout (corepack → pnpm 11) and CI (pnpm 9) resolve builds differently. Add `"packageManager": "pnpm@9.x"`
 (matching CI) and move `onlyBuiltDependencies` to `pnpm-workspace.yaml` if you
 bump to pnpm ≥10. Reconcile the two workflow files at the same time (action-setup
 warns if both `version:` and `packageManager` are set).
@@ -134,6 +134,7 @@ The 22 `any`/`ts-ignore` sites are concentrated in `core/documents/toDocx.ts` an
 node type. Not urgent, but it removes the last untyped seams.
 
 **3.9 Accessibility & UX polish.**
+
 - The theme toggle and several icon buttons rely on `aria-label` only — good, but
   a visible focus ring audit across the new hero + cards is worth one pass.
 - Consider `prefers-reduced-motion` for the sidebar/topbar transitions (the CSS
@@ -145,7 +146,7 @@ node type. Not urgent, but it removes the last untyped seams.
 ### P3 — larger / strategic (maintainer's call)
 
 **3.10 A dedicated marketing landing page.**
-Today the app *is* the landing page (Excalidraw-style), and the elevated welcome
+Today the app _is_ the landing page (Excalidraw-style), and the elevated welcome
 hero now serves that well for first-run. If you want SEO/marketing reach (feature
 tour, screenshots, pricing, testimonials) without loading the app, a separate
 static route or a small companion site is the way — but it is a product decision,
@@ -162,19 +163,19 @@ were explicitly deferred (see `architecture.md` Phase 6). Natural next addons.
 
 ## 4. Documentation inventory
 
-| Path | Role | Recommendation |
-|---|---|---|
-| `README.md` | Front door | ✅ refreshed this pass |
-| `docs/architecture.md` | Living architecture | ✅ refreshed; keep current |
-| `docs/cloud.md` | Cloud/signed-in setup | Living; keep |
-| `docs/refactor-audit.md` | This file | Living backlog |
-| `docs/revamp/ROADMAP.md` + `STATUS.md` | Revamp record | Keep as history; link from architecture |
-| `docs/revamp/prompts/*` (30 files) | Build scaffolding | Archive or delete — served their purpose |
-| `docs/vision/*` (6 files) | Pre-build product vision | Mark historical; superseded by shipped app |
-| `docs/roadmap-professional-features.md` | Pre-revamp plan | Mark historical; largely delivered |
+| Path                                    | Role                     | Recommendation                             |
+| --------------------------------------- | ------------------------ | ------------------------------------------ |
+| `README.md`                             | Front door               | ✅ refreshed this pass                     |
+| `docs/architecture.md`                  | Living architecture      | ✅ refreshed; keep current                 |
+| `docs/cloud.md`                         | Cloud/signed-in setup    | Living; keep                               |
+| `docs/refactor-audit.md`                | This file                | Living backlog                             |
+| `docs/revamp/ROADMAP.md` + `STATUS.md`  | Revamp record            | Keep as history; link from architecture    |
+| `docs/revamp/prompts/*` (30 files)      | Build scaffolding        | Archive or delete — served their purpose   |
+| `docs/vision/*` (6 files)               | Pre-build product vision | Mark historical; superseded by shipped app |
+| `docs/roadmap-professional-features.md` | Pre-revamp plan          | Mark historical; largely delivered         |
 
 The revamp is done, so several planning docs are now historical rather than
-directive. Nothing here is *wrong* — it just needs a clear "this was the plan /
+directive. Nothing here is _wrong_ — it just needs a clear "this was the plan /
 this is the current state" boundary so a newcomer isn't misled.
 
 ---

@@ -9,15 +9,13 @@ assignees: ''
 **What happened**
 A clear description of the bug.
 
-**Steps to reproduce**
-1.
-2.
-3.
+**Steps to reproduce** 1. 2. 3.
 
 **Expected behaviour**
 What you expected to happen instead.
 
 **Environment**
+
 - Build SHA (from the About page):
 - Browser / OS:
 - Mode: local-only / signed-in

@@ -205,7 +205,5 @@ test('jump to next tracked change moves focus via the command palette', async ({
   await page.keyboard.press('Control+k')
   await page.getByTestId('cmd-next-change').click()
 
-  await expect(
-    page.locator('[data-segment-index="3"][data-focused="true"]'),
-  ).toBeVisible()
+  await expect(page.locator('[data-segment-index="3"][data-focused="true"]')).toBeVisible()
 })

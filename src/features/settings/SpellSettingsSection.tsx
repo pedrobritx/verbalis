@@ -26,8 +26,8 @@ export function SpellSettingsSection() {
         <span className="flex flex-col">
           On-device spell-check
           <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-            Hunspell dictionaries run locally; the active one follows each project's
-            target language (English and Portuguese ship today). Nothing is uploaded.
+            Hunspell dictionaries run locally; the active one follows each project's target language
+            (English and Portuguese ship today). Nothing is uploaded.
           </span>
         </span>
         <input

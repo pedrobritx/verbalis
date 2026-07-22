@@ -8,11 +8,7 @@ export default function TranslatePage() {
         title="Translate"
         subtitle="Paste text, pick languages, translate — no project required."
       />
-      <TranslateWorkspace
-        active
-        testIdPrefix="translate-page"
-        autoFocus={false}
-      />
+      <TranslateWorkspace active testIdPrefix="translate-page" autoFocus={false} />
     </div>
   )
 }

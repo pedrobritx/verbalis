@@ -66,10 +66,7 @@ export function TranslateWorkspace({
   const [saveGlossaryState, setSaveGlossaryState] = useState<SaveState>('idle')
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
-  const wordCount = useMemo(
-    () => input.trim().split(/\s+/).filter(Boolean).length,
-    [input],
-  )
+  const wordCount = useMemo(() => input.trim().split(/\s+/).filter(Boolean).length, [input])
   const isShortInput = wordCount > 0 && wordCount <= SHORT_INPUT_MAX_WORDS
   const provider = mtSettings ? resolveDefaultProvider(mtSettings) : undefined
 
@@ -129,14 +126,11 @@ export function TranslateWorkspace({
     setSaveTmState('idle')
     setSaveGlossaryState('idle')
 
-    const persistLastLang = settingsRepo.set<Partial<LookupSettings>>(
-      LOOKUP_SETTINGS_KEY,
-      {
-        ...(lookupSettings ?? {}),
-        defaultTargetLang: lookupSettings?.defaultTargetLang ?? targetLang,
-        lastSourceLang: sourceLang,
-      },
-    )
+    const persistLastLang = settingsRepo.set<Partial<LookupSettings>>(LOOKUP_SETTINGS_KEY, {
+      ...(lookupSettings ?? {}),
+      defaultTargetLang: lookupSettings?.defaultTargetLang ?? targetLang,
+      lastSourceLang: sourceLang,
+    })
     void persistLastLang
 
     const mtPromise = (async () => {
@@ -148,11 +142,7 @@ export function TranslateWorkspace({
       }
       setMtLoading(true)
       try {
-        const res = await translateWith(
-          provider,
-          { text, sourceLang, targetLang },
-          mtSettings,
-        )
+        const res = await translateWith(provider, { text, sourceLang, targetLang }, mtSettings)
         setMtResult(res.text)
       } catch (err) {
         if (err instanceof MTError) setMtError(`${err.code}: ${err.message}`)
@@ -170,17 +160,12 @@ export function TranslateWorkspace({
       }
       setWikLoading(true)
       try {
-        const res = await fetchWiktionaryEntry(
-          text,
-          sourceLang === 'und' ? 'en' : sourceLang,
-        )
+        const res = await fetchWiktionaryEntry(text, sourceLang === 'und' ? 'en' : sourceLang)
         setWikResult(res)
       } catch (err) {
         if (err instanceof WiktionaryError) {
           setWikError(
-            err.code === 'not_found'
-              ? `Not in ${sourceLang}.wiktionary.org`
-              : err.message,
+            err.code === 'not_found' ? `Not in ${sourceLang}.wiktionary.org` : err.message,
           )
         } else {
           setWikError(err instanceof Error ? err.message : 'Wiktionary failed')
@@ -255,10 +240,7 @@ export function TranslateWorkspace({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span
-            className="text-footnote font-medium"
-            style={{ color: 'var(--color-muted)' }}
-          >
+          <span className="text-footnote font-medium" style={{ color: 'var(--color-muted)' }}>
             Term or sentence
           </span>
           <button
@@ -289,15 +271,12 @@ export function TranslateWorkspace({
           rows={4}
           data-testid={`${testIdPrefix}-input`}
         />
-        <div
-          className="text-caption"
-          style={{ color: 'var(--color-muted)' }}
-        >
+        <div className="text-caption" style={{ color: 'var(--color-muted)' }}>
           {wordCount === 0
             ? 'Tip: Cmd/Ctrl+Enter to translate'
             : isShortInput
-            ? `Short input · ${wordCount} word${wordCount === 1 ? '' : 's'} · Wiktionary + MT`
-            : `Sentence · ${wordCount} words · MT only`}
+              ? `Short input · ${wordCount} word${wordCount === 1 ? '' : 's'} · Wiktionary + MT`
+              : `Sentence · ${wordCount} words · MT only`}
         </div>
       </div>
 
@@ -319,10 +298,7 @@ export function TranslateWorkspace({
             ))}
           </Select>
           {detected !== 'und' && detected !== sourceLang && (
-            <span
-              className="text-caption"
-              style={{ color: 'var(--color-warning)' }}
-            >
+            <span className="text-caption" style={{ color: 'var(--color-warning)' }}>
               Detected: {getLanguageLabel(detected)}
             </span>
           )}
@@ -352,11 +328,7 @@ export function TranslateWorkspace({
         size="lg"
         data-testid={`${testIdPrefix}-go`}
       >
-        {mtLoading || wikLoading ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          <Search />
-        )}
+        {mtLoading || wikLoading ? <Loader2 className="animate-spin" /> : <Search />}
         Translate
       </Button>
 
@@ -369,10 +341,7 @@ export function TranslateWorkspace({
           }}
           data-testid={`${testIdPrefix}-wiktionary`}
         >
-          <span
-            className="text-footnote font-semibold"
-            style={{ color: 'var(--color-muted)' }}
-          >
+          <span className="text-footnote font-semibold" style={{ color: 'var(--color-muted)' }}>
             Wiktionary · {wikResult.term}
           </span>
           {wikResult.definitions.length > 0 && (
@@ -428,10 +397,7 @@ export function TranslateWorkspace({
           data-testid={`${testIdPrefix}-mt`}
         >
           <div className="flex items-center justify-between">
-            <span
-              className="text-footnote font-semibold"
-              style={{ color: 'var(--color-muted)' }}
-            >
+            <span className="text-footnote font-semibold" style={{ color: 'var(--color-muted)' }}>
               MT · {getLanguageLabel(sourceLang)} → {getLanguageLabel(targetLang)}
             </span>
             <button
@@ -445,10 +411,7 @@ export function TranslateWorkspace({
               <Copy size={16} />
             </button>
           </div>
-          <p
-            className="text-body whitespace-pre-wrap"
-            style={{ color: 'var(--color-text)' }}
-          >
+          <p className="text-body whitespace-pre-wrap" style={{ color: 'var(--color-text)' }}>
             {mtResult}
           </p>
         </section>
@@ -459,11 +422,7 @@ export function TranslateWorkspace({
           {!provider && (
             <>
               {' '}
-              <Link
-                to="/settings"
-                className="underline"
-                style={{ color: 'var(--color-error)' }}
-              >
+              <Link to="/settings" className="underline" style={{ color: 'var(--color-error)' }}>
                 Open Settings
               </Link>
             </>

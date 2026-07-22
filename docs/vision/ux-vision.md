@@ -2,8 +2,11 @@
      Part of the canonical context for the Translation IDE revamp: see docs/revamp/ROADMAP.md -->
 
 # Verbalis UX Vision
+
 Designing the Translation IDE professionals have always deserved.
+
 # Vision
+
 Verbalis is not another Computer-Assisted Translation (CAT) tool.
 It is a Translation Integrated Development Environment (Translation IDE) designed around how translators actually think, research, collaborate, and publish.
 Instead of centering the experience around documents and segmented tables, Verbalis is built around knowledge.
@@ -12,18 +15,25 @@ The objective is simple:
 Reduce cognitive load while increasing translator control.
 AI is not the translator.
 AI is the translator’s copilot.
+
 # Design Principles
+
 ## Knowledge over Documents
+
 Traditional CAT tools organize work around files.
 Verbalis organizes work around knowledge.
 A document is only one node inside a much larger workspace.
 Every translation benefits from everything the project knows.
+
 ## Progressive Disclosure
+
 The application should feel approachable to beginners while remaining extremely powerful for professionals.
 A new user should be translating within minutes.
 An expert should be able to customize nearly every aspect of the interface and workflow.
 Complexity is revealed only when it becomes useful.
+
 ## Context is Everything
+
 Every action should provide contextual information automatically.
 Users should rarely have to search manually for:
 terminology
@@ -33,7 +43,9 @@ corpus examples
 reviewer notes
 style guide instructions
 The system should surface these proactively.
+
 ## AI as Copilot
+
 Artificial Intelligence supports decision making.
 It never replaces professional translators.
 It assists by:
@@ -44,7 +56,9 @@ explaining terminology
 finding similar segments
 automating repetitive work
 The translator remains fully in control.
+
 ## Native Everywhere
+
 Verbalis shares one application engine across every platform while respecting platform conventions.
 The experience should feel natural on:
 Windows
@@ -52,7 +66,9 @@ macOS
 Linux
 Shared architecture.
 Native experience.
+
 # User Journey
+
 Instead of a linear pipeline:
 Import
 ↓
@@ -78,21 +94,29 @@ Learn
 ↓
 Improve
 Every completed project improves future projects.
+
 # Home Workspace
+
 Opening Verbalis should not feel like opening a file.
 It should feel like entering a workspace.
 The home dashboard provides:
+
 ## Continue Working
+
 Recent projects.
 Pinned workspaces.
 Current progress.
+
 ## Daily Overview
+
 pending translations
 reviewer feedback
 terminology warnings
 AI suggestions
 recent activity
+
 ## Universal Search
+
 Search everything.
 Projects.
 Sentences.
@@ -102,7 +126,9 @@ Corpora.
 Comments.
 Commits.
 References.
+
 # Workspaces
+
 Projects are grouped into reusable workspaces.
 Examples:
 Apple
@@ -122,7 +148,9 @@ plugins
 automation rules
 collaborators
 Switching projects should automatically load the entire working environment.
+
 # Project Creation
+
 Instead of asking users which file to import, Verbalis first asks what they are creating.
 Examples:
 Website
@@ -143,7 +171,9 @@ preview engines
 terminology extraction
 AI behavior
 recommended plugins
+
 # Workspace Architecture
+
 Each project contains multiple interconnected resources.
 Project
 ├── Documents
@@ -158,7 +188,9 @@ Project
 ├── Comments
 └── Published Deliverables
 Projects become complete translation ecosystems.
+
 # Translation View
+
 The editor is designed for focus.
 Instead of spreadsheet rows, translators work inside a clean writing environment.
 Each segment displays:
@@ -167,7 +199,9 @@ translation
 inline AI suggestions
 quality indicators
 Suggestions appear naturally and never interrupt typing.
+
 # Context Panel
+
 The right sidebar dynamically changes according to the selected content.
 For each segment it may display:
 terminology
@@ -180,7 +214,9 @@ previous decisions
 AI explanations
 legal or technical context
 Everything relevant appears automatically.
+
 # AI Experience
+
 AI should rarely require opening a chat window.
 Instead, assistance appears exactly when useful.
 Examples:
@@ -192,7 +228,9 @@ Examples:
 “Review?”
 Interaction is immediate.
 No prompting required.
+
 # Version Control
+
 Every translation project behaves like software.
 Each sentence has its own history.
 Every modification records:
@@ -217,7 +255,9 @@ Marketing
 Technical
 Legal
 Changes can later be merged.
+
 # Review Experience
+
 Review mode presents work similarly to code review systems.
 Each change displays:
 Original
@@ -235,15 +275,23 @@ approve
 reject
 suggest edits
 resolve conversations
+
 # Focus Modes
+
 Different tasks require different interfaces.
+
 ## Translation
+
 Minimal distractions.
 Writing first.
+
 ## Review
+
 Differences dominate.
 Comments remain visible.
+
 ## Research
+
 Reference-heavy.
 Corpora.
 Dictionaries.
@@ -251,14 +299,20 @@ Web.
 PDFs.
 AI.
 Parallel texts.
+
 ## QA
+
 Displays only validation issues.
+
 ## Publishing
+
 Validation.
 Preview.
 Packaging.
 Export.
+
 # Knowledge Graph
+
 Instead of navigating folders, users can explore relationships visually.
 Connections may include:
 Client
@@ -277,7 +331,9 @@ Reference Material
 ↓
 Published Version
 This encourages discovery rather than searching.
+
 # Universal Search
+
 One search engine indexes everything.
 Searchable resources include:
 documents
@@ -291,7 +347,9 @@ PDFs
 dictionaries
 translation memories
 Search behaves more like Spotlight than a traditional file browser.
+
 # Resource Center
+
 All reusable linguistic assets are managed centrally.
 Resources include:
 Translation Memories
@@ -306,7 +364,9 @@ Macros
 Scripts
 Automation Rules
 Resources can be shared across projects.
+
 # Automation Builder
+
 Users can automate repetitive workflows through a visual pipeline.
 Examples:
 Document Imported
@@ -321,7 +381,9 @@ Generate QA Report
 ↓
 Publish Draft
 Automation requires no programming knowledge.
+
 # Plugin Marketplace
+
 Verbalis is designed to be extended.
 Plugins may provide:
 AI providers
@@ -335,7 +397,9 @@ Preview renderers
 Automation nodes
 External integrations
 A public marketplace encourages community innovation.
+
 # Collaboration
+
 Teams collaborate in real time.
 Features include:
 live presence
@@ -355,7 +419,9 @@ Edit
 Approve
 ↓
 Publish
+
 # Publishing Pipeline
+
 Publishing follows a structured workflow.
 Validate
 ↓
@@ -371,27 +437,37 @@ Export
 ↓
 Publish
 Every deliverable remains reproducible and traceable.
+
 # Cross-Platform Philosophy
+
 Verbalis uses a shared engine while embracing native conventions.
+
 ### Windows
+
 Explorer integration
 multi-window workflows
 PowerToys compatibility
+
 ### macOS
+
 native menus
 Spotlight
 Quick Look
 iCloud integration
 Apple Intelligence
 SF Symbols
+
 ### Linux
+
 GNOME
 KDE
 Wayland
 X11
 native package management
 Users should feel at home regardless of platform.
+
 # Long-Term Vision
+
 Verbalis is not intended to become another CAT tool.
 It aims to become the operating environment for professional translation.
 An application where translators think, collaborate, research, translate, revise, publish, and continuously improve.

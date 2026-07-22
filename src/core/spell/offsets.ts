@@ -51,11 +51,7 @@ export function mapOffsetToNode(spans: NodeSpan[], offset: number): MappedOffset
  * text node with node-local offsets, or null when the token lands in / spans a
  * non-text node or crosses a node boundary (skip — don't underline).
  */
-export function mapTokenToNode(
-  spans: NodeSpan[],
-  start: number,
-  end: number,
-): MappedRange | null {
+export function mapTokenToNode(spans: NodeSpan[], start: number, end: number): MappedRange | null {
   if (end <= start) return null
   let offset = 0
   for (const span of spans) {

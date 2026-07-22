@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, PanelRight, PanelRightClose, Pencil, Trash2, BookOpenText } from 'lucide-react'
+import {
+  ChevronLeft,
+  PanelRight,
+  PanelRightClose,
+  Pencil,
+  Trash2,
+  BookOpenText,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { projectRepo } from '@/storage/repositories/projectRepo'
 import { segmentRepo, tallyStatus } from '@/storage/repositories/segmentRepo'
@@ -174,10 +181,7 @@ export default function EditorPage() {
 
   // Derive status counts from the segments already in memory so the filter bar
   // doesn't re-scan the same rows from the database.
-  const statusCounts = useMemo(
-    () => (segments ? tallyStatus(segments) : undefined),
-    [segments],
-  )
+  const statusCounts = useMemo(() => (segments ? tallyStatus(segments) : undefined), [segments])
 
   const visibleSegments = useMemo(() => {
     if (!segments) return [] as Array<{ seg: Segment; originalIndex: number }>

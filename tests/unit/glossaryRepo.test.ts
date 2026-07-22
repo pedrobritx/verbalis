@@ -37,11 +37,7 @@ describe('glossaryRepo', () => {
   })
 
   it('removeMany deletes by id list', async () => {
-    const entries = [
-      makeEntry({ term: 'a' }),
-      makeEntry({ term: 'b' }),
-      makeEntry({ term: 'c' }),
-    ]
+    const entries = [makeEntry({ term: 'a' }), makeEntry({ term: 'b' }), makeEntry({ term: 'c' })]
     await glossaryRepo.bulkAdd(entries)
     await glossaryRepo.removeMany([entries[0].id, entries[2].id])
     const left = await glossaryRepo.getAll()

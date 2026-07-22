@@ -1,6 +1,11 @@
 import type { ClaudeSettings } from '@/core/types'
 import { MTError, type MTProvider, type TranslateInput, type TranslateResult } from './types'
-import { buildSystemPrompt, CLAUDE_API_URL, CLAUDE_API_VERSION, CLAUDE_MAX_TOKENS } from './constants'
+import {
+  buildSystemPrompt,
+  CLAUDE_API_URL,
+  CLAUDE_API_VERSION,
+  CLAUDE_MAX_TOKENS,
+} from './constants'
 
 interface ClaudeContentBlock {
   type: string

@@ -1,13 +1,7 @@
 import { Shield, Lock, Repeat, Scale, ArrowUpRight, User, Building2 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { VerbalisMark } from '@/components/brand/VerbalisMark'
-import {
-  BRAND_LINKS,
-  REPO_URL,
-  LICENSE_URL,
-  AUTHOR_NAME,
-  AUTHOR_EMAIL,
-} from './links'
+import { BRAND_LINKS, REPO_URL, LICENSE_URL, AUTHOR_NAME, AUTHOR_EMAIL } from './links'
 
 export default function AboutPage() {
   return (
@@ -41,23 +35,21 @@ export default function AboutPage() {
           style={{ color: 'var(--color-text)' }}
         >
           <p>
-            Verbalis started with a stubborn problem: I needed to translate
-            sensitive, security-critical material and there was no tool I could
-            fully trust. The mainstream options wanted my documents on their
-            servers. The privacy-respecting ones couldn't speak the formats real
-            translation work runs on — XLIFF, TMX, TBX — so they never fit a
+            Verbalis started with a stubborn problem: I needed to translate sensitive,
+            security-critical material and there was no tool I could fully trust. The mainstream
+            options wanted my documents on their servers. The privacy-respecting ones couldn't speak
+            the formats real translation work runs on — XLIFF, TMX, TBX — so they never fit a
             professional CAT workflow.
           </p>
           <p>
-            So I built the tool I wanted: <strong>local-first by default</strong>{' '}
-            — your files, translation memory and glossaries never leave your
-            browser — yet <strong>fluent in the industry's interchange
-            formats</strong>, so it slots into the same pipelines as memoQ,
-            Trados and OmegaT.
+            So I built the tool I wanted: <strong>local-first by default</strong> — your files,
+            translation memory and glossaries never leave your browser — yet{' '}
+            <strong>fluent in the industry's interchange formats</strong>, so it slots into the same
+            pipelines as memoQ, Trados and OmegaT.
           </p>
           <p style={{ color: 'var(--color-muted)' }}>
-            Verbalis is a CAT tool for people who handle confidential text.
-            Privacy here isn't a setting you toggle — it's the architecture.
+            Verbalis is a CAT tool for people who handle confidential text. Privacy here isn't a
+            setting you toggle — it's the architecture.
           </p>
         </div>
       </section>
@@ -97,8 +89,8 @@ export default function AboutPage() {
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
         >
           <p className="text-callout" style={{ color: 'var(--color-muted)' }}>
-            Verbalis is <strong style={{ color: 'var(--color-text)' }}>source-available</strong>{' '}
-            — the code is public to read and learn from, under a two-tier license:
+            Verbalis is <strong style={{ color: 'var(--color-text)' }}>source-available</strong> —
+            the code is public to read and learn from, under a two-tier license:
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <LicenseTier
@@ -114,9 +106,7 @@ export default function AboutPage() {
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
             <ExternalLink href={LICENSE_URL}>Read the full license</ExternalLink>
-            <ExternalLink href={`mailto:${AUTHOR_EMAIL}`}>
-              Contact for commercial use
-            </ExternalLink>
+            <ExternalLink href={`mailto:${AUTHOR_EMAIL}`}>Contact for commercial use</ExternalLink>
           </div>
         </div>
       </section>
@@ -183,15 +173,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Principle({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode
-  title: string
-  body: string
-}) {
+function Principle({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div
       className="flex flex-col gap-2 rounded-md border p-4"
@@ -210,15 +192,7 @@ function Principle({
   )
 }
 
-function LicenseTier({
-  icon,
-  tier,
-  body,
-}: {
-  icon: React.ReactNode
-  tier: string
-  body: string
-}) {
+function LicenseTier({ icon, tier, body }: { icon: React.ReactNode; tier: string; body: string }) {
   return (
     <div
       className="flex flex-col gap-2 rounded-md border p-4"
@@ -226,7 +200,10 @@ function LicenseTier({
     >
       <div className="flex items-center gap-2">
         <span style={{ color: 'var(--color-accent)' }}>{icon}</span>
-        <h3 className="text-footnote font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text)' }}>
+        <h3
+          className="text-footnote font-semibold uppercase tracking-wide"
+          style={{ color: 'var(--color-text)' }}
+        >
           {tier}
         </h3>
       </div>

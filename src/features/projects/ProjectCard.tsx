@@ -16,9 +16,11 @@ export function formatRelative(iso: string): string {
   return new Date(iso).toLocaleDateString()
 }
 
-export function projectProgress(
-  counts: StatusCounts | undefined,
-): { total: number; done: number; pct: number } {
+export function projectProgress(counts: StatusCounts | undefined): {
+  total: number
+  done: number
+  pct: number
+} {
   if (!counts) return { total: 0, done: 0, pct: 0 }
   const total =
     counts.untranslated + counts.draft + counts.translated + counts.reviewed + counts.locked
@@ -72,7 +74,10 @@ export function ProjectCard({ project, counts }: { project: Project; counts?: St
             {project.name}
           </span>
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-footnote" style={{ color: 'var(--color-muted)' }}>
+        <div
+          className="mt-1 flex flex-wrap items-center gap-2 text-footnote"
+          style={{ color: 'var(--color-muted)' }}
+        >
           <Badge variant="outline" style={{ color: 'var(--color-muted)' }}>
             {project.sourceLang} → {project.targetLang}
           </Badge>

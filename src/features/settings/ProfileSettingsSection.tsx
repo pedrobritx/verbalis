@@ -38,8 +38,8 @@ export function ProfileSettingsSection() {
         style={{ color: 'var(--color-muted)' }}
         data-testid="settings-profile-account-note"
       >
-        Your name for comments, tracked changes and collaboration comes from your
-        account{accountName ? ` — ${accountName}` : ''}. Change it in Account settings.
+        Your name for comments, tracked changes and collaboration comes from your account
+        {accountName ? ` — ${accountName}` : ''}. Change it in Account settings.
       </p>
     )
   }
@@ -47,8 +47,8 @@ export function ProfileSettingsSection() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-        The name attached to your comments, tracked changes and collaboration
-        presence. Stored on this device only.
+        The name attached to your comments, tracked changes and collaboration presence. Stored on
+        this device only.
       </p>
       <label className="flex flex-col gap-1 text-footnote" style={{ color: 'var(--color-muted)' }}>
         Display name

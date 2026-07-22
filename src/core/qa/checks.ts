@@ -42,11 +42,7 @@ function hasTarget(seg: Segment): boolean {
  * that apply to the project. Inspired by memoQ's QA (tags, numbers, terminology
  * consistency) but limited to checks that are reliable without a server.
  */
-export function runQA(
-  segments: Segment[],
-  glossary: GlossaryEntry[],
-  opts: QAOptions,
-): QAIssue[] {
+export function runQA(segments: Segment[], glossary: GlossaryEntry[], opts: QAOptions): QAIssue[] {
   const rules: QARuleToggles = { ...DEFAULT_QA_RULES, ...(opts.rules ?? {}) }
   const issues: QAIssue[] = []
   const push = (seg: Segment, code: QACode, severity: QAIssue['severity'], message: string) => {
@@ -57,7 +53,12 @@ export function runQA(
     const target = seg.target
 
     if (rules.empty_target && seg.status !== 'untranslated' && target.trim() === '') {
-      push(seg, 'empty_target', 'error', 'Target is empty but the segment is not marked untranslated.')
+      push(
+        seg,
+        'empty_target',
+        'error',
+        'Target is empty but the segment is not marked untranslated.',
+      )
     }
 
     // Tag / number / whitespace checks only make sense once a target exists.

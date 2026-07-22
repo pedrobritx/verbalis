@@ -47,7 +47,10 @@ describe('effectiveQaRules (registry-gated QA, §6.2)', () => {
     const segments = [seg('hello  world')] // double space
 
     // Enabled: the double_space rule fires.
-    let issues = runQA(segments, [], { targetLang: 'en', rules: effectiveQaRules(DEFAULT_QA_RULES) })
+    let issues = runQA(segments, [], {
+      targetLang: 'en',
+      rules: effectiveQaRules(DEFAULT_QA_RULES),
+    })
     expect(issues.some((i) => i.code === 'double_space')).toBe(true)
 
     // Disable the addon → the finding is gone, others unaffected.

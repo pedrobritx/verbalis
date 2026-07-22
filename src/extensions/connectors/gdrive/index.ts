@@ -1,14 +1,14 @@
-import type {
-  ConnectorFile,
-  ConnectorUpload,
-  ListFilesOptions,
-  StorageConnector,
-} from '../types'
+import type { ConnectorFile, ConnectorUpload, ListFilesOptions, StorageConnector } from '../types'
 import { CONNECTOR_GDRIVE_ID, isGdriveConfigured } from './config'
 import { downloadDriveFile, listDriveFiles, uploadDriveFile } from './driveApi'
 import { requestDriveToken } from './gis'
 
-export { CONNECTOR_GDRIVE_ID, isGdriveConfigured, isGdriveAvailable, googleClientId } from './config'
+export {
+  CONNECTOR_GDRIVE_ID,
+  isGdriveConfigured,
+  isGdriveAvailable,
+  googleClientId,
+} from './config'
 
 /**
  * The Google Drive storage connector (Phase 6.3) — pairs the GIS token client

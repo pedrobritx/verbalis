@@ -12,7 +12,10 @@ export function BrandFooter() {
       className="mt-2 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between"
       style={{ borderColor: 'var(--color-border)' }}
     >
-      <div className="flex items-center gap-2 text-footnote" style={{ color: 'var(--color-muted)' }}>
+      <div
+        className="flex items-center gap-2 text-footnote"
+        style={{ color: 'var(--color-muted)' }}
+      >
         <VerbalisMark size={18} />
         <span>
           Verbalis — local-first CAT tool by{' '}

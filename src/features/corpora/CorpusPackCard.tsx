@@ -19,12 +19,7 @@ function sourcesLabel(sources: Record<string, number>): string {
     .join(' · ')
 }
 
-export function CorpusPackCard({
-  pack,
-  langSource,
-  langTarget,
-  installed,
-}: CorpusPackCardProps) {
+export function CorpusPackCard({ pack, langSource, langTarget, installed }: CorpusPackCardProps) {
   const [busy, setBusy] = useState(false)
   const [seedTm, setSeedTm] = useState(false)
   const [error, setError] = useState<string | null>(null)

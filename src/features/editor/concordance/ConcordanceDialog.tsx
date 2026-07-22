@@ -77,7 +77,9 @@ export function ConcordanceDialog({ project }: ConcordanceDialogProps) {
           style={{ color: 'var(--color-muted)' }}
           data-testid="concordance-count"
         >
-          {query.trim() ? `${matches.length} match${matches.length === 1 ? '' : 'es'}` : 'Enter a phrase.'}
+          {query.trim()
+            ? `${matches.length} match${matches.length === 1 ? '' : 'es'}`
+            : 'Enter a phrase.'}
         </div>
 
         <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto">
@@ -88,14 +90,20 @@ export function ConcordanceDialog({ project }: ConcordanceDialogProps) {
               style={{ borderColor: 'var(--color-border)' }}
               data-testid={`concordance-hit-${i}`}
             >
-              <span className="text-xs whitespace-pre-wrap break-words" style={{ color: 'var(--color-muted)' }}>
+              <span
+                className="text-xs whitespace-pre-wrap break-words"
+                style={{ color: 'var(--color-muted)' }}
+              >
                 {m.field === 'source' ? (
                   <Highlight text={m.entry.source} start={m.start} end={m.end} />
                 ) : (
                   m.entry.source
                 )}
               </span>
-              <span className="whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
+              <span
+                className="whitespace-pre-wrap break-words"
+                style={{ color: 'var(--color-text)' }}
+              >
                 {m.field === 'target' ? (
                   <Highlight text={m.entry.target} start={m.start} end={m.end} />
                 ) : (

@@ -13,10 +13,7 @@ describe('OfflineBadge', () => {
   let originalDescriptor: PropertyDescriptor | undefined
 
   beforeEach(() => {
-    originalDescriptor = Object.getOwnPropertyDescriptor(
-      Object.getPrototypeOf(navigator),
-      'onLine',
-    )
+    originalDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(navigator), 'onLine')
     setOnline(true)
   })
 

@@ -75,7 +75,10 @@ export function SegmentHistoryDialog() {
             No saved versions include this segment yet.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto" data-testid="segment-history-list">
+          <ul
+            className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto"
+            data-testid="segment-history-list"
+          >
             {entries.map((entry, i) => {
               // Diff against the next-older entry (or empty for the oldest).
               const prev = entries[i + 1]?.target ?? ''

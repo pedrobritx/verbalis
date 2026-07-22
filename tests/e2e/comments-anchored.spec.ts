@@ -47,7 +47,9 @@ test('comment on a selection: highlight, thread, reply, resolve', async ({ page 
   const replyInput = thread.locator('[data-testid^="comment-reply-input-"]')
   await replyInput.fill('Agreed')
   await replyInput.press('ControlOrMeta+Enter')
-  await expect(thread.locator('[data-testid^="comment-reply-"]').filter({ hasText: 'Agreed' })).toBeVisible()
+  await expect(
+    thread.locator('[data-testid^="comment-reply-"]').filter({ hasText: 'Agreed' }),
+  ).toBeVisible()
 
   // Resolving the thread drops the highlight but keeps the comment.
   await thread.locator('[data-testid^="comment-resolve-"]').click()

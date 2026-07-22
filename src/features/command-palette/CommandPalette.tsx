@@ -127,10 +127,7 @@ export function CommandPalette() {
     return (
       <>
         <CommandGroup heading="Editor">
-          <CommandItem
-            onSelect={() => run(() => togglePanel())}
-            data-testid="cmd-toggle-sidebar"
-          >
+          <CommandItem onSelect={() => run(() => togglePanel())} data-testid="cmd-toggle-sidebar">
             <PanelRight />
             <span>Toggle sidebar panel</span>
           </CommandItem>
@@ -142,10 +139,7 @@ export function CommandPalette() {
             <BookA />
             <span>Switch sidebar to Glossary</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => goToSidebar('mt'))}
-            data-testid="cmd-sidebar-mt"
-          >
+          <CommandItem onSelect={() => run(() => goToSidebar('mt'))} data-testid="cmd-sidebar-mt">
             <Wand2 />
             <span>Switch sidebar to Machine translation</span>
           </CommandItem>
@@ -184,7 +178,9 @@ export function CommandPalette() {
             data-testid="cmd-toggle-suggesting"
           >
             <MessageSquarePlus />
-            <span>{editMode === 'suggesting' ? 'Switch to direct editing' : 'Switch to suggesting mode'}</span>
+            <span>
+              {editMode === 'suggesting' ? 'Switch to direct editing' : 'Switch to suggesting mode'}
+            </span>
           </CommandItem>
           <CommandItem
             disabled={!editorActions}
@@ -276,10 +272,7 @@ export function CommandPalette() {
             <span>Find &amp; replace…</span>
             <CommandShortcut>⌃H</CommandShortcut>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => goToSidebar('qa'))}
-            data-testid="cmd-run-qa"
-          >
+          <CommandItem onSelect={() => run(() => goToSidebar('qa'))} data-testid="cmd-run-qa">
             <ShieldCheck />
             <span>Run quality assurance</span>
           </CommandItem>
@@ -287,10 +280,7 @@ export function CommandPalette() {
             <BarChart3 />
             <span>Show analysis</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => openAddTerm(''))}
-            data-testid="cmd-add-term"
-          >
+          <CommandItem onSelect={() => run(() => openAddTerm(''))} data-testid="cmd-add-term">
             <BookAddIcon />
             <span>Add glossary term…</span>
             <CommandShortcut>⌃E</CommandShortcut>
@@ -303,10 +293,7 @@ export function CommandPalette() {
             <span>Concordance search…</span>
             <CommandShortcut>⌃⇧K</CommandShortcut>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => openLookup(''))}
-            data-testid="cmd-lookup"
-          >
+          <CommandItem onSelect={() => run(() => openLookup(''))} data-testid="cmd-lookup">
             <Languages />
             <span>Quick lookup…</span>
             <CommandShortcut>⌃L</CommandShortcut>
@@ -331,7 +318,9 @@ export function CommandPalette() {
         <CommandGroup heading="Project">
           <CommandItem
             disabled={!currentProjectId}
-            onSelect={() => run(() => currentProjectId && openProjectDialog('edit', currentProjectId))}
+            onSelect={() =>
+              run(() => currentProjectId && openProjectDialog('edit', currentProjectId))
+            }
             data-testid="cmd-edit-project"
           >
             <Pencil />
@@ -398,17 +387,11 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>No matching commands.</CommandEmpty>
         <CommandGroup heading="Navigate">
-          <CommandItem
-            onSelect={() => run(() => navigate('/'))}
-            data-testid="cmd-nav-projects"
-          >
+          <CommandItem onSelect={() => run(() => navigate('/'))} data-testid="cmd-nav-projects">
             <FolderOpen />
             <span>Go to Projects</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => navigate('/tm'))}
-            data-testid="cmd-nav-tm"
-          >
+          <CommandItem onSelect={() => run(() => navigate('/tm'))} data-testid="cmd-nav-tm">
             <Database />
             <span>Go to Translation Memory</span>
           </CommandItem>
@@ -428,10 +411,7 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="Actions">
-          <CommandItem
-            onSelect={() => run(() => openImport(true))}
-            data-testid="cmd-import"
-          >
+          <CommandItem onSelect={() => run(() => openImport(true))} data-testid="cmd-import">
             <FilePlus />
             <span>Import file…</span>
           </CommandItem>
@@ -439,10 +419,7 @@ export function CommandPalette() {
             {theme === 'dark' ? <Sun /> : <Moon />}
             <span>Toggle theme (currently {theme})</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => run(() => openShortcuts(true))}
-            data-testid="cmd-shortcuts"
-          >
+          <CommandItem onSelect={() => run(() => openShortcuts(true))} data-testid="cmd-shortcuts">
             <Keyboard />
             <span>Show keyboard shortcuts</span>
             <CommandShortcut>?</CommandShortcut>

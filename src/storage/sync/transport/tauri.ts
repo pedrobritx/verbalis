@@ -51,9 +51,8 @@ export class TauriLanTransport implements SyncTransport {
     const { core, event } = await loadTauri()
     this.core = core
     // Rust emits `verbalis://sync/<projectId>` for every inbound peer message.
-    this.unlisten = await event.listen<SyncMessage>(
-      `verbalis://sync/${this.projectId}`,
-      (e) => this.handler?.(e.payload),
+    this.unlisten = await event.listen<SyncMessage>(`verbalis://sync/${this.projectId}`, (e) =>
+      this.handler?.(e.payload),
     )
     await core.invoke('start_sharing', { projectId: this.projectId })
   }

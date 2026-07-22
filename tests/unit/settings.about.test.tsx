@@ -12,9 +12,7 @@ describe('SettingsPage About section', () => {
     openAbout()
     expect(screen.getByTestId('settings-version')).toHaveTextContent('0.0.0-test')
     expect(screen.getByTestId('settings-build-sha')).toHaveTextContent('testsha')
-    expect(screen.getByTestId('settings-build-time')).toHaveTextContent(
-      '2026-01-01T00:00:00.000Z',
-    )
+    expect(screen.getByTestId('settings-build-time')).toHaveTextContent('2026-01-01T00:00:00.000Z')
   })
 
   it('includes the offline copy', () => {

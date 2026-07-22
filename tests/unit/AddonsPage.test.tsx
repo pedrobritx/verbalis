@@ -46,7 +46,9 @@ describe('AddonsPage (§6.2)', () => {
 
     fireEvent.click(toggle)
     expect(extensionRegistry.isEnabled('qa.double_space')).toBe(false)
-    expect((screen.getByTestId('addon-toggle-qa.double_space') as HTMLInputElement).checked).toBe(false)
+    expect((screen.getByTestId('addon-toggle-qa.double_space') as HTMLInputElement).checked).toBe(
+      false,
+    )
 
     fireEvent.click(screen.getByTestId('addon-toggle-qa.double_space'))
     expect(extensionRegistry.isEnabled('qa.double_space')).toBe(true)

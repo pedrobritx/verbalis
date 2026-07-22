@@ -108,7 +108,10 @@ export const useSidebarPanelStore = create<SidebarPanelState>()(
           return { layout: { ...s.layout, [stage]: cur }, updatedAt: Date.now() }
         }),
       resetLayout: (stage) =>
-        set((s) => ({ layout: { ...s.layout, [stage]: [...STAGE_TABS[stage]] }, updatedAt: Date.now() })),
+        set((s) => ({
+          layout: { ...s.layout, [stage]: [...STAGE_TABS[stage]] },
+          updatedAt: Date.now(),
+        })),
     }),
     {
       name: 'verbalis.sidebar.layout',

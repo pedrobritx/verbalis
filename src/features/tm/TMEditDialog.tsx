@@ -19,7 +19,10 @@ interface TMEditDialogProps {
   entry: TMEntry | null
   projects: Project[]
   onOpenChange: (open: boolean) => void
-  onSave: (id: string, changes: Pick<TMEntry, 'source' | 'target' | 'projectId'>) => Promise<void> | void
+  onSave: (
+    id: string,
+    changes: Pick<TMEntry, 'source' | 'target' | 'projectId'>,
+  ) => Promise<void> | void
 }
 
 export function TMEditDialog({ open, entry, projects, onOpenChange, onSave }: TMEditDialogProps) {

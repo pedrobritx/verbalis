@@ -25,9 +25,7 @@ export function isQaRuleEnabled(code: QACode): boolean {
  * AND the given rule toggles with the registry: any rule whose addon is disabled
  * is forced off; the rest keep their toggle value.
  */
-export function effectiveQaRules(
-  toggles: Partial<QARuleToggles>,
-): Partial<QARuleToggles> {
+export function effectiveQaRules(toggles: Partial<QARuleToggles>): Partial<QARuleToggles> {
   const out: Partial<QARuleToggles> = { ...toggles }
   for (const code of QA_CODES) {
     if (!isQaRuleEnabled(code)) out[code] = false

@@ -93,9 +93,7 @@ export function $createCommentMarkNode(anchorId: string): CommentMarkNode {
   return new CommentMarkNode(anchorId)
 }
 
-export function $isCommentMarkNode(
-  node: LexicalNode | null | undefined,
-): node is CommentMarkNode {
+export function $isCommentMarkNode(node: LexicalNode | null | undefined): node is CommentMarkNode {
   return node instanceof CommentMarkNode
 }
 

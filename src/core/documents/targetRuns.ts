@@ -66,7 +66,11 @@ function walk(node: RichNode, ctx: Ctx, runs: InlineRun[]): void {
   const type = node.type
   if (type === 'text') {
     if (ctx.drop) return
-    push(runs, { text: node.text ?? '', ...fmt(node.format), ...(ctx.href ? { href: ctx.href } : {}) })
+    push(runs, {
+      text: node.text ?? '',
+      ...fmt(node.format),
+      ...(ctx.href ? { href: ctx.href } : {}),
+    })
     return
   }
   if (type === 'linebreak') {

@@ -158,10 +158,7 @@ export function MTPanel({ focusedSource, sourceLang, targetLang, onApply }: MTPa
               Apply
             </button>
           </div>
-          <div
-            className="whitespace-pre-wrap break-words"
-            style={{ color: 'var(--color-text)' }}
-          >
+          <div className="whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
             {result.text}
           </div>
         </div>

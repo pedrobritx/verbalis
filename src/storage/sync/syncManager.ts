@@ -56,8 +56,7 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
   // keeps the same-machine BroadcastChannel (or Tauri LAN) transport (§4.2).
   const auth = useAuthStore.getState()
   const signedIn = auth.status === 'authenticated'
-  const cloudId =
-    signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
+  const cloudId = signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
 
   // Stable identity for presence attribution (§4.4, D8): the signed-in user id
   // when available, else the device-local author id used for tracked changes —

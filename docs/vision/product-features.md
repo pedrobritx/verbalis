@@ -2,16 +2,22 @@
      Part of the canonical context for the Translation IDE revamp: see docs/revamp/ROADMAP.md -->
 
 # Verbalis — Product Features
+
 ## Introduction
+
 Verbalis is a next-generation, cross-platform Translation IDE designed for professional translators, localization engineers, technical writers, reviewers, editors, and multilingual content teams.
 Rather than being another Computer-Assisted Translation (CAT) tool, Verbalis serves as a complete Translation Operating Environment: a unified workspace where translation, revision, terminology management, quality assurance, collaboration, publishing, and AI-assisted workflows coexist seamlessly.
 Its guiding philosophy is simple:
 AI assists professionals. Professionals make the decisions.
 Every feature is built around openness, interoperability, long-term sustainability, and extensibility.
+
 # 1. Translation Workspace
+
 The Translation Workspace is the heart of Verbalis.
 It combines the flexibility of a modern IDE with the specialized workflow of professional translation.
+
 ## Features
+
 Multi-document editing
 Split editors
 Multiple windows
@@ -28,9 +34,13 @@ Scratchpad
 Sticky notes
 Live previews
 Timeline navigation
+
 # 2. Project Management
+
 Translation projects are treated as first-class citizens.
+
 ## Project Organization
+
 Unlimited projects
 Client management
 Domain classification
@@ -41,7 +51,9 @@ Cost estimation
 Resource assignment
 Project templates
 Shared assets
+
 ## Workflow States
+
 Projects can define custom workflows such as:
 Draft
 Translate
@@ -51,9 +63,13 @@ Approve
 Publish
 Archive
 Entire workflows are customizable.
+
 # 3. Collaboration
+
 Designed for both freelancers and enterprise localization teams.
+
 ## Team Collaboration
+
 Shared projects
 Live synchronization
 Local network collaboration
@@ -65,7 +81,9 @@ Live cursors
 Segment ownership
 Segment locking
 Conflict resolution
+
 ## Review Tools
+
 Comments
 Threaded discussions
 Suggestions
@@ -76,8 +94,11 @@ Approvals
 Resolution workflow
 Change tracking
 Review history
+
 # 4. Translation Intelligence
+
 ## Translation Memories
+
 Personal translation memories
 Shared translation memories
 Cloud translation memories
@@ -88,7 +109,9 @@ Fuzzy matching
 Fragment matching
 Concordance search
 Automatic propagation
+
 ## Terminology Management
+
 Shared term bases
 Live synchronized terminology
 Preferred terminology
@@ -99,7 +122,9 @@ Images
 Context examples
 Domain-specific terminology
 Terminology validation
+
 ## Corpora
+
 Parallel corpora
 Monolingual corpora
 Concordancer
@@ -108,9 +133,13 @@ Phrase extraction
 Context explorer
 N-gram analysis
 Collocation analysis
+
 # 5. AI Copilot
+
 Artificial Intelligence is integrated as an assistant—not an autonomous translator.
+
 ## Capabilities
+
 Translation suggestions
 Alternative translations
 Register adaptation
@@ -125,7 +154,9 @@ Cultural adaptation
 Summarization
 Rewrite assistance
 Quality suggestions
+
 ## AI Research
+
 The AI can answer questions about:
 The current segment
 The current document
@@ -134,7 +165,9 @@ Translation memories
 Glossaries
 Style guides
 Previous revisions
+
 ## Safety Principles
+
 Human approval required
 Explainable suggestions
 Never overwrite approved translations
@@ -142,9 +175,13 @@ Local AI support
 Cloud AI providers
 Bring Your Own API Key (BYOK)
 Offline models
+
 # 6. Version Control
+
 Inspired by modern software development.
+
 ## Features
+
 Automatic snapshots
 Named checkpoints
 Full project history
@@ -155,9 +192,13 @@ Branching
 Merge revisions
 Conflict resolution
 Restore any revision
+
 # 7. Document Engineering
+
 Verbalis understands document structure instead of treating documents as plain text.
+
 ## Structural Elements
+
 Heading hierarchy
 Automatic Table of Contents
 Hyperlinks
@@ -174,7 +215,9 @@ Lists of figures
 Lists of tables
 Automatic indexes
 Glossaries
+
 ## Formatting
+
 Paragraph styles
 Character styles
 Lists
@@ -186,9 +229,13 @@ Code blocks
 Markdown
 HTML
 XML
+
 # 8. Standards & Compliance Engine
+
 Verbalis assists users in producing documents compliant with international standards.
+
 ## Academic Standards
+
 ABNT
 APA
 MLA
@@ -199,7 +246,9 @@ ASA
 IEEE
 Harvard
 OSCOLA
+
 ## Technical Standards
+
 ANSI
 ISO
 IEC
@@ -210,15 +259,21 @@ CEN
 OASIS Open
 Unicode
 W3C
+
 ## Validation
+
 The Standards Engine automatically:
 Detects violations
 Explains non-compliance
 Suggests corrections
 Performs one-click fixes where possible
+
 # 9. Reference Management
+
 Integrated academic and technical referencing.
+
 ## Citation Styles
+
 Parenthetical
 Numeric
 Footnote
@@ -231,7 +286,9 @@ Chicago
 Bluebook
 IEEE
 Harvard
+
 ## Bibliography
+
 Automatic generation and maintenance of references.
 Supported identifiers include:
 DOI
@@ -249,9 +306,13 @@ BibTeX
 CSL JSON
 RIS
 EndNote XML
+
 # 10. Localization
+
 Designed for professional localization workflows.
+
 ## Supported Areas
+
 Software localization
 Website localization
 Mobile applications
@@ -259,7 +320,9 @@ Desktop applications
 Video games
 Documentation
 Subtitles
+
 ## Features
+
 String preview
 UI preview
 Right-to-left preview
@@ -267,9 +330,13 @@ ICU MessageFormat support
 Unicode validation
 Plural rules
 Locale validation
+
 # 11. Segment Engine
+
 Highly configurable segmentation system.
+
 ## Capabilities
+
 Rule-based segmentation
 Regular expression segmentation
 AI-assisted segmentation
@@ -282,7 +349,9 @@ Segment inheritance
 Segment dependencies
 Context grouping
 Custom segmentation profiles
+
 # 12. Advanced Search & Filtering
+
 Universal search across the entire workspace.
 Searchable resources include:
 Documents
@@ -295,7 +364,9 @@ Plugins
 Commands
 Standards
 Dictionaries
+
 ## Filters
+
 Boolean
 Regex
 Semantic search
@@ -309,7 +380,9 @@ Match percentage
 QA status
 Workflow state
 Saved Smart Filters are supported.
+
 # 13. Quality Assurance
+
 Continuous quality verification.
 Checks include:
 Terminology
@@ -328,7 +401,9 @@ Broken hyperlinks
 Missing citations
 Invalid references
 Standards compliance
+
 # 14. Knowledge Engine
+
 The core innovation of Verbalis.
 Rather than storing translation memories, glossaries, citations, comments, standards, revisions, and AI interactions separately, Verbalis builds a semantic knowledge graph connecting every artifact produced during a project’s lifecycle.
 This enables users to retrieve knowledge instead of merely searching files.
@@ -339,9 +414,13 @@ Example queries include:
 “Which glossary entry generated this translation?”
 “Where did this terminology change originate?”
 The Knowledge Engine transforms years of translation work into a reusable organizational memory.
+
 # 15. Automation
+
 Reduce repetitive work through automation.
+
 ## Features
+
 Batch translation
 Batch QA
 Batch conversion
@@ -352,9 +431,13 @@ Rules engine
 Hooks
 Automatic backups
 Automatic exports
+
 # 16. Web & Research Tools
+
 Integrated research capabilities.
+
 ## Features
+
 Web scraping
 Website mirroring
 Metadata extraction
@@ -365,7 +448,9 @@ Image text extraction
 Table extraction
 Automatic citation generation
 Hyperlink analysis
+
 # 17. Internationalization
+
 Automatic localization-aware conversions.
 Supported conversions include:
 SI units
@@ -380,10 +465,14 @@ Paper sizes
 Telephone formats
 Addresses
 Regional formatting
+
 # 18. Customization
+
 Every translator works differently.
 Verbalis supports extensive personalization.
+
 ## Customizable Elements
+
 Themes
 Color palettes
 Custom segment syntax highlighting
@@ -400,7 +489,9 @@ Segmentation rules
 Ignore lists
 Filters
 Automation profiles
+
 # 19. Plugin Ecosystem
+
 Virtually every subsystem can be extended through plugins.
 Plugin categories include:
 AI providers
@@ -418,9 +509,13 @@ Scripts
 Automation
 Project templates
 Workflow integrations
+
 # 20. Open Ecosystem & Interoperability
+
 Verbalis embraces open standards and vendor neutrality.
+
 ## Open Standards
+
 OpenDocument
 XLIFF
 TMX
@@ -434,9 +529,13 @@ YAML
 CSV
 PO
 RESX
+
 ## Integrations
+
 Native connectors for major localization platforms, version control systems, cloud storage providers, and publishing pipelines ensure organizations can adopt Verbalis without abandoning their existing workflows.
+
 # Design Principles
+
 Human-first translation.
 AI as a copilot, never an autonomous decision maker.
 Open standards over proprietary lock-in.

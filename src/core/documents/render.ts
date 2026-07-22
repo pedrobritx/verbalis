@@ -63,7 +63,9 @@ function targetOrSource(seg: Segment): string {
 
 function buildTextBlock(block: Block, segs: Segment[]): RenderBlock {
   const join = block.kind === 'code' ? '\n' : SENTENCE_JOIN
-  const sourceText = block.sourceRuns ? runsText(block.sourceRuns) : segs.map((s) => s.source).join(join)
+  const sourceText = block.sourceRuns
+    ? runsText(block.sourceRuns)
+    : segs.map((s) => s.source).join(join)
   return {
     id: block.id,
     kind: block.kind,

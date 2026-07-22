@@ -99,8 +99,12 @@ describe('runQA', () => {
 
   it('allows a space before ; : ? ! for French targets but still flags the comma', () => {
     const fr = { targetLang: 'fr-FR' }
-    expect(runQA([seg('a', 'Bonjour ; toi')], [], fr).some((i) => i.code === 'space_before_punct')).toBe(false)
-    expect(runQA([seg('a', 'Bonjour ,toi')], [], fr).some((i) => i.code === 'space_before_punct')).toBe(true)
+    expect(
+      runQA([seg('a', 'Bonjour ; toi')], [], fr).some((i) => i.code === 'space_before_punct'),
+    ).toBe(false)
+    expect(
+      runQA([seg('a', 'Bonjour ,toi')], [], fr).some((i) => i.code === 'space_before_punct'),
+    ).toBe(true)
   })
 
   it('flags a back-to-back repeated word', () => {
@@ -115,7 +119,9 @@ describe('runQA', () => {
 
   it('flags straight quotes only when the rule is enabled', () => {
     const target = 'she said "hi"'
-    expect(runQA([seg('a', target)], [], OPTS).some((i) => i.code === 'straight_quotes')).toBe(false)
+    expect(runQA([seg('a', target)], [], OPTS).some((i) => i.code === 'straight_quotes')).toBe(
+      false,
+    )
     expect(
       runQA([seg('a', target)], [], { ...OPTS, rules: { straight_quotes: true } }).some(
         (i) => i.code === 'straight_quotes',

@@ -59,12 +59,20 @@ export function TMImportButton() {
         }}
       />
       {status && (
-        <span className="text-footnote" style={{ color: 'var(--color-accent)' }} data-testid="tm-import-status">
+        <span
+          className="text-footnote"
+          style={{ color: 'var(--color-accent)' }}
+          data-testid="tm-import-status"
+        >
           {status}
         </span>
       )}
       {error && (
-        <span className="text-footnote" style={{ color: 'var(--color-error)' }} data-testid="tm-import-error">
+        <span
+          className="text-footnote"
+          style={{ color: 'var(--color-error)' }}
+          data-testid="tm-import-error"
+        >
           {error}
         </span>
       )}

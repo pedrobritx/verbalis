@@ -85,9 +85,7 @@ export function ShortcutsDialog() {
       >
         <DialogHeader>
           <DialogTitle style={{ color: 'var(--color-text)' }}>Keyboard shortcuts</DialogTitle>
-          <DialogDescription>
-            On macOS, Ctrl maps to ⌘ (Command).
-          </DialogDescription>
+          <DialogDescription>On macOS, Ctrl maps to ⌘ (Command).</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-5 max-h-[60vh] overflow-y-auto pr-1">
           {GROUPS.map((g) => (
@@ -100,10 +98,7 @@ export function ShortcutsDialog() {
               </h3>
               <ul className="flex flex-col gap-1.5">
                 {g.items.map((s) => (
-                  <li
-                    key={s.keys}
-                    className="flex items-center justify-between gap-3 py-1"
-                  >
+                  <li key={s.keys} className="flex items-center justify-between gap-3 py-1">
                     <span className="text-callout" style={{ color: 'var(--color-text)' }}>
                       {s.description}
                     </span>

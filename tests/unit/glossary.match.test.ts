@@ -47,18 +47,14 @@ describe('findGlossaryHits', () => {
   })
 
   it('does not double-report the same entry when it appears twice', () => {
-    const out = findGlossaryHits(
-      'hello hello hello',
-      [entry({ id: '1', term: 'hello' })],
-      { limit: 10 },
-    )
+    const out = findGlossaryHits('hello hello hello', [entry({ id: '1', term: 'hello' })], {
+      limit: 10,
+    })
     expect(out).toHaveLength(1)
   })
 
   it('respects the limit option', () => {
-    const candidates = Array.from({ length: 5 }, (_, i) =>
-      entry({ id: `e${i}`, term: `term${i}` }),
-    )
+    const candidates = Array.from({ length: 5 }, (_, i) => entry({ id: `e${i}`, term: `term${i}` }))
     const source = 'term0 term1 term2 term3 term4'
     const out = findGlossaryHits(source, candidates, { limit: 3 })
     expect(out).toHaveLength(3)
@@ -84,11 +80,7 @@ describe('findGlossaryHits', () => {
   })
 
   it('handles term with regex metacharacters safely', () => {
-    const out = findGlossaryHits(
-      'use C++ here',
-      [entry({ term: 'C++' })],
-      { limit: 10 },
-    )
+    const out = findGlossaryHits('use C++ here', [entry({ term: 'C++' })], { limit: 10 })
     expect(out).toHaveLength(1)
   })
 })

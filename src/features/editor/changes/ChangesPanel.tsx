@@ -182,7 +182,11 @@ function SuggestionRow({
           #{change.segmentIndex + 1}
         </button>
         <span className="inline-flex items-center gap-1" style={{ color }}>
-          <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
+          <span
+            aria-hidden
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ background: color }}
+          />
           {change.authorName || 'Unknown'}
         </span>
         <span style={{ color: isInsert ? 'var(--color-accent)' : 'var(--color-error)' }}>
@@ -295,7 +299,11 @@ function HistoryView({ projectId }: ChangesPanelProps) {
                 style={{ color }}
                 data-testid="changes-author"
               >
-                <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ background: color }}
+                />
                 {c.author || 'Unknown'}
               </span>
               <span className="ml-auto" style={{ color: 'var(--color-muted)' }}>
@@ -305,7 +313,10 @@ function HistoryView({ projectId }: ChangesPanelProps) {
             {showDiff ? (
               <DiffText prev={c.before} next={c.after} addColor={color} />
             ) : (
-              <p className="text-sm whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
+              <p
+                className="text-sm whitespace-pre-wrap break-words"
+                style={{ color: 'var(--color-text)' }}
+              >
                 {c.after}
               </p>
             )}

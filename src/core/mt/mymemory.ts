@@ -52,11 +52,7 @@ export const myMemoryProvider: MTProvider<MyMemorySettings> = {
       if (err instanceof Error && err.name === 'AbortError') {
         throw new MTError('mymemory', 'aborted', 'Request cancelled')
       }
-      throw new MTError(
-        'mymemory',
-        'network',
-        err instanceof Error ? err.message : 'fetch failed',
-      )
+      throw new MTError('mymemory', 'network', err instanceof Error ? err.message : 'fetch failed')
     }
 
     let json: MyMemoryResponse | null = null
@@ -70,22 +66,24 @@ export const myMemoryProvider: MTProvider<MyMemorySettings> = {
       throw new MTError('mymemory', codeForStatus(resp.status), `MyMemory returned ${resp.status}`)
     }
 
-    const status = typeof json?.responseStatus === 'string'
-      ? Number.parseInt(json.responseStatus, 10)
-      : json?.responseStatus
+    const status =
+      typeof json?.responseStatus === 'string'
+        ? Number.parseInt(json.responseStatus, 10)
+        : json?.responseStatus
     if (status && status !== 200) {
       const detail = json?.responseDetails || `MyMemory responded with status ${status}`
       const lower = detail.toLowerCase()
       // Inspect the message first: MyMemory returns 403 for unsupported
       // language pairs and 429-ish bodies for quota issues, so the message
       // is more reliable than the status code alone.
-      const code = lower.includes('language') || lower.includes('pair')
-        ? 'unsupported_lang'
-        : lower.includes('quota') || lower.includes('limit') || status === 429
-          ? 'rate_limit'
-          : status === 403 || status === 401
-            ? 'auth'
-            : 'network'
+      const code =
+        lower.includes('language') || lower.includes('pair')
+          ? 'unsupported_lang'
+          : lower.includes('quota') || lower.includes('limit') || status === 429
+            ? 'rate_limit'
+            : status === 403 || status === 401
+              ? 'auth'
+              : 'network'
       throw new MTError('mymemory', code, detail)
     }
 
@@ -104,15 +102,15 @@ export const myMemoryProvider: MTProvider<MyMemorySettings> = {
     let resp: Response
     try {
       resp = await fetchImpl(
-        buildUrl(settings.endpoint, { text: 'hi', sourceLang: 'en', targetLang: 'es' }, settings.email),
+        buildUrl(
+          settings.endpoint,
+          { text: 'hi', sourceLang: 'en', targetLang: 'es' },
+          settings.email,
+        ),
         { method: 'GET', headers: { Accept: 'application/json' } },
       )
     } catch (err) {
-      throw new MTError(
-        'mymemory',
-        'network',
-        err instanceof Error ? err.message : 'fetch failed',
-      )
+      throw new MTError('mymemory', 'network', err instanceof Error ? err.message : 'fetch failed')
     }
     if (!resp.ok) {
       throw new MTError('mymemory', codeForStatus(resp.status), `MyMemory returned ${resp.status}`)

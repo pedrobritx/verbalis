@@ -69,7 +69,11 @@ export function CommentsPanel({ projectId }: { projectId: string }) {
       ) : (
         <ul className="flex flex-col gap-2" data-testid="comments-results">
           {visible.map((t) => (
-            <ThreadCard key={t.root.id} thread={t} onJump={() => actions?.jumpToSegment(t.segmentIndex + 1)} />
+            <ThreadCard
+              key={t.root.id}
+              thread={t}
+              onJump={() => actions?.jumpToSegment(t.segmentIndex + 1)}
+            />
           ))}
         </ul>
       )}

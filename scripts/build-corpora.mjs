@@ -111,7 +111,8 @@ const FIELDS = [
   {
     id: 'tax',
     label: 'Tax',
-    description: 'Tax and fiscal terminology: direct and indirect taxes, withholding, tax procedure.',
+    description:
+      'Tax and fiscal terminology: direct and indirect taxes, withholding, tax procedure.',
     keywords: [
       'taxation',
       'taxable',
@@ -175,7 +176,8 @@ const FIELDS = [
   {
     id: 'corporate',
     label: 'Corporate & M&A',
-    description: 'Company law, shareholders, corporate governance, mergers, acquisitions and restructuring.',
+    description:
+      'Company law, shareholders, corporate governance, mergers, acquisitions and restructuring.',
     keywords: [
       'shareholder',
       'corporate',
@@ -200,7 +202,8 @@ const FIELDS = [
   {
     id: 'accounting-finance',
     label: 'Accounting & Finance',
-    description: 'Accounting, auditing, financial statements, banking and capital-markets terminology.',
+    description:
+      'Accounting, auditing, financial statements, banking and capital-markets terminology.',
     keywords: [
       'accounting',
       'balance sheet',
@@ -293,7 +296,8 @@ const FIELDS = [
   {
     id: 'contracts',
     label: 'Contracts & Obligations',
-    description: 'Contract drafting and the law of obligations: clauses, leases, guarantees, performance.',
+    description:
+      'Contract drafting and the law of obligations: clauses, leases, guarantees, performance.',
     keywords: [
       'contract',
       'agreement',

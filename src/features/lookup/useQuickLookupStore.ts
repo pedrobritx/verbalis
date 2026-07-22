@@ -40,4 +40,3 @@ export const useQuickLookupStore = create<QuickLookupState>((set, get) => ({
   setProjectLangs: (projectLangs) => set({ projectLangs }),
   setOpen: (open) => set(open ? { open } : { open: false, prefill: '' }),
 }))
-

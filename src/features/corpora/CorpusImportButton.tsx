@@ -69,7 +69,13 @@ export function CorpusImportButton({
       let rows: Array<Omit<GlossaryEntry, 'id'>> = []
       if (format === 'csv') rows = mergeRows(parseCSV(text))
       else if (format === 'tsv') rows = mergeRows(parseTSV(text, sourceLang, targetLang))
-      else rows = parseTBX(text).map((t) => ({ term: t.term, definition: t.definition, translations: t.translations, notes: t.notes }))
+      else
+        rows = parseTBX(text).map((t) => ({
+          term: t.term,
+          definition: t.definition,
+          translations: t.translations,
+          notes: t.notes,
+        }))
 
       const id = slugifyCorpusId(name)
       const pack = rowsToCorpusFile(rows, { id, langSource: sourceLang, langTarget: targetLang })
@@ -111,8 +117,8 @@ export function CorpusImportButton({
           <DialogHeader>
             <DialogTitle style={{ color: 'var(--color-text)' }}>Import a corpus</DialogTitle>
             <DialogDescription>
-              Upload a CSV, TSV (OmegaT) or TBX termbase as a custom field corpus. It
-              feeds glossary matching and quick lookup like the bundled packs.
+              Upload a CSV, TSV (OmegaT) or TBX termbase as a custom field corpus. It feeds glossary
+              matching and quick lookup like the bundled packs.
             </DialogDescription>
           </DialogHeader>
 
@@ -174,7 +180,11 @@ export function CorpusImportButton({
             </label>
 
             {error && (
-              <p className="text-xs" style={{ color: 'var(--color-error)' }} data-testid="corpus-import-error">
+              <p
+                className="text-xs"
+                style={{ color: 'var(--color-error)' }}
+                data-testid="corpus-import-error"
+              >
                 {error}
               </p>
             )}

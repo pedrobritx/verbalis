@@ -33,11 +33,29 @@ describe('exportProjectDocx', () => {
       block({ id: 'p', index: 1, kind: 'paragraph' }),
     ]
     const boldRich = JSON.stringify({
-      root: { type: 'root', children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Salut.', format: 1 }] }] },
+      root: {
+        type: 'root',
+        children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Salut.', format: 1 }] }],
+      },
     })
     const segments = [
-      seg({ id: 's-h', index: 0, blockId: 'h', source: 'Title', target: 'Titre', sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 } }),
-      seg({ id: 's-p', index: 1, blockId: 'p', source: 'Hi.', target: 'Salut.', targetRich: boldRich, sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 } }),
+      seg({
+        id: 's-h',
+        index: 0,
+        blockId: 'h',
+        source: 'Title',
+        target: 'Titre',
+        sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 },
+      }),
+      seg({
+        id: 's-p',
+        index: 1,
+        blockId: 'p',
+        source: 'Hi.',
+        target: 'Salut.',
+        targetRich: boldRich,
+        sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 },
+      }),
     ]
 
     const blob = await exportProjectDocx(blocks, segments, [])
@@ -51,11 +69,30 @@ describe('exportProjectDocx', () => {
 
   it('exports a table with translated cells', async () => {
     const blocks = [
-      block({ id: 't', index: 0, kind: 'table', attrs: { rows: [[[{ text: 'H' }], [{ text: 'X' }]]] } }),
+      block({
+        id: 't',
+        index: 0,
+        kind: 'table',
+        attrs: { rows: [[[{ text: 'H' }], [{ text: 'X' }]]] },
+      }),
     ]
     const segments = [
-      seg({ id: 'c0', index: 0, blockId: 't', source: 'H', target: 'Ht', sourceMeta: { kind: 'paragraph', blockIndex: 0, sentenceIndex: 0 } }),
-      seg({ id: 'c1', index: 1, blockId: 't', source: 'X', target: 'Xt', sourceMeta: { kind: 'paragraph', blockIndex: 0, sentenceIndex: 1 } }),
+      seg({
+        id: 'c0',
+        index: 0,
+        blockId: 't',
+        source: 'H',
+        target: 'Ht',
+        sourceMeta: { kind: 'paragraph', blockIndex: 0, sentenceIndex: 0 },
+      }),
+      seg({
+        id: 'c1',
+        index: 1,
+        blockId: 't',
+        source: 'X',
+        target: 'Xt',
+        sourceMeta: { kind: 'paragraph', blockIndex: 0, sentenceIndex: 1 },
+      }),
     ]
     const xml = await documentXml(await exportProjectDocx(blocks, segments, []))
     expect(xml).toContain('<w:tbl')

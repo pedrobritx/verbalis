@@ -4,12 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { db } from '@/storage/db'
 import { glossaryRepo } from '@/storage/repositories/glossaryRepo'
 import { setRowSyncEnabled } from '@/storage/cloud/rowSyncState'
-import {
-  pushResource,
-  pullResource,
-  syncResource,
-  syncAllResources,
-} from '@/storage/cloud/rowSync'
+import { pushResource, pullResource, syncResource, syncAllResources } from '@/storage/cloud/rowSync'
 import type { GlossaryEntry } from '@/core/types'
 
 interface ServerRow {
@@ -39,9 +34,7 @@ function makeServer() {
                     order() {
                       const cutoff = Date.parse(iso)
                       const data = [...rows.values()]
-                        .filter(
-                          (r) => r.user_id === userId && Date.parse(r.updated_at) > cutoff,
-                        )
+                        .filter((r) => r.user_id === userId && Date.parse(r.updated_at) > cutoff)
                         .sort((a, b) => Date.parse(a.updated_at) - Date.parse(b.updated_at))
                       return Promise.resolve({ data, error: null })
                     },
@@ -106,8 +99,25 @@ describe('pushResource', () => {
   it('excludes bundled-corpus TM rows', async () => {
     const { client, tables } = makeServer()
     await db.tm.bulkPut([
-      { id: 't1', source: 'a', target: 'b', sourceLang: 'en', targetLang: 'pt', date: 'x', updatedAt: 10 },
-      { id: 'c1', source: 'c', target: 'd', sourceLang: 'en', targetLang: 'pt', date: 'x', updatedAt: 10, corpusId: 'pack1' },
+      {
+        id: 't1',
+        source: 'a',
+        target: 'b',
+        sourceLang: 'en',
+        targetLang: 'pt',
+        date: 'x',
+        updatedAt: 10,
+      },
+      {
+        id: 'c1',
+        source: 'c',
+        target: 'd',
+        sourceLang: 'en',
+        targetLang: 'pt',
+        date: 'x',
+        updatedAt: 10,
+        corpusId: 'pack1',
+      },
     ])
     const tmAdapter = {
       resource: 'tm' as const,

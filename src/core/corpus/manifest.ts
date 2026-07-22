@@ -14,10 +14,7 @@ export async function fetchCorpusManifest(signal?: AbortSignal): Promise<CorpusM
   return (await res.json()) as CorpusManifest
 }
 
-export async function fetchCorpusPack(
-  file: string,
-  signal?: AbortSignal,
-): Promise<CorpusPackFile> {
+export async function fetchCorpusPack(file: string, signal?: AbortSignal): Promise<CorpusPackFile> {
   const res = await fetch(corpusAssetUrl(file), { signal })
   if (!res.ok) throw new Error(`Failed to load corpus pack ${file} (${res.status})`)
   return (await res.json()) as CorpusPackFile

@@ -14,17 +14,17 @@ below.
 
 memoQ is powerful and dense — a ribbon with ~120 commands, modal resource
 consoles, and a learning curve measured in weeks. Verbalis copies memoQ's
-*capabilities*, not its *surface*. Every feature below is restated as "what
+_capabilities_, not its _surface_. Every feature below is restated as "what
 memoQ does" → "the Verbalis‑native, simpler treatment" → "where it plugs into
 the current code".
 
 The plan is built on three decisions already made with the maintainer:
 
-| Decision | Choice |
-|---|---|
-| LAN collaboration | **Tauri desktop peers** with mDNS auto‑discovery + CRDT sync — every install is a real peer, no cloud, no central server |
-| Rich editor core | **Lexical** (Meta) replaces the plain `<textarea>` segments |
-| Document standards (ABNT/ISO/BSI/ANSI) | **Export/preview profiles**, built after the editor and collaboration land |
+| Decision                               | Choice                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| LAN collaboration                      | **Tauri desktop peers** with mDNS auto‑discovery + CRDT sync — every install is a real peer, no cloud, no central server |
+| Rich editor core                       | **Lexical** (Meta) replaces the plain `<textarea>` segments                                                              |
+| Document standards (ABNT/ISO/BSI/ANSI) | **Export/preview profiles**, built after the editor and collaboration land                                               |
 
 ---
 
@@ -64,6 +64,7 @@ segment's `source`/`target` are plain strings edited in a `<textarea>`
 (`src/features/editor/SegmentRow.tsx`).
 
 **Approach (what shipped):**
+
 - `RichSegmentEditor` (`src/features/editor/rich/`) wraps a Lexical instance per
   target cell, lazy-loaded so Lexical (≈72 KB gzip) stays out of the main bundle
   until rich mode is on. Both editors implement a thin `SegmentEditorHandle`
@@ -75,7 +76,7 @@ segment's `source`/`target` are plain strings edited in a `<textarea>`
   Sentence) are pure functions in `src/core/text/case.ts` applied to the
   selection.
 - **Serialization is the contract.** Target is stored as Lexical JSON
-  (`Segment.targetRich`) *plus* the derived plain‑text `target`, which stays the
+  (`Segment.targetRich`) _plus_ the derived plain‑text `target`, which stays the
   source of truth for TM matching, QA, search and counters. `richStateToPlain`
   (`src/core/editor/richText.ts`) derives plain text headlessly and is
   unit-tested, so storage always agrees with what TM/QA see.
@@ -84,6 +85,7 @@ segment's `source`/`target` are plain strings edited in a `<textarea>`
   so the rich editor rebuilds cleanly from the applied plain text.
 
 **Next slices on this core:**
+
 - `InlineTagNode` (decorator chip) carrying the XLIFF tag payload, mapped ↔ the
   numeric placeholders round-tripped via `bilingualMeta.inlineTags`
   (`src/core/bilingual/xliff12.ts`) — for quotes / footnotes / bibliography.
@@ -118,6 +120,7 @@ data type (CRDT), and single‑user undo‑history and multi‑peer merge both f
 out.
 
 **Approach (what shipped):**
+
 - Each project's segment set is mirrored into a **Yjs document**
   (`src/storage/sync/segmentCrdt.ts`): `target` is a `Y.Text`, comments a
   `Y.Array<Y.Map>`, everything else plain LWW values. The doc persists in
@@ -153,6 +156,7 @@ network." Browsers can't bind sockets or do mDNS; a Tauri desktop shell can,
 while reusing 100% of the existing React app.
 
 **Approach:**
+
 - Wrap the existing SPA in **Tauri**. The PWA stays the zero‑install entry
   point; the desktop build adds peer capabilities.
 - A small Rust sidecar does **mDNS/zeroconf discovery** (`_verbalis._tcp.local`)
@@ -178,17 +182,17 @@ F2 CRDT + history ─┤            edit-source-as-change, segment handling
 
 Continues the numbering in `docs/architecture.md` (phases 0–6 done, 7+ planned).
 
-| Phase | Theme | Headline deliverables | Depends on |
-|---|---|---|---|
-| **8** | **Editor UX wins** ✅ | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity | — |
-| **9** | **Segment handling** ✅ | Lock / split / join, non‑breaking abbreviation list (insert/move deferred) | — |
-| **10** | **Rich editing (F1)** | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1 |
-| **11** | **Language quality** ✅ | Web search + AutoCorrect ✅; grammar/style QA hints + selection lookup ✅; on‑device Hunspell spell‑check — panel + rich‑editor squiggles ✅ | — (F1 for inline marks) |
-| **12** | **Versioning (F2)** | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide | F1, F2 |
-| **13** | **Workflow & layout** | Source‑prep / translation / revision layouts, layout customization, view density | F1 |
-| **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next | F2, F3 |
-| **15** | **Resources sync** | Update/download glossaries, TMs, corpora; shared project resources over LAN | F3 |
-| **16** | **Document standards** | ABNT/ISO/BSI/ANSI export/preview profiles: citations, references, numbering, indentation, index | F1 |
+| Phase  | Theme                     | Headline deliverables                                                                                                                                   | Depends on              |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **8**  | **Editor UX wins** ✅     | Auto‑collapsing sidebar, per‑segment confirm button, comments, edit source, guided tips, local identity                                                 | —                       |
+| **9**  | **Segment handling** ✅   | Lock / split / join, non‑breaking abbreviation list (insert/move deferred)                                                                              | —                       |
+| **10** | **Rich editing (F1)**     | Lexical core, bold/italic/underline/sub‑sup, case transforms ✅; inline tag chips + F9 insertion + QA tag rule ✅ (opt-in); rich-on-by-default deferred | F1                      |
+| **11** | **Language quality** ✅   | Web search + AutoCorrect ✅; grammar/style QA hints + selection lookup ✅; on‑device Hunspell spell‑check — panel + rich‑editor squiggles ✅            | — (F1 for inline marks) |
+| **12** | **Versioning (F2)**       | CRDT data layer, per‑segment history, named project snapshots, tracked changes + show/hide                                                              | F1, F2                  |
+| **13** | **Workflow & layout**     | Source‑prep / translation / revision layouts, layout customization, view density                                                                        | F1                      |
+| **14** | **Collaboration (F3)** 🚧 | Bidirectional CRDT sync, transport seam + BroadcastChannel peers, presence, encryption codec, opt-in sharing UI ✅; Tauri/mDNS desktop networking next  | F2, F3                  |
+| **15** | **Resources sync**        | Update/download glossaries, TMs, corpora; shared project resources over LAN                                                                             | F3                      |
+| **16** | **Document standards**    | ABNT/ISO/BSI/ANSI export/preview profiles: citations, references, numbering, indentation, index                                                         | F1                      |
 
 Phases are independently shippable; 9, 11 and 13 can interleave with the heavier
 foundation work.
@@ -199,7 +203,8 @@ foundation work.
 
 ### A. Editing core & formatting
 
-**Text styling — bold / italic / underline / sub‑sup / case** *(shipped, Phase 10, opt-in)*
+**Text styling — bold / italic / underline / sub‑sup / case** _(shipped, Phase 10, opt-in)_
+
 - memoQ: ribbon Format group + `Ctrl+B/I/U`, `Ctrl+Shift+=` etc.
 - Verbalis: a focus-time `FormatToolbar` + `Ctrl+B/I/U`, using Lexical's built-in
   text formats (bold/italic/underline/subscript/superscript). Case
@@ -208,30 +213,33 @@ foundation work.
 - Round‑trip to XLIFF `<bpt>/<ept>` run styling on export is a follow-up (lands
   with inline tags).
 
-**Inline tagging — quotes, footnotes, bibliography** *(shipped, Phase 10, opt-in)*
+**Inline tagging — quotes, footnotes, bibliography** _(shipped, Phase 10, opt-in)_
+
 - memoQ: numbered inline tags `{1}…{2}` that must be carried to the target.
 - Verbalis: `InlineTagNode` renders each placeholder as a compact chip (glyph by
   kind — "¹" footnote, "❝" quote, "※" biblio — plus the id) with hover detail,
   classified from the stored tag XML by `classifyInlineTag`
   (`src/core/bilingual/inlineTags.ts`). The source cell shows the same chips
   read‑only; a focus‑time **tag strip** lists the source tags and `F9` inserts the
-  next one still missing from the target (`nextMissingTagId`). The QA *tag
-  mismatch* rule (`src/core/qa/checks.ts`) already compares the placeholder
+  next one still missing from the target (`nextMissingTagId`). The QA _tag
+  mismatch_ rule (`src/core/qa/checks.ts`) already compares the placeholder
   multiset and is unaffected, because the chip's `getTextContent()` returns
   `{id}` — plain `target` stays the contract for TM/QA/search/export. Footnote/
   citation tags will reference entries managed by the standards engine (Phase 16).
 
-**Edit source** *(shipped, Phase 8)*
+**Edit source** _(shipped, Phase 8)_
+
 - memoQ: "Edit source" toggles the source cell editable.
 - Verbalis: per‑row "Source" pencil makes the original editable with debounced
-  autosave (`SegmentRow.tsx`). In Phase 12 a source edit becomes a *tracked
-  change* and, for bilingual projects, is flagged because it diverges from the
+  autosave (`SegmentRow.tsx`). In Phase 12 a source edit becomes a _tracked
+  change_ and, for bilingual projects, is flagged because it diverges from the
   imported skeleton.
 
-**Segment handling — lock / split / join** *(shipped, Phase 9)*
+**Segment handling — lock / split / join** _(shipped, Phase 9)_
+
 - memoQ: `Ctrl+T` split, `Ctrl+J` join, lock, etc.
 - Verbalis: a per‑row **⋯ actions menu** (`segments/SegmentActionsMenu.tsx`) plus
-  keyboard parity (`Ctrl/⌘+J` join). **Lock** is an *orthogonal* `Segment.locked`
+  keyboard parity (`Ctrl/⌘+J` join). **Lock** is an _orthogonal_ `Segment.locked`
   flag — not the `locked` status value — so a locked reviewed segment keeps its
   reviewed state; locked rows become read‑only and are excluded from confirm,
   pre‑translate, number population and auto‑propagation (`EditorPage.tsx`).
@@ -240,7 +248,7 @@ foundation work.
   transaction (`segmentRepo.splitSegment` / `joinWithNext`), with pure decision
   logic in `core/segments/operations.ts` (`splitSourceText`, `canJoin`,
   `mergeStatus`). Join is restricted to the same source block; the merged status
-  is the *less complete* of the two.
+  is the _less complete_ of the two.
 - **Bilingual guard:** split/join are disabled for XLIFF projects because export
   maps strictly by `transUnitId` against a stored template — a split/merged
   segment has no matching trans‑unit and would be dropped. Lock works for both.
@@ -248,10 +256,11 @@ foundation work.
   re‑index machinery but add little value against the same XLIFF round‑trip risk;
   revisit once rich content (F1) and versioning (F2) land.
 
-**Abbreviations handler** *(non‑breaking list shipped Phase 9; AutoCorrect Phase 11)*
+**Abbreviations handler** _(non‑breaking list shipped Phase 9; AutoCorrect Phase 11)_
+
 - Two distinct needs: (1) a **non‑breaking abbreviation list** so the segmenter
   doesn't split "Art. 5º" — extends `src/core/segmentation/sbdOptions.ts` with the
-  English defaults plus a curated PT/legal set (sbd *replaces* rather than extends
+  English defaults plus a curated PT/legal set (sbd _replaces_ rather than extends
   its list, so both are shipped). ✅ Phase 9.
   (2) an **AutoCorrect/expansion** map ("eg" → "e.g.", custom shorthands) applied
   on input — shipped (Phase 11). Pure core `src/core/text/autocorrect.ts`
@@ -262,7 +271,8 @@ foundation work.
 
 ### B. Language quality
 
-**Grammar/style hints** *(shipped, Phase 11)*
+**Grammar/style hints** _(shipped, Phase 11)_
+
 - memoQ: rule-based QA for spacing, punctuation and consistency.
 - Verbalis: rule‑based hints run in the existing pure QA pass
   (`src/core/qa/checks.ts`) and surface in the QA panel + per‑rule Settings toggles
@@ -272,7 +282,8 @@ foundation work.
   the pre‑existing double‑space / whitespace / terminology‑consistency checks —
   privacy‑safe and fully offline.
 
-**Spelling (Hunspell)** *(shipped, Phase 11 — panel + rich-editor squiggles)*
+**Spelling (Hunspell)** _(shipped, Phase 11 — panel + rich-editor squiggles)_
+
 - memoQ: Hunspell or MS Word; squiggly underlines; download dictionaries.
 - Verbalis: **nspell** (pure-JS, Hunspell-compatible — same wooorm ecosystem as
   remark; chosen over a WASM build for far less complexity, same offline result)
@@ -292,7 +303,8 @@ foundation work.
   pure, tested `src/core/spell/offsets.ts`, and one shared loader
   (`src/core/spell/loader.ts`) fetches each dictionary once across panel + overlay.
 
-**Dictionary lookup** *(shipped, Phase 11)*
+**Dictionary lookup** _(shipped, Phase 11)_
+
 - Already present: Wiktionary adapter + Quick Lookup dialog (`src/features/lookup`,
   `src/features/translate/TranslateWorkspace.tsx`, `src/core/glossary/wiktionary.ts`,
   offline‑cache‑first via the Workbox runtime cache). Now **selection‑aware**:
@@ -300,7 +312,8 @@ foundation work.
   (`useGlobalShortcuts.ts` → `activeSelectionText()`), and a "Quick lookup…" command
   palette entry mirrors it. A dedicated inline popover remains a possible refinement.
 
-**Web search** *(shipped, Phase 11)*
+**Web search** _(shipped, Phase 11)_
+
 - memoQ: configurable web‑search providers in the resource console.
 - Verbalis: a Settings list of providers (`{id, name, urlTemplate, enabled}` with
   `{q}`, `{src}` and `{tgt}` placeholders — `src/core/websearch/providers.ts`,
@@ -312,17 +325,20 @@ foundation work.
 
 ### C. Review & collaboration
 
-**Confirmation button** *(shipped, Phase 8)*
+**Confirmation button** _(shipped, Phase 8)_
+
 - Per‑row ✓ button mirroring `Ctrl/⌘+Enter`; in review mode it becomes the
   reviewed toggle (`SegmentRow.tsx`).
 
-**Comments** *(shipped, Phase 8; threaded in Phase 12)*
+**Comments** _(shipped, Phase 8; threaded in Phase 12)_
+
 - Inline per‑segment thread with author, relative time, resolve and delete
   (`src/features/editor/comments/`). Author comes from the new local identity.
   Phase 12 anchors comments to a text range via a `CommentMark` and adds a
   project‑wide comments view.
 
-**Changes tracking + show/hide** *(read-only Changes view shipped, Phase 12)*
+**Changes tracking + show/hide** _(read-only Changes view shipped, Phase 12)_
+
 - memoQ: per‑author insertion/deletion colors, mark insertions underlined /
   deletions struck through, toggle visibility (see the Appearance → Tracked
   changes screenshot).
@@ -333,27 +349,31 @@ foundation work.
   (`diffWords`) with **per‑author colours** (`core/history/authorColor.ts`,
   insertions coloured / deletions struck through) and a single **show/hide**
   toggle; clicking a row jumps to the segment. History is always recorded, so
-  there is no "track changes on/off" mode to forget — *display* is the toggle.
+  there is no "track changes on/off" mode to forget — _display_ is the toggle.
 - **Next:** live in‑editor `TrackedChangeMark` decorations and accept/reject per
   change (the editing half), plus comment‑range anchoring (`CommentMark`).
 
-**Versioning history** *(Phase 12)*
+**Versioning history** _(Phase 12)_
+
 - Per‑segment timeline (who/when/what) and named project snapshots with
   diff‑and‑restore, both derived from F2. Auto‑snapshot on confirm + manual
   "Save version" with a label.
 
-**Collaborative projects on the LAN** *(Phase 14)*
+**Collaborative projects on the LAN** _(Phase 14)_
+
 - Tauri peers + mDNS + encrypted Yjs sync (F3). Presence avatars show who's in a
   project and which segment they're on; edits merge conflict‑free. memoQ's
   server URL / "share on server" becomes "Share with peers on this network".
 
 ### D. Workflow & layout
 
-**Auto‑collapse sidebar** *(shipped, Phase 8)*
+**Auto‑collapse sidebar** _(shipped, Phase 8)_
+
 - The nav sidebar auto‑collapses inside `/project/:id` for a wider grid, with a
   manual override that re‑arms on re‑entry (`src/components/layout/Sidebar.tsx`).
 
-**Three workflow‑stage layouts** *(Phase 13)*
+**Three workflow‑stage layouts** _(Phase 13)_
+
 - **Source preparation:** source‑forward, segmentation/tag/abbreviation tools,
   target hidden or narrow.
 - **Translation:** the current balanced grid + TM/Glossary/MT panels.
@@ -363,19 +383,22 @@ foundation work.
   which side tabs are open — a single switcher in the editor header, persisted
   per project. Builds on the existing `useSidebarPanelStore` / `useEditorModeStore`.
 
-**Layout customization** *(Phase 13)*
+**Layout customization** _(Phase 13)_
+
 - Resizable columns (drag the source/target divider), font size for source vs
   target (memoQ Appearance → font size), density (comfortable/compact), and
   reorderable side panels. Persisted in Settings.
 
-**Help guiding tips** *(shipped basic, Phase 8; expanded Phase 13)*
+**Help guiding tips** _(shipped basic, Phase 8; expanded Phase 13)_
+
 - A dismissible, recallable tips strip in the editor (`EditorTips.tsx`). Expand
   to context‑aware coach‑marks on first use of each new surface, plus a "What's
   this?" affordance, all gated by `localStorage` so they never nag.
 
 ### E. Resources
 
-**Update & download glossaries, memories, corpora** *(Phase 15)*
+**Update & download glossaries, memories, corpora** _(Phase 15)_
+
 - Today corpora install from bundled packs (`/corpora`, `src/core/corpus`).
   Generalize to a **catalogue with versions**: each resource pack has a version;
   Settings shows "update available" and downloads deltas (Workbox‑cached, like
@@ -383,7 +406,7 @@ foundation work.
   resource — the memoQ "Translation memories / Term bases / LiveDocs on server"
   model, but peer‑to‑peer.
 
-### F. Document standards — ABNT / ISO / BSI / ANSI *(Phase 16)*
+### F. Document standards — ABNT / ISO / BSI / ANSI _(Phase 16)_
 
 - memoQ leans on the source document's own formatting; Verbalis goes further with
   **standard‑aware export/preview profiles**.
@@ -403,16 +426,16 @@ foundation work.
 
 All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
 
-| Version | Change | Notes |
-|---|---|---|
-| v4 | `Segment.comments?: SegmentComment[]` *(Phase 8)* | Inline, no index needed; no migration required |
-| v4 | `Segment.locked?: boolean` *(Phase 9)* | Orthogonal lock flag; not indexed, no migration required |
-| v4 | `Segment.targetRich?` (Lexical JSON) *(Phase 10)* | Plain `target` stays the derived source of truth; not indexed, no migration |
-| v5 | `Segment.sourceRich?` (when source becomes rich) | Future, with inline tags |
-| v5 | `versions` table `{id, projectId, label, kind, snapshot, segmentCount, author, createdAt}` *(Phase 12, shipped)* | Project snapshots; per‑segment history derived from the blobs |
-| v5 | Yjs doc per project via `y-indexeddb` (outside Dexie) *(shipped)* | Dexie stays the query layer; doc is a derived mirror |
-| v7 | `resources` versioning fields; `peers`/share metadata | Collaboration + resource sync |
-| — | Settings keys: `profile.identity` *(this PR)*, `abbreviations`, `autocorrect`, `webSearch.providers`, `layout.presets`, `spell.dicts` | Key/value `settings` table |
+| Version | Change                                                                                                                                | Notes                                                                       |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| v4      | `Segment.comments?: SegmentComment[]` _(Phase 8)_                                                                                     | Inline, no index needed; no migration required                              |
+| v4      | `Segment.locked?: boolean` _(Phase 9)_                                                                                                | Orthogonal lock flag; not indexed, no migration required                    |
+| v4      | `Segment.targetRich?` (Lexical JSON) _(Phase 10)_                                                                                     | Plain `target` stays the derived source of truth; not indexed, no migration |
+| v5      | `Segment.sourceRich?` (when source becomes rich)                                                                                      | Future, with inline tags                                                    |
+| v5      | `versions` table `{id, projectId, label, kind, snapshot, segmentCount, author, createdAt}` _(Phase 12, shipped)_                      | Project snapshots; per‑segment history derived from the blobs               |
+| v5      | Yjs doc per project via `y-indexeddb` (outside Dexie) _(shipped)_                                                                     | Dexie stays the query layer; doc is a derived mirror                        |
+| v7      | `resources` versioning fields; `peers`/share metadata                                                                                 | Collaboration + resource sync                                               |
+| —       | Settings keys: `profile.identity` _(this PR)_, `abbreviations`, `autocorrect`, `webSearch.providers`, `layout.presets`, `spell.dicts` | Key/value `settings` table                                                  |
 
 ---
 
@@ -420,19 +443,19 @@ All additive; Dexie migrations only ever increment (`src/storage/db.ts`).
 
 T‑shirt sizes; a "slice" ≈ a few focused days.
 
-| Item | Size | Parallelizable? |
-|---|---|---|
-| Phase 8 UX wins | S | ✅ (shipped) |
-| Segment handling | M | ✅ independent |
-| Lexical core (F1) | L | ⛔ blocks 10/12/13 |
-| Formatting + tags | M | after F1 |
-| Spell/grammar/dict/web | M | mostly independent |
-| CRDT + versioning (F2) | L | ⛔ blocks 12/14 |
-| Tracked changes | M | after F1+F2 |
-| Workflow layouts | M | after F1 |
-| Tauri + mDNS sync (F3) | XL | ⛔ blocks 14/15 |
-| Resource sync | M | after F3 |
-| Standards profiles | L | after F1 |
+| Item                   | Size | Parallelizable?    |
+| ---------------------- | ---- | ------------------ |
+| Phase 8 UX wins        | S    | ✅ (shipped)       |
+| Segment handling       | M    | ✅ independent     |
+| Lexical core (F1)      | L    | ⛔ blocks 10/12/13 |
+| Formatting + tags      | M    | after F1           |
+| Spell/grammar/dict/web | M    | mostly independent |
+| CRDT + versioning (F2) | L    | ⛔ blocks 12/14    |
+| Tracked changes        | M    | after F1+F2        |
+| Workflow layouts       | M    | after F1           |
+| Tauri + mDNS sync (F3) | XL   | ⛔ blocks 14/15    |
+| Resource sync          | M    | after F3           |
+| Standards profiles     | L    | after F1           |
 
 **Critical path:** F1 → F2 → F3. Everything else clusters around these.
 Recommended order: ship Phase 8 (done) → Phase 9 (quick, independent) →
@@ -448,7 +471,7 @@ Phase 13 → Phase 14/15 (F3) → Phase 16.
   primitives — never raw hex. New components match the existing quiet,
   high‑contrast aesthetic.
 - **Discoverability without clutter.** Every new action is reachable from the
-  command palette *and* has a visible affordance with a tooltip. No feature is
+  command palette _and_ has a visible affordance with a tooltip. No feature is
   keyboard‑only.
 - **Don't reintroduce a ribbon.** Group by task (translate / review / prepare)
   via layout presets, not by a permanent multi‑tab toolbar.
@@ -464,7 +487,7 @@ Phase 13 → Phase 14/15 (F3) → Phase 16.
 
 1. **Plain ↔ rich sync.** TM, QA, search and counters assume plain strings.
    Keep Lexical the source of truth and derive plain text deterministically;
-   never let the two drift. *(Decided.)*
+   never let the two drift. _(Decided.)_
 2. **XLIFF fidelity with rich content.** Validate round‑trip against real memoQ
    `.mqxliff` and Trados files in the e2e fixtures before shipping Phase 10.
 3. **Desktop build maintenance.** Tauri adds a Rust toolchain and a second

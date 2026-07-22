@@ -50,7 +50,8 @@
 
 @font-face {
   font-family: 'Geist Mono';
-  src: url('../../node_modules/geist/dist/fonts/geist-mono/GeistMono-SemiBold.woff2') format('woff2');
+  src: url('../../node_modules/geist/dist/fonts/geist-mono/GeistMono-SemiBold.woff2')
+    format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;

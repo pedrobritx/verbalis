@@ -3,8 +3,7 @@ import type { DocumentEntity, Block, Asset } from '@/core/documents/model'
 
 /** The document belonging to a project (monolingual projects have exactly one). */
 export const documentRepo = {
-  getByProject: (projectId: string) =>
-    db.documents.where('projectId').equals(projectId).first(),
+  getByProject: (projectId: string) => db.documents.where('projectId').equals(projectId).first(),
 
   getById: (id: string) => db.documents.get(id),
 
@@ -26,8 +25,7 @@ export const blockRepo = {
 
   bulkCreate: (blocks: Block[]) => db.blocks.bulkAdd(blocks),
 
-  removeByProject: (projectId: string) =>
-    db.blocks.where('projectId').equals(projectId).delete(),
+  removeByProject: (projectId: string) => db.blocks.where('projectId').equals(projectId).delete(),
 }
 
 /** Binary assets (embedded images, original file) referenced by a document. */
@@ -40,6 +38,5 @@ export const assetRepo = {
 
   bulkCreate: (assets: Asset[]) => db.assets.bulkAdd(assets),
 
-  removeByProject: (projectId: string) =>
-    db.assets.where('projectId').equals(projectId).delete(),
+  removeByProject: (projectId: string) => db.assets.where('projectId').equals(projectId).delete(),
 }

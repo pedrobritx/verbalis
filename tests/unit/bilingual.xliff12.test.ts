@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { exportXliff12, parseXliff12 } from '@/core/bilingual/xliff12'
-import {
-  statusToXliffState,
-  xliffStateToStatus,
-} from '@/core/bilingual/xliff12Status'
+import { statusToXliffState, xliffStateToStatus } from '@/core/bilingual/xliff12Status'
 import type { ExportXliffUnit } from '@/core/bilingual/xliff12'
 
 const MIN_XLIFF = `<?xml version="1.0" encoding="UTF-8"?>

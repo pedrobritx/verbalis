@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const convertToHtml = vi.fn<(args: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string; messages: unknown[] }>>()
+const convertToHtml =
+  vi.fn<(args: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string; messages: unknown[] }>>()
 
 vi.mock('mammoth', () => ({
   default: {
@@ -44,11 +45,7 @@ describe('segmentDocx', () => {
   it('splits paragraphs into sentences and tracks blockIndex', async () => {
     mockHtml('<p>First sentence. Second sentence.</p><p>Para two.</p>')
     const out = await segmentDocx(EMPTY_BUFFER)
-    expect(out.map((s) => s.source)).toEqual([
-      'First sentence.',
-      'Second sentence.',
-      'Para two.',
-    ])
+    expect(out.map((s) => s.source)).toEqual(['First sentence.', 'Second sentence.', 'Para two.'])
     expect(out.map((s) => s.sourceMeta.blockIndex)).toEqual([0, 0, 1])
     expect(out.map((s) => s.sourceMeta.sentenceIndex)).toEqual([0, 1, 0])
     expect(out.every((s) => s.sourceMeta.kind === 'paragraph')).toBe(true)

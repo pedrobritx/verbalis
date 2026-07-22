@@ -68,7 +68,11 @@ export async function listOnedriveFiles(
   try {
     resp = await fetchImpl(url, { headers: authHeaders(token) })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_ONEDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_ONEDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await graphError(resp)
   const body = (await resp.json()) as { value?: GraphDriveItem[] }
@@ -87,7 +91,11 @@ export async function downloadOnedriveFile(
       headers: authHeaders(token),
     })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_ONEDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_ONEDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await graphError(resp)
   return resp.arrayBuffer()
@@ -111,7 +119,11 @@ export async function uploadOnedriveFile(
       body,
     })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_ONEDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_ONEDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await graphError(resp)
   return mapItem((await resp.json()) as GraphDriveItem)

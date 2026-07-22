@@ -36,11 +36,14 @@ describe('rowsToCorpusFile', () => {
   })
 
   it('matches the base language when the target is a regional variant', () => {
-    const file = rowsToCorpusFile([{ term: 'colour', translations: { 'en-GB': 'colour' }, notes: '' }], {
-      id: 'custom:x',
-      langSource: 'pt',
-      langTarget: 'en-US',
-    })
+    const file = rowsToCorpusFile(
+      [{ term: 'colour', translations: { 'en-GB': 'colour' }, notes: '' }],
+      {
+        id: 'custom:x',
+        langSource: 'pt',
+        langTarget: 'en-US',
+      },
+    )
     expect(file.terms).toEqual([['colour', 'colour', 'custom', '']])
   })
 

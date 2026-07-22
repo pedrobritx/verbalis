@@ -1,11 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isCloudConfigured, getSupabase } from '@/storage/cloud/supabaseClient'
 import { useAuthStore } from '@/features/account/useAuthStore'
-import {
-  useSidebarPanelStore,
-  defaultLayout,
-  type SidebarTab,
-} from './useSidebarPanelStore'
+import { useSidebarPanelStore, defaultLayout, type SidebarTab } from './useSidebarPanelStore'
 import type { EditorStage } from './useEditorModeStore'
 
 /**

@@ -37,7 +37,10 @@ export function DocumentPreview({ projectId }: { projectId: string }) {
   return (
     <div className="flex flex-col gap-2" data-testid="document-preview">
       <div className="flex items-center justify-between">
-        <span className="text-footnote font-semibold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
+        <span
+          className="text-footnote font-semibold uppercase tracking-wider"
+          style={{ color: 'var(--color-muted)' }}
+        >
           Document preview
         </span>
         <div
@@ -131,7 +134,11 @@ function PreviewBlock({
 
   if (block.kind === 'table') {
     return (
-      <table className="my-2 w-full border-collapse text-sm" data-testid="preview-block" data-kind="table">
+      <table
+        className="my-2 w-full border-collapse text-sm"
+        data-testid="preview-block"
+        data-kind="table"
+      >
         <tbody>
           {(block.rows ?? []).map((row, ri) => (
             <tr key={ri}>
@@ -143,10 +150,15 @@ function PreviewBlock({
                   style={{
                     borderColor: 'var(--color-border)',
                     cursor: cell.ref ? 'pointer' : undefined,
-                    color: cell.ref && !cell.ref.translated ? 'var(--color-muted)' : 'var(--color-text)',
+                    color:
+                      cell.ref && !cell.ref.translated ? 'var(--color-muted)' : 'var(--color-text)',
                   }}
                 >
-                  {mode === 'source' ? <Runs runs={cell.sourceRuns} fallback={cell.sourceText} /> : cell.targetText}
+                  {mode === 'source' ? (
+                    <Runs runs={cell.sourceRuns} fallback={cell.sourceText} />
+                  ) : (
+                    cell.targetText
+                  )}
                 </td>
               ))}
             </tr>
@@ -205,6 +217,12 @@ function wrapperFor(block: RenderBlock): (props: BlockWrapperProps) => ReactNode
   }
   if (block.kind === 'code') return (props) => <pre {...props} />
   if (block.kind === 'blockquote') return (props) => <blockquote {...props} />
-  if (block.kind === 'list_item') return (props) => <li {...props} style={{ marginLeft: '1.25rem', listStyle: block.ordered ? 'decimal' : 'disc' }} />
+  if (block.kind === 'list_item')
+    return (props) => (
+      <li
+        {...props}
+        style={{ marginLeft: '1.25rem', listStyle: block.ordered ? 'decimal' : 'disc' }}
+      />
+    )
   return (props) => <p {...props} />
 }

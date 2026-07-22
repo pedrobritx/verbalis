@@ -29,7 +29,9 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
 
 /** Whether the current role may accept/reject tracked changes (revisor / PM). */
 export function useCanResolveChanges(): boolean {
-  return useWorkflowStore((s) => workflowCapabilities(s.role, s.stage, 'translated').canResolveChanges)
+  return useWorkflowStore(
+    (s) => workflowCapabilities(s.role, s.stage, 'translated').canResolveChanges,
+  )
 }
 
 /** Whether the current role/stage forces suggesting mode (translator in review). */

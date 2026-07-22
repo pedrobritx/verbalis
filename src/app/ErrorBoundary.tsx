@@ -66,8 +66,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 Something went wrong
               </h2>
               <p className="text-callout" style={{ color: 'var(--color-muted)' }}>
-                This page hit an unexpected error. Your projects and data are stored locally and
-                are safe — try reloading, or head back to your projects.
+                This page hit an unexpected error. Your projects and data are stored locally and are
+                safe — try reloading, or head back to your projects.
               </p>
             </div>
           </div>

@@ -28,8 +28,16 @@ describe('targetRichToRuns', () => {
   it('applies accepted-preview to tracked changes (insertions kept, deletions dropped)', () => {
     const json = state([
       { type: 'text', text: 'keep ', format: 0 },
-      { type: 'change-mark', changeType: 'delete', children: [{ type: 'text', text: 'gone', format: 0 }] },
-      { type: 'change-mark', changeType: 'insert', children: [{ type: 'text', text: 'added', format: 0 }] },
+      {
+        type: 'change-mark',
+        changeType: 'delete',
+        children: [{ type: 'text', text: 'gone', format: 0 }],
+      },
+      {
+        type: 'change-mark',
+        changeType: 'insert',
+        children: [{ type: 'text', text: 'added', format: 0 }],
+      },
     ])
     expect(targetRichToRuns(json)).toEqual([{ text: 'keep added' }])
   })

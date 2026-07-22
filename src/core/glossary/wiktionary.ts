@@ -88,10 +88,7 @@ export async function fetchWiktionaryEntry(
     // to non-dictionary pages). Either way, there's no entry to show — treat
     // it as "not found" so the UI can degrade gracefully instead of leaking
     // an HTTP status code.
-    throw new WiktionaryError(
-      'not_found',
-      `Term "${trimmed}" not found on Wiktionary`,
-    )
+    throw new WiktionaryError('not_found', `Term "${trimmed}" not found on Wiktionary`)
   }
 
   let defJson: DefinitionResponse

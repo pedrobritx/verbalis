@@ -30,12 +30,7 @@ export function LookupPanel({ sourceLang, targetLang }: LookupPanelProps) {
         </p>
       )}
 
-      <TranslateWorkspace
-        active
-        prefill={selection}
-        autoFocus={false}
-        testIdPrefix="lookup"
-      />
+      <TranslateWorkspace active prefill={selection} autoFocus={false} testIdPrefix="lookup" />
 
       {enabledProviders.length > 0 && (
         <div className="flex flex-col gap-1.5">

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  buildCorpusIndex,
-  findCorpusHits,
-  keySideForSourceLang,
-} from '@/core/corpus/match'
+import { buildCorpusIndex, findCorpusHits, keySideForSourceLang } from '@/core/corpus/match'
 import type { CorpusTerm } from '@/core/corpus/types'
 
 function term(over: Partial<CorpusTerm> = {}): CorpusTerm {

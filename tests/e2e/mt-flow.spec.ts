@@ -30,13 +30,11 @@ async function waitForMTPersisted(
       open.onsuccess = () => res(open.result)
       open.onerror = () => rej(open.error)
     })
-    const row = await new Promise<{ value?: Record<string, unknown> } | undefined>(
-      (res, rej) => {
-        const r = db.transaction('settings').objectStore('settings').get('mt.providers')
-        r.onsuccess = () => res(r.result)
-        r.onerror = () => rej(r.error)
-      },
-    )
+    const row = await new Promise<{ value?: Record<string, unknown> } | undefined>((res, rej) => {
+      const r = db.transaction('settings').objectStore('settings').get('mt.providers')
+      r.onsuccess = () => res(r.result)
+      r.onerror = () => rej(r.error)
+    })
     db.close()
     const v = row?.value as
       | {

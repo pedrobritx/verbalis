@@ -97,7 +97,11 @@ export default function ProjectsPage() {
           </div>
 
           {visible.length === 0 ? (
-            <p className="text-callout" style={{ color: 'var(--color-muted)' }} data-testid="project-empty-search">
+            <p
+              className="text-callout"
+              style={{ color: 'var(--color-muted)' }}
+              data-testid="project-empty-search"
+            >
               No projects match “{query}”.
             </p>
           ) : (
@@ -183,8 +187,8 @@ function FirstRunOnboarding({ onImport, onShortcuts }: FirstRunOnboardingProps) 
             </h1>
             <p className="text-body" style={{ color: 'var(--color-muted)' }}>
               Verbalis is a <strong style={{ color: 'var(--color-text)' }}>local-first</strong>{' '}
-              computer-assisted translation workspace. Import your files, translate with memory
-              and glossary support, and export clean — all without a single sentence leaving your
+              computer-assisted translation workspace. Import your files, translate with memory and
+              glossary support, and export clean — all without a single sentence leaving your
               machine.
             </p>
           </div>
@@ -282,10 +286,7 @@ function Step({
         <span style={{ color: 'var(--color-muted)' }} aria-hidden>
           <Icon size={18} />
         </span>
-        <h3
-          className="text-callout font-semibold"
-          style={{ color: 'var(--color-text)' }}
-        >
+        <h3 className="text-callout font-semibold" style={{ color: 'var(--color-text)' }}>
           {title}
         </h3>
       </div>

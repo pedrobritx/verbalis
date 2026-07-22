@@ -17,12 +17,42 @@ export interface WebSearchSettings {
 }
 
 export const DEFAULT_WEB_SEARCH_PROVIDERS: WebSearchProvider[] = [
-  { id: 'linguee', name: 'Linguee', urlTemplate: 'https://www.linguee.com/search?query={q}', enabled: false },
-  { id: 'reverso', name: 'Reverso Context', urlTemplate: 'https://context.reverso.net/translation/?q={q}', enabled: false },
-  { id: 'wordreference', name: 'WordReference', urlTemplate: 'https://www.wordreference.com/{src}{tgt}/{q}', enabled: false },
-  { id: 'deepl', name: 'DeepL (web)', urlTemplate: 'https://www.deepl.com/translator#{src}/{tgt}/{q}', enabled: false },
-  { id: 'google', name: 'Google', urlTemplate: 'https://www.google.com/search?q={q}', enabled: false },
-  { id: 'scholar', name: 'Google Scholar', urlTemplate: 'https://scholar.google.com/scholar?q={q}', enabled: false },
+  {
+    id: 'linguee',
+    name: 'Linguee',
+    urlTemplate: 'https://www.linguee.com/search?query={q}',
+    enabled: false,
+  },
+  {
+    id: 'reverso',
+    name: 'Reverso Context',
+    urlTemplate: 'https://context.reverso.net/translation/?q={q}',
+    enabled: false,
+  },
+  {
+    id: 'wordreference',
+    name: 'WordReference',
+    urlTemplate: 'https://www.wordreference.com/{src}{tgt}/{q}',
+    enabled: false,
+  },
+  {
+    id: 'deepl',
+    name: 'DeepL (web)',
+    urlTemplate: 'https://www.deepl.com/translator#{src}/{tgt}/{q}',
+    enabled: false,
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    urlTemplate: 'https://www.google.com/search?q={q}',
+    enabled: false,
+  },
+  {
+    id: 'scholar',
+    name: 'Google Scholar',
+    urlTemplate: 'https://scholar.google.com/scholar?q={q}',
+    enabled: false,
+  },
 ]
 
 export const DEFAULT_WEB_SEARCH_SETTINGS: WebSearchSettings = {

@@ -86,7 +86,13 @@ describe('projectRepo.removeCascade', () => {
     await projectRepo.create(p)
     await db.segments.bulkAdd([makeSeg(p.id), makeSeg(p.id)])
     await db.tm.add({
-      id: 't1', source: 'a', target: 'b', sourceLang: 'en', targetLang: 'es', projectId: p.id, date: '2024-01-01',
+      id: 't1',
+      source: 'a',
+      target: 'b',
+      sourceLang: 'en',
+      targetLang: 'es',
+      projectId: p.id,
+      date: '2024-01-01',
     } as TMEntry)
 
     await projectRepo.removeCascade(p.id)
@@ -100,11 +106,28 @@ describe('projectRepo.removeCascade', () => {
     const p = makeProject()
     await projectRepo.create(p)
     await db.tm.add({
-      id: 't1', source: 'a', target: 'b', sourceLang: 'en', targetLang: 'es', projectId: p.id, date: '2024-01-01',
+      id: 't1',
+      source: 'a',
+      target: 'b',
+      sourceLang: 'en',
+      targetLang: 'es',
+      projectId: p.id,
+      date: '2024-01-01',
     } as TMEntry)
-    await db.glossary.add({ id: 'g1', term: 'x', definition: '', translations: {}, projectId: p.id } as GlossaryEntry)
+    await db.glossary.add({
+      id: 'g1',
+      term: 'x',
+      definition: '',
+      translations: {},
+      projectId: p.id,
+    } as GlossaryEntry)
     await db.embeddings.add({
-      id: 'e1', tmId: 't1', model: 'm', dim: 1, vector: new Float32Array([1]), createdAt: '2024-01-01',
+      id: 'e1',
+      tmId: 't1',
+      model: 'm',
+      dim: 1,
+      vector: new Float32Array([1]),
+      createdAt: '2024-01-01',
     } as EmbeddingRecord)
 
     await projectRepo.removeCascade(p.id, { deleteResources: true })
@@ -118,7 +141,12 @@ describe('projectRepo.removeCascade', () => {
     const p = makeProject()
     await projectRepo.create(p)
     await db.tm.add({
-      id: 'global', source: 'a', target: 'b', sourceLang: 'en', targetLang: 'es', date: '2024-01-01',
+      id: 'global',
+      source: 'a',
+      target: 'b',
+      sourceLang: 'en',
+      targetLang: 'es',
+      date: '2024-01-01',
     } as TMEntry)
     await projectRepo.removeCascade(p.id, { deleteResources: true })
     expect(await db.tm.count()).toBe(1)
@@ -141,7 +169,10 @@ describe('projectRepo.duplicate', () => {
     const clone = await projectRepo.getById(newId as string)
     expect(clone?.name).toBe('Original (copy)')
 
-    const cloneSegs = await db.segments.where('projectId').equals(newId as string).sortBy('index')
+    const cloneSegs = await db.segments
+      .where('projectId')
+      .equals(newId as string)
+      .sortBy('index')
     expect(cloneSegs.map((s) => [s.source, s.target])).toEqual([
       ['a', 'A'],
       ['b', ''],

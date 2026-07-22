@@ -20,9 +20,7 @@ export function PeersPresenceChip({ onOpen }: PeersPresenceChipProps) {
       type="button"
       onClick={onOpen}
       data-testid="peers-presence-chip"
-      aria-label={
-        shared ? `Peers — ${peers.length} on this network` : 'Peers — sharing off'
-      }
+      aria-label={shared ? `Peers — ${peers.length} on this network` : 'Peers — sharing off'}
       title={
         shared
           ? `${peers.length} peer${peers.length === 1 ? '' : 's'} on this network`

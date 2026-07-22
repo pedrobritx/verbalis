@@ -63,7 +63,11 @@ export function removeCommentMark(
   anchorId: string,
 ): { targetRich: string; target: string } | null {
   if (!targetRich) return null
-  const editor = createEditor({ namespace: RICH_NAMESPACE, nodes: getRichNodes(), onError: () => {} })
+  const editor = createEditor({
+    namespace: RICH_NAMESPACE,
+    nodes: getRichNodes(),
+    onError: () => {},
+  })
   let found = false
   try {
     editor.setEditorState(editor.parseEditorState(targetRich))

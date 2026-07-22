@@ -72,7 +72,9 @@ export function FormatToolbar({
 
   const [commentOpen, setCommentOpen] = useState(false)
   const [commentBody, setCommentBody] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ anchorId: string; quote: string } | null>(null)
+  const [commentAnchor, setCommentAnchor] = useState<{ anchorId: string; quote: string } | null>(
+    null,
+  )
   const commentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {

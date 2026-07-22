@@ -31,5 +31,7 @@ export function isGdriveConfigured(): boolean {
  */
 export function isGdriveAvailable(): boolean {
   if (!isGdriveConfigured()) return false
-  return !extensionRegistry.has(CONNECTOR_GDRIVE_ID) || extensionRegistry.isEnabled(CONNECTOR_GDRIVE_ID)
+  return (
+    !extensionRegistry.has(CONNECTOR_GDRIVE_ID) || extensionRegistry.isEnabled(CONNECTOR_GDRIVE_ID)
+  )
 }

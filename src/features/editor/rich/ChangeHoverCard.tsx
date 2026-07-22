@@ -96,7 +96,10 @@ export function ChangeHoverCard({
       // re-open/close the card) or moving the editor selection.
       onMouseDown={(e) => e.preventDefault()}
     >
-      <span className="px-1 text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
+      <span
+        className="px-1 text-[10px] uppercase tracking-wider"
+        style={{ color: 'var(--color-muted)' }}
+      >
         {card.type === 'insert' ? 'Insertion' : 'Deletion'}
         {card.author ? ` · ${card.author}` : ''}
       </span>

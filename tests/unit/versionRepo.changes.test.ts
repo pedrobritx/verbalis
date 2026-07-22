@@ -5,7 +5,11 @@ import { db } from '@/storage/db'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { versionRepo } from '@/storage/repositories/versionRepo'
 import { installSegmentBridge, setDocResolver } from '@/storage/sync/bridge'
-import { getProfileSettings, settingsRepo, PROFILE_SETTINGS_KEY } from '@/storage/repositories/settingsRepo'
+import {
+  getProfileSettings,
+  settingsRepo,
+  PROFILE_SETTINGS_KEY,
+} from '@/storage/repositories/settingsRepo'
 import type { Segment } from '@/core/types'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))

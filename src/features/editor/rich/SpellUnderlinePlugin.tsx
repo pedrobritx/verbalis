@@ -91,8 +91,13 @@ export function SpellUnderlinePlugin({
         editor.getEditorState().read(() => {
           const para = $getRoot().getFirstChild()
           const children =
-            para && 'getChildren' in para ? (para as { getChildren: () => unknown[] }).getChildren() : []
-          for (const child of children as Array<{ getKey: () => string; getTextContent: () => string }>) {
+            para && 'getChildren' in para
+              ? (para as { getChildren: () => unknown[] }).getChildren()
+              : []
+          for (const child of children as Array<{
+            getKey: () => string
+            getTextContent: () => string
+          }>) {
             spans.push({
               key: child.getKey(),
               length: child.getTextContent().length,

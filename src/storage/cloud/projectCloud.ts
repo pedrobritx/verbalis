@@ -133,7 +133,12 @@ export async function fetchCloudProject(
   const row = projectRes.data as ProjectRowSelect | null
   if (!row) return null
   const role = (memberRes.data as { role: ProjectRole } | null)?.role ?? 'translator'
-  return { summary: toSummary(row), role, stage: row.stage ?? 'translation', deadline: row.deadline ?? null }
+  return {
+    summary: toSummary(row),
+    role,
+    stage: row.stage ?? 'translation',
+    deadline: row.deadline ?? null,
+  }
 }
 
 /** Set a cloud project's workflow stage (project_manager-only, enforced by RLS). */

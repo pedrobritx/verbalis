@@ -2,7 +2,9 @@
      Part of the canonical context for the Translation IDE revamp: see docs/revamp/ROADMAP.md -->
 
 # Verbalis Architecture
+
 ## Philosophy
+
 Verbalis is not a CAT tool.
 It is a Translation Development Environment (TDE): a platform where professional translators, reviewers, editors, project managers, terminologists, and localization engineers collaborate throughout the entire localization lifecycle.
 Its architecture follows five principles:
@@ -11,10 +13,15 @@ Offline-first
 Modular by design
 Cross-platform from a single engine
 Enterprise-ready without sacrificing usability
+
 # High-Level Architecture
-┌─────────────────────────────┐                 │         Verbalis UI         │                 │ Windows │ macOS │ Linux     │                 └─────────────┬───────────────┘                               │                      Presentation Layer                               │        ┌──────────────────────┴──────────────────────┐        │                                             │ Command System                              Workspace Manager Docking Layout                              Session Manager Theme Engine                                Navigation Shortcuts                                   Accessibility                               │                        Application Core                               │┌────────────────────────────────────────────────────────────┐│                                                            ││ Translation Engine                                         ││ Version Control Engine                                     ││ AI Copilot Engine                                          ││ Search & Index Engine                                      ││ Terminology Engine                                         ││ Translation Memory Engine                                  ││ Collaboration Engine                                       ││ Quality Assurance Engine                                   ││ Automation Engine                                          ││ Plugin Runtime                                              ││                                                            │└────────────────────────────────────────────────────────────┘                               │                        Service Layer                               │      Local Services                    Cloud Services                               │──────────────────────────────────────────────────────────────                               │                        Storage Layer                               │ Workspace Database Translation Memories Project Files Cache Plugin Data User Settings AI Embeddings Version History
+
+┌─────────────────────────────┐ │ Verbalis UI │ │ Windows │ macOS │ Linux │ └─────────────┬───────────────┘ │ Presentation Layer │ ┌──────────────────────┴──────────────────────┐ │ │ Command System Workspace Manager Docking Layout Session Manager Theme Engine Navigation Shortcuts Accessibility │ Application Core │┌────────────────────────────────────────────────────────────┐│ ││ Translation Engine ││ Version Control Engine ││ AI Copilot Engine ││ Search & Index Engine ││ Terminology Engine ││ Translation Memory Engine ││ Collaboration Engine ││ Quality Assurance Engine ││ Automation Engine ││ Plugin Runtime ││ │└────────────────────────────────────────────────────────────┘ │ Service Layer │ Local Services Cloud Services │────────────────────────────────────────────────────────────── │ Storage Layer │ Workspace Database Translation Memories Project Files Cache Plugin Data User Settings AI Embeddings Version History
+
 # Layers
+
 ## 1. Presentation Layer
+
 Everything users interact with.
 Responsibilities
 Native experience on every OS
@@ -29,14 +36,19 @@ Custom themes
 Responsive UI
 Examples
 EditorPreviewTerminologyTranslation MemoryVersion HistoryCopilotQACommentsSearchOutlineProject ExplorerPublishing
+
 ## 2. Application Core
+
 The brain.
 No UI.
 No platform code.
 Contains every business rule.
 Every desktop version shares this exact core.
+
 # Core Modules
+
 ## Translation Engine
+
 Responsible for
 segment management
 bilingual editing
@@ -67,7 +79,9 @@ EPUB
 SRT
 VTT
 PDF (where feasible)
+
 ## AI Copilot Engine
+
 AI never edits automatically.
 Everything is proposed.
 Capabilities
@@ -92,7 +106,9 @@ Ollama
 LM Studio
 Azure OpenAI
 Custom APIs
+
 ## Version Control Engine
+
 Inspired by Git.
 Every change becomes recoverable.
 Features
@@ -108,7 +124,9 @@ Comparison
 Blame
 Translator attribution
 Revision history
+
 ## Translation Memory Engine
+
 Supports
 TMX
 SDLTM
@@ -124,7 +142,9 @@ Priority ranking
 Multiple memories
 Read-only memories
 Shared memories
+
 ## Terminology Engine
+
 Supports
 TBX
 CSV
@@ -140,7 +160,9 @@ Domains
 Inflections
 Automatic recognition
 AI-assisted terminology suggestions
+
 ## Search Engine
+
 Instant indexing.
 Supports
 Full-text search
@@ -150,7 +172,9 @@ Cross-project search
 Context search
 Similarity search
 Saved searches
+
 ## QA Engine
+
 Real-time validation.
 Checks
 Numbers
@@ -166,7 +190,9 @@ Placeholders
 Date formats
 Units
 Custom rules
+
 ## Collaboration Engine
+
 Supports
 Multiple reviewers
 Live comments
@@ -179,7 +205,9 @@ Conflict resolution
 Track Changes
 Activity feed
 Audit logs
+
 ## Automation Engine
+
 Workflow automation.
 Examples
 Import
@@ -194,7 +222,9 @@ Backup
 Scheduled jobs
 Hooks
 Triggers
+
 ## Publishing Engine
+
 Final delivery.
 Exports
 DOCX
@@ -206,7 +236,9 @@ JSON
 Localized software resources
 Website bundles
 Translation packages
+
 ## Plugin Runtime
+
 Everything extensible.
 Plugin types
 Panels
@@ -222,21 +254,29 @@ File parsers
 Visualizations
 Templates
 Marketplace integration
+
 # Workspace Manager
+
 Everything revolves around Workspaces.
 Workspace ├── Projects ├── Memories ├── Termbases ├── Dictionaries ├── Corpora ├── AI Providers ├── Plugins ├── Settings ├── Layouts ├── Shortcuts └── Version History
+
 # Storage
+
 Projects are self-contained.
-Project/project    manifest.json    source/    target/    memories/    terminology/    corpus/    versions/    comments/    exports/    assets/    settings.json
+Project/project manifest.json source/ target/ memories/ terminology/ corpus/ versions/ comments/ exports/ assets/ settings.json
 Everything is portable.
 Everything is reproducible.
+
 # Plugin Architecture
+
 Plugins are sandboxed.
 PluginManifestPermissionsCommandsPanelsAPIAssetsLocalizationLifecycleDependencies
 Permissions are explicit.
 For example
 Read projectWrite translationAccess AIInternetFilesystemClipboard
+
 # Connector Architecture
+
 Official connectors.
 Examples
 MemoQ
@@ -260,7 +300,9 @@ Microsoft Translator
 LibreTranslate
 LanguageTool
 Custom REST APIs
+
 # Security
+
 Zero-trust philosophy.
 Sandboxed plugins
 Signed extensions
@@ -272,36 +314,53 @@ Crash recovery
 Immutable version history
 Granular permissions
 Enterprise authentication (SSO/OAuth)
+
 # Technology Stack
+
 ## Core
+
 Rust (performance, safety, portability)
+
 ## Desktop
+
 Tauri
 Native platform APIs
+
 ## UI
+
 React
 TypeScript
 Tailwind CSS
 shadcn/ui
 Custom design system
+
 ## Database
+
 SQLite
 PostgreSQL (team/server)
 DuckDB (analytics)
+
 ## Search
+
 Tantivy
 SQLite FTS
 Vector embeddings
+
 ## AI
+
 Model Context Protocol (MCP)
 LangGraph
 Ollama
 OpenAI-compatible APIs
+
 ## Collaboration
+
 CRDT-based synchronization
 WebSockets
 Event sourcing
+
 # Design Principles
+
 Human-first, AI-second.
 Everything is recoverable.
 Every action is explainable.

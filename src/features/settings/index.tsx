@@ -55,14 +55,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 type SectionId =
-  | 'identity'
-  | 'account'
-  | 'mt'
-  | 'editor'
-  | 'spell'
-  | 'search'
-  | 'semantic'
-  | 'about'
+  'identity' | 'account' | 'mt' | 'editor' | 'spell' | 'search' | 'semantic' | 'about'
 
 const NAV: Array<{ id: SectionId; label: string; icon: React.ReactNode }> = [
   { id: 'identity', label: 'Identity', icon: <User size={15} /> },
@@ -131,9 +124,9 @@ function SectionContent({ id }: { id: SectionId }) {
           </Section>
           <Section title="Offline">
             <p className="text-callout" style={{ color: 'var(--color-muted)' }}>
-              Translation Memory and Glossary work fully offline. Wiktionary lookups are
-              cached after first fetch. Ollama runs locally on your machine; Claude and
-              LibreTranslate require network access.
+              Translation Memory and Glossary work fully offline. Wiktionary lookups are cached
+              after first fetch. Ollama runs locally on your machine; Claude and LibreTranslate
+              require network access.
             </p>
           </Section>
         </div>

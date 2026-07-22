@@ -88,11 +88,18 @@ export function OpenCloudProjectDialog({
         </DialogHeader>
 
         {items === null ? (
-          <div className="flex items-center justify-center gap-2 py-6" style={{ color: 'var(--color-muted)' }}>
+          <div
+            className="flex items-center justify-center gap-2 py-6"
+            style={{ color: 'var(--color-muted)' }}
+          >
             <Loader2 size={16} className="animate-spin" /> Loading…
           </div>
         ) : items.length === 0 ? (
-          <p className="py-4 text-sm" style={{ color: 'var(--color-muted)' }} data-testid="cloud-projects-empty">
+          <p
+            className="py-4 text-sm"
+            style={{ color: 'var(--color-muted)' }}
+            data-testid="cloud-projects-empty"
+          >
             No cloud projects yet. Publish one from the projects list to get started.
           </p>
         ) : (
@@ -104,7 +111,10 @@ export function OpenCloudProjectDialog({
                 style={{ borderColor: 'var(--color-border)' }}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  <p
+                    className="truncate text-sm font-medium"
+                    style={{ color: 'var(--color-text)' }}
+                  >
                     {p.name}
                   </p>
                   <Badge variant="outline" style={{ color: 'var(--color-muted)' }}>
@@ -128,7 +138,11 @@ export function OpenCloudProjectDialog({
         )}
 
         {error ? (
-          <p className="text-sm" style={{ color: 'var(--color-error)' }} data-testid="open-cloud-error">
+          <p
+            className="text-sm"
+            style={{ color: 'var(--color-error)' }}
+            data-testid="open-cloud-error"
+          >
             {error}
           </p>
         ) : null}

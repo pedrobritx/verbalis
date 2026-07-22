@@ -64,14 +64,22 @@ export function ExportDocxButton({ projectId, name }: { projectId: string; name:
         onClick={() => void onExport()}
         disabled={busy}
         data-testid="export-docx"
-        title={pending ? 'Pending suggestions will be exported as accepted' : 'Export the translated document as .docx'}
+        title={
+          pending
+            ? 'Pending suggestions will be exported as accepted'
+            : 'Export the translated document as .docx'
+        }
         className="inline-flex items-center gap-1.5 rounded-full border h-8 px-3 text-footnote transition-colors hover:bg-[var(--color-fill)] disabled:opacity-50"
         style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
       >
         <FileDown size={14} />
         {busy ? 'Exporting…' : 'Export .docx'}
         {pending && (
-          <AlertTriangle size={13} data-testid="export-pending-warning" style={{ color: 'var(--color-error)' }} />
+          <AlertTriangle
+            size={13}
+            data-testid="export-pending-warning"
+            style={{ color: 'var(--color-error)' }}
+          />
         )}
       </button>
 
@@ -81,7 +89,9 @@ export function ExportDocxButton({ projectId, name }: { projectId: string; name:
           testId="export-docx-gdrive"
           filename={filename}
           buildBlob={buildBlob}
-          loadConnector={async () => (await import('@/extensions/connectors/gdrive')).gdriveConnector}
+          loadConnector={async () =>
+            (await import('@/extensions/connectors/gdrive')).gdriveConnector
+          }
         />
       )}
       {onedrive && (
@@ -90,7 +100,9 @@ export function ExportDocxButton({ projectId, name }: { projectId: string; name:
           testId="export-docx-onedrive"
           filename={filename}
           buildBlob={buildBlob}
-          loadConnector={async () => (await import('@/extensions/connectors/onedrive')).onedriveConnector}
+          loadConnector={async () =>
+            (await import('@/extensions/connectors/onedrive')).onedriveConnector
+          }
         />
       )}
     </div>
@@ -141,7 +153,10 @@ function SaveToCloudButton({
       data-testid={testId}
       title={error ?? `Save the translated .docx to ${label}`}
       className="inline-flex items-center gap-1.5 rounded-full border h-8 px-3 text-footnote transition-colors hover:bg-[var(--color-fill)] disabled:opacity-50"
-      style={{ borderColor: 'var(--color-border)', color: error ? 'var(--color-error)' : 'var(--color-muted)' }}
+      style={{
+        borderColor: 'var(--color-border)',
+        color: error ? 'var(--color-error)' : 'var(--color-muted)',
+      }}
     >
       {saved ? <Check size={14} /> : <HardDriveDownload size={14} />}
       {saving ? 'Saving…' : saved ? `Saved to ${label}` : `Save to ${label}`}

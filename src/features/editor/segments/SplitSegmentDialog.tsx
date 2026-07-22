@@ -55,8 +55,8 @@ export function SplitSegmentDialog({ projectId }: SplitSegmentDialogProps) {
         <DialogHeader>
           <DialogTitle style={{ color: 'var(--color-text)' }}>Split segment</DialogTitle>
           <DialogDescription style={{ color: 'var(--color-muted)' }}>
-            Click in the source where it should be divided, then split. The first part
-            keeps its translation; the second becomes a new untranslated segment.
+            Click in the source where it should be divided, then split. The first part keeps its
+            translation; the second becomes a new untranslated segment.
           </DialogDescription>
         </DialogHeader>
 

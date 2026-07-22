@@ -44,9 +44,7 @@ export function GlossaryEditDialog({
 }: GlossaryEditDialogProps) {
   const [term, setTerm] = useState('')
   const [definition, setDefinition] = useState('')
-  const [translations, setTranslations] = useState<Array<{ lang: string; value: string }>>(
-    [],
-  )
+  const [translations, setTranslations] = useState<Array<{ lang: string; value: string }>>([])
   const [notes, setNotes] = useState('')
   const [projectId, setProjectId] = useState<string>(UNASSIGNED)
   const [error, setError] = useState<string | null>(null)
@@ -55,9 +53,7 @@ export function GlossaryEditDialog({
     if (!draft) return
     setTerm(draft.term)
     setDefinition(draft.definition)
-    setTranslations(
-      draft.translations.length > 0 ? draft.translations : [{ lang: '', value: '' }],
-    )
+    setTranslations(draft.translations.length > 0 ? draft.translations : [{ lang: '', value: '' }])
     setNotes(draft.notes)
     setProjectId(draft.projectId ?? UNASSIGNED)
     setError(null)
@@ -87,14 +83,12 @@ export function GlossaryEditDialog({
     onOpenChange(false)
   }
 
-  const addTranslationRow = () =>
-    setTranslations((rows) => [...rows, { lang: '', value: '' }])
+  const addTranslationRow = () => setTranslations((rows) => [...rows, { lang: '', value: '' }])
 
   const updateRow = (i: number, key: 'lang' | 'value', v: string) =>
     setTranslations((rows) => rows.map((r, idx) => (idx === i ? { ...r, [key]: v } : r)))
 
-  const removeRow = (i: number) =>
-    setTranslations((rows) => rows.filter((_, idx) => idx !== i))
+  const removeRow = (i: number) => setTranslations((rows) => rows.filter((_, idx) => idx !== i))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

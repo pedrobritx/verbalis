@@ -37,8 +37,7 @@ export const segmentRepo = {
   update: (id: string, changes: Partial<Segment>) =>
     db.segments.update(id, { ...changes, updatedAt: new Date().toISOString() }),
 
-  removeByProject: (projectId: string) =>
-    db.segments.where('projectId').equals(projectId).delete(),
+  removeByProject: (projectId: string) => db.segments.where('projectId').equals(projectId).delete(),
 
   // Counts come from the [projectId+status] index — IndexedDB tallies them
   // without ever loading a segment row (source/target/rich text/comments), so a
@@ -92,9 +91,7 @@ export const segmentRepo = {
     db.transaction('rw', db.segments, async () => {
       const seg = await db.segments.get(id)
       if (!seg?.comments) return
-      const comments = seg.comments.map((c) =>
-        c.id === commentId ? { ...c, ...changes } : c,
-      )
+      const comments = seg.comments.map((c) => (c.id === commentId ? { ...c, ...changes } : c))
       await db.segments.update(id, { comments, updatedAt: new Date().toISOString() })
     }),
 

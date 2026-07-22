@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  createEditor,
-  $getRoot,
-  $createParagraphNode,
-  $createTextNode,
-} from 'lexical'
+import { createEditor, $getRoot, $createParagraphNode, $createTextNode } from 'lexical'
 import {
   richStateToPlain,
   richStateToOriginal,
@@ -173,7 +168,12 @@ describe('inline tags: XLIFF import → rich edit → export', () => {
     expect(derivedPlain).toBe('Clique {1} para continuar{2}')
 
     const out = exportXliff12(parsed.templateXml, [
-      { transUnitId: unit.transUnitId, target: derivedPlain, status: 'translated', inlineTags: unit.inlineTags },
+      {
+        transUnitId: unit.transUnitId,
+        target: derivedPlain,
+        status: 'translated',
+        inlineTags: unit.inlineTags,
+      },
     ])
     expect(out).toContain('<g id="b1">here</g>')
     expect(out).toContain('<x id="x1"/>')

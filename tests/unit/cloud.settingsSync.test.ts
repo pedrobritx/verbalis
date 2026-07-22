@@ -74,10 +74,7 @@ describe('reconcileSettings (per-key LWW)', () => {
   })
 
   it('ignores keys outside the allowlist entirely', () => {
-    const { pull, push } = reconcileSettings(
-      [L(MT_SETTINGS_KEY, 100)],
-      [R(MT_SETTINGS_KEY, 1)],
-    )
+    const { pull, push } = reconcileSettings([L(MT_SETTINGS_KEY, 100)], [R(MT_SETTINGS_KEY, 1)])
     expect(pull).toHaveLength(0)
     expect(push).toHaveLength(0)
   })
@@ -104,9 +101,7 @@ function makeClient(rows: FakeRow[]) {
             eq(_col: string, userId: string) {
               return {
                 in(_keyCol: string, keys: string[]) {
-                  const data = rows.filter(
-                    (r) => r.user_id === userId && keys.includes(r.key),
-                  )
+                  const data = rows.filter((r) => r.user_id === userId && keys.includes(r.key))
                   return Promise.resolve({ data, error: null })
                 },
               }

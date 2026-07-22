@@ -42,10 +42,10 @@ export function WebSearchSettingsSection() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-        Enabled providers appear in the command palette (⌘/Ctrl+K) and open the
-        focused segment's source term in your browser. Verbalis never proxies the
-        query — the request goes straight to the provider. Use <code>{'{q}'}</code>,{' '}
-        <code>{'{src}'}</code> and <code>{'{tgt}'}</code> in the URL template.
+        Enabled providers appear in the command palette (⌘/Ctrl+K) and open the focused segment's
+        source term in your browser. Verbalis never proxies the query — the request goes straight to
+        the provider. Use <code>{'{q}'}</code>, <code>{'{src}'}</code> and <code>{'{tgt}'}</code> in
+        the URL template.
       </p>
 
       <div className="flex flex-col gap-3" data-testid="settings-websearch-providers">
@@ -102,10 +102,7 @@ export function WebSearchSettingsSection() {
           variant="bordered"
           size="sm"
           onClick={() =>
-            void save([
-              ...providers,
-              { id: uid(), name: '', urlTemplate: '', enabled: true },
-            ])
+            void save([...providers, { id: uid(), name: '', urlTemplate: '', enabled: true }])
           }
           data-testid="settings-websearch-add"
         >

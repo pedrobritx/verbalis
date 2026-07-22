@@ -39,9 +39,7 @@ export function exportTSV(entries: GlossaryEntry[], targetLang: string): string 
     const translation = e.translations[targetLang]
     if (!translation) continue
     // OmegaT can't represent tabs/newlines inside a cell; collapse to spaces.
-    const cells = [e.term, translation, e.notes ?? ''].map((v) =>
-      v.replace(/[\t\r\n]+/g, ' '),
-    )
+    const cells = [e.term, translation, e.notes ?? ''].map((v) => v.replace(/[\t\r\n]+/g, ' '))
     lines.push(cells.join('\t'))
   }
   return lines.join('\n') + (lines.length ? '\n' : '')

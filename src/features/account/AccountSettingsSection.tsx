@@ -61,8 +61,8 @@ export function AccountSettingsSection() {
     return (
       <div className="flex flex-col gap-3" data-testid="account-settings">
         <p className="text-callout" style={{ color: 'var(--color-muted)' }}>
-          Sign in to sync your preferences, term bank, and cloud projects across
-          devices. Verbalis stays 100% local until you sign in.
+          Sign in to sync your preferences, term bank, and cloud projects across devices. Verbalis
+          stays 100% local until you sign in.
         </p>
         <Button
           variant="filled"
@@ -98,8 +98,8 @@ export function AccountSettingsSection() {
     <div className="flex flex-col gap-5" data-testid="account-settings">
       <div className="flex flex-col gap-3">
         <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-          The name shown on your account, comments, and collaboration presence.
-          Synced to the cloud and shared across your devices.
+          The name shown on your account, comments, and collaboration presence. Synced to the cloud
+          and shared across your devices.
         </p>
         <label
           className="flex flex-col gap-1 text-footnote"
@@ -145,10 +145,7 @@ export function AccountSettingsSection() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3
-          className="text-footnote font-semibold"
-          style={{ color: 'var(--color-text)' }}
-        >
+        <h3 className="text-footnote font-semibold" style={{ color: 'var(--color-text)' }}>
           Linked sign-in methods
         </h3>
         {identities === null ? (

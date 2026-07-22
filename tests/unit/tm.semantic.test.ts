@@ -25,19 +25,31 @@ const MODEL = 'test-model'
 
 describe('findSemanticMatches', () => {
   it('returns empty when query is blank', async () => {
-    const out = await findSemanticMatches('  ', MODEL, [entry({})], { topK: 5, threshold: 0.5 }, {
-      embedAndRank: async () => [],
-    })
+    const out = await findSemanticMatches(
+      '  ',
+      MODEL,
+      [entry({})],
+      { topK: 5, threshold: 0.5 },
+      {
+        embedAndRank: async () => [],
+      },
+    )
     expect(out).toEqual([])
   })
 
   it('returns empty when no candidates have embeddings', async () => {
     const candidates = [entry({ source: 'foo' }), entry({ source: 'bar' })]
-    const out = await findSemanticMatches('q', MODEL, candidates, { topK: 5, threshold: 0.5 }, {
-      embedAndRank: async () => {
-        throw new Error('should not be called')
+    const out = await findSemanticMatches(
+      'q',
+      MODEL,
+      candidates,
+      { topK: 5, threshold: 0.5 },
+      {
+        embedAndRank: async () => {
+          throw new Error('should not be called')
+        },
       },
-    })
+    )
     expect(out).toEqual([])
   })
 

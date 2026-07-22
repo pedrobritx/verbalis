@@ -98,7 +98,6 @@ export function TrackedChangesPlugin({ locked }: { locked?: boolean }) {
       ),
     ]
     return () => unregister.forEach((u) => u())
-     
   }, [editor])
 
   return null

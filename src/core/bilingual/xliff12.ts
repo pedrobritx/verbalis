@@ -177,9 +177,7 @@ export function exportXliff12(template: string, units: ExportXliffUnit[]): strin
   const doc = new DOMParser().parseFromString(template, 'application/xml')
   const parseError = doc.querySelector('parsererror')
   if (parseError) {
-    throw new Error(
-      `Invalid XLIFF template: ${parseError.textContent?.trim() ?? 'malformed XML'}`,
-    )
+    throw new Error(`Invalid XLIFF template: ${parseError.textContent?.trim() ?? 'malformed XML'}`)
   }
 
   const unitMap = new Map(units.map((u) => [u.transUnitId, u]))
@@ -215,7 +213,5 @@ export function exportXliff12(template: string, units: ExportXliffUnit[]): strin
   // XMLSerializer drops the XML declaration; restore it so tools that expect
   // a declaration (some memoQ versions warn on its absence) are happy.
   const body = new XMLSerializer().serializeToString(doc)
-  return body.startsWith('<?xml')
-    ? body
-    : '<?xml version="1.0" encoding="UTF-8"?>\n' + body
+  return body.startsWith('<?xml') ? body : '<?xml version="1.0" encoding="UTF-8"?>\n' + body
 }

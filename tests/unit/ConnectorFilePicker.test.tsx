@@ -9,7 +9,9 @@ function fakeConnector(files: ConnectorFile[]): StorageConnector {
     name: 'Google Drive',
     isConfigured: () => true,
     listFiles: vi.fn().mockResolvedValue(files),
-    downloadFile: vi.fn().mockImplementation(async (f: ConnectorFile) => new File(['data'], f.name)),
+    downloadFile: vi
+      .fn()
+      .mockImplementation(async (f: ConnectorFile) => new File(['data'], f.name)),
     uploadFile: vi.fn(),
   }
 }
@@ -60,8 +62,14 @@ describe('ConnectorFilePicker (§6.3)', () => {
 
   it('surfaces a listing error', async () => {
     const connector = fakeConnector(FILES)
-    ;(connector.listFiles as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Authorisation cancelled'))
-    render(<ConnectorFilePicker connector={connector} open onOpenChange={() => {}} onPick={() => {}} />)
-    expect(await screen.findByTestId('connector-error')).toHaveTextContent('Authorisation cancelled')
+    ;(connector.listFiles as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('Authorisation cancelled'),
+    )
+    render(
+      <ConnectorFilePicker connector={connector} open onOpenChange={() => {}} onPick={() => {}} />,
+    )
+    expect(await screen.findByTestId('connector-error')).toHaveTextContent(
+      'Authorisation cancelled',
+    )
   })
 })

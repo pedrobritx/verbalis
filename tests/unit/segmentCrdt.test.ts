@@ -80,7 +80,13 @@ describe('segmentCrdt model', () => {
 
     applyUpdate(
       doc,
-      makeSeg({ id: 's1', target: 'novo', status: 'translated', targetRich: undefined, locked: undefined }),
+      makeSeg({
+        id: 's1',
+        target: 'novo',
+        status: 'translated',
+        targetRich: undefined,
+        locked: undefined,
+      }),
     )
 
     const out = readSegment(doc, 'p1', 's1')!
@@ -128,7 +134,11 @@ describe('segmentCrdt model', () => {
   it('seedFromDexie populates an empty doc once and marks it seeded', () => {
     const doc = new Y.Doc()
     expect(isSeeded(doc)).toBe(false)
-    const segs = [makeSeg({ id: 'a', index: 2 }), makeSeg({ id: 'b', index: 0 }), makeSeg({ id: 'c', index: 1 })]
+    const segs = [
+      makeSeg({ id: 'a', index: 2 }),
+      makeSeg({ id: 'b', index: 0 }),
+      makeSeg({ id: 'c', index: 1 }),
+    ]
     seedFromDexie(doc, 'p1', segs)
     expect(isSeeded(doc)).toBe(true)
     expect(readAllSegments(doc, 'p1').map((s) => s.id)).toEqual(['b', 'c', 'a'])

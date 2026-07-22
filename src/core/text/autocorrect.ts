@@ -54,7 +54,8 @@ function matchRule(token: string, rules: AutocorrectRule[]): string | null {
   for (const r of rules) {
     if (!r.from || r.from.toLowerCase() !== lower) continue
     const first = token.charAt(0)
-    const isCapitalized = first !== '' && first === first.toUpperCase() && first !== first.toLowerCase()
+    const isCapitalized =
+      first !== '' && first === first.toUpperCase() && first !== first.toLowerCase()
     return isCapitalized ? r.to.charAt(0).toUpperCase() + r.to.slice(1) : r.to
   }
   return null

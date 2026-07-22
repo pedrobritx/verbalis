@@ -12,12 +12,7 @@
 
 /** What an extension contributes. One extension may contribute several kinds. */
 export type ExtensionKind =
-  | 'mt-provider'
-  | 'qa-rule'
-  | 'panel'
-  | 'import-format'
-  | 'export-format'
-  | 'storage-connector'
+  'mt-provider' | 'qa-rule' | 'panel' | 'import-format' | 'export-format' | 'storage-connector'
 
 /** A capability an extension needs — surfaced to the user before enabling it. */
 export type ExtensionPermission =

@@ -214,10 +214,7 @@ export const versionRepo = {
    * The history of one segment, newest first, with consecutive identical
    * (status + target) states collapsed so each entry marks an actual change.
    */
-  segmentTimeline: async (
-    projectId: string,
-    segmentId: string,
-  ): Promise<SegmentHistoryEntry[]> => {
+  segmentTimeline: async (projectId: string, segmentId: string): Promise<SegmentHistoryEntry[]> => {
     const versions = await listAsc(projectId)
     const out: SegmentHistoryEntry[] = []
     let prevKey: string | null = null

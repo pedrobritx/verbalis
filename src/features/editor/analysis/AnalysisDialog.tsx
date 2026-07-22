@@ -7,11 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import {
-  analyzeProject,
-  LEVERAGE_BUCKETS,
-  LEVERAGE_LABELS,
-} from '@/core/analysis/report'
+import { analyzeProject, LEVERAGE_BUCKETS, LEVERAGE_LABELS } from '@/core/analysis/report'
 import { tmRepo } from '@/storage/repositories/tmRepo'
 import type { Project } from '@/core/types'
 import { useProjectSegments } from '../useProjectSegments'
@@ -102,10 +98,7 @@ export function AnalysisDialog({ project }: AnalysisDialogProps) {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div
-      className="rounded-md border p-2"
-      style={{ borderColor: 'var(--color-border)' }}
-    >
+    <div className="rounded-md border p-2" style={{ borderColor: 'var(--color-border)' }}>
       <div className="text-lg font-semibold tabular-nums" style={{ color: 'var(--color-text)' }}>
         {value.toLocaleString()}
       </div>

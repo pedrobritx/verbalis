@@ -26,9 +26,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": [
-      "../public/icons/icon-192.png",
-      "../public/icons/icon-512.png"
-    ]
+    "icon": ["../public/icons/icon-192.png", "../public/icons/icon-512.png"]
   }
 }

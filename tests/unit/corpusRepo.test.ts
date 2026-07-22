@@ -63,10 +63,9 @@ describe('corpusRepo', () => {
 
   it('re-installing replaces the previous pack (idempotent)', async () => {
     await corpusRepo.install(pack(), { label: 'Competition' })
-    await corpusRepo.install(
-      pack({ terms: [['multa', 'fine', 'CADE', '']] }),
-      { label: 'Competition' },
-    )
+    await corpusRepo.install(pack({ terms: [['multa', 'fine', 'CADE', '']] }), {
+      label: 'Competition',
+    })
     const terms = await corpusRepo.termsByCorpus('competition')
     expect(terms).toHaveLength(1)
     expect(terms[0].source).toBe('multa')

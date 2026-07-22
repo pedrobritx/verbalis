@@ -48,10 +48,7 @@ describe('ollamaProvider.translate', () => {
 
   it('throws invalid on empty source', async () => {
     await expect(
-      ollamaProvider.translate(
-        { text: '   ', sourceLang: 'en', targetLang: 'es' },
-        settings,
-      ),
+      ollamaProvider.translate({ text: '   ', sourceLang: 'en', targetLang: 'es' }, settings),
     ).rejects.toMatchObject({ code: 'invalid' })
   })
 
@@ -67,7 +64,9 @@ describe('ollamaProvider.translate', () => {
   })
 
   it('returns aborted on AbortError', async () => {
-    const fetchImpl = vi.fn().mockRejectedValueOnce(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(Object.assign(new Error('aborted'), { name: 'AbortError' }))
     await expect(
       ollamaProvider.translate(
         { text: 'hi', sourceLang: 'en', targetLang: 'es' },
@@ -93,7 +92,9 @@ describe('ollamaProvider.translate', () => {
   })
 
   it('throws network on non-OK status', async () => {
-    const fetchImpl = vi.fn().mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) })
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) })
     await expect(
       ollamaProvider.translate(
         { text: 'hi', sourceLang: 'en', targetLang: 'es' },

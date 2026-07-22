@@ -12,8 +12,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { LANG_OPTIONS } from '@/core/lang/options'
 import type { GlossaryEditDraft } from './GlossaryEditDialog'
 
-const OFFLINE_MESSAGE =
-  "You're offline — only previously looked-up terms are available."
+const OFFLINE_MESSAGE = "You're offline — only previously looked-up terms are available."
 
 interface WiktionaryLookupProps {
   onAddToGlossary: (draft: GlossaryEditDraft) => void
@@ -136,7 +135,11 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
       </div>
 
       {error && (
-        <p className="text-footnote" style={{ color: 'var(--color-error)' }} data-testid="wiktionary-error">
+        <p
+          className="text-footnote"
+          style={{ color: 'var(--color-error)' }}
+          data-testid="wiktionary-error"
+        >
           {error}
         </p>
       )}
@@ -146,10 +149,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
           <div className="flex items-center justify-between">
             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
               {result.term}
-              <span
-                className="ml-2 text-xs font-normal"
-                style={{ color: 'var(--color-muted)' }}
-              >
+              <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-muted)' }}>
                 ({result.sourceLang})
               </span>
             </span>
@@ -171,10 +171,7 @@ export function WiktionaryLookup({ onAddToGlossary }: WiktionaryLookupProps) {
             <ol className="flex flex-col gap-2 list-decimal list-inside text-sm">
               {result.definitions.slice(0, 6).map((d, i) => (
                 <li key={i} style={{ color: 'var(--color-text)' }}>
-                  <span
-                    className="text-xs italic mr-1"
-                    style={{ color: 'var(--color-muted)' }}
-                  >
+                  <span className="text-xs italic mr-1" style={{ color: 'var(--color-muted)' }}>
                     {d.partOfSpeech}
                   </span>
                   {d.definition}

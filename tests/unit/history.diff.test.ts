@@ -10,13 +10,23 @@ describe('diffWords', () => {
     const parts = diffWords('hello world', 'hello big world')
     expect(parts.filter((p) => p.op === 'add').map((p) => p.text.trim())).toEqual(['big'])
     // Reassembling the "after" side reproduces the new text.
-    expect(parts.filter((p) => p.op !== 'remove').map((p) => p.text).join('')).toBe('hello big world')
+    expect(
+      parts
+        .filter((p) => p.op !== 'remove')
+        .map((p) => p.text)
+        .join(''),
+    ).toBe('hello big world')
   })
 
   it('detects a removed word', () => {
     const parts = diffWords('hello big world', 'hello world')
     expect(parts.filter((p) => p.op === 'remove').map((p) => p.text.trim())).toEqual(['big'])
-    expect(parts.filter((p) => p.op !== 'add').map((p) => p.text).join('')).toBe('hello big world')
+    expect(
+      parts
+        .filter((p) => p.op !== 'add')
+        .map((p) => p.text)
+        .join(''),
+    ).toBe('hello big world')
   })
 
   it('handles a full replacement and empty sides', () => {

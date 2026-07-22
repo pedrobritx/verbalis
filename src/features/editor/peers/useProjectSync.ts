@@ -17,10 +17,7 @@ import { usePresenceStore } from './usePresenceStore'
 export function useProjectSync(projectId: string | undefined): {
   setActiveSegment: (id: string | undefined, caret?: CaretRange) => void
 } {
-  const share = useLiveQuery(
-    () => (projectId ? shareRepo.get(projectId) : undefined),
-    [projectId],
-  )
+  const share = useLiveQuery(() => (projectId ? shareRepo.get(projectId) : undefined), [projectId])
   const shared = share?.shared ?? false
 
   const setShared = usePresenceStore((s) => s.setShared)

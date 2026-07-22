@@ -45,11 +45,7 @@ function FieldRow({
 }) {
   return (
     <div className="flex flex-col gap-1 py-1.5">
-      <label
-        htmlFor={htmlFor}
-        className="text-footnote"
-        style={{ color: 'var(--color-muted)' }}
-      >
+      <label htmlFor={htmlFor} className="text-footnote" style={{ color: 'var(--color-muted)' }}>
         {label}
       </label>
       {children}
@@ -150,7 +146,10 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
       data-testid={`mt-card-${id}`}
     >
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-callout" style={{ color: 'var(--color-text)' }}>
+        <label
+          className="flex items-center gap-2 text-callout"
+          style={{ color: 'var(--color-text)' }}
+        >
           <input
             type="checkbox"
             checked={enabled}
@@ -212,9 +211,8 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             />
           </FieldRow>
           <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-            Free, no signup. Anonymous quota is ~5,000 characters/day; adding an
-            email raises it to ~50,000/day. Each request is limited to 500
-            characters of source text.
+            Free, no signup. Anonymous quota is ~5,000 characters/day; adding an email raises it to
+            ~50,000/day. Each request is limited to 500 characters of source text.
           </p>
         </>
       )}
@@ -235,15 +233,13 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             <Input
               id="ollama-model"
               value={settings.ollama.model}
-              onChange={(e) =>
-                onPatch({ ollama: { ...settings.ollama, model: e.target.value } })
-              }
+              onChange={(e) => onPatch({ ollama: { ...settings.ollama, model: e.target.value } })}
               data-testid="mt-ollama-model"
             />
           </FieldRow>
           <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-            Ollama must be running locally and configured to accept this origin
-            (<code>OLLAMA_ORIGINS=*</code>).
+            Ollama must be running locally and configured to accept this origin (
+            <code>OLLAMA_ORIGINS=*</code>).
           </p>
         </>
       )}
@@ -263,9 +259,7 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             <Input
               id="claude-model"
               value={settings.claude.model}
-              onChange={(e) =>
-                onPatch({ claude: { ...settings.claude, model: e.target.value } })
-              }
+              onChange={(e) => onPatch({ claude: { ...settings.claude, model: e.target.value } })}
               data-testid="mt-claude-model"
             />
           </FieldRow>
@@ -277,8 +271,8 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
               background: 'color-mix(in srgb, var(--color-warning) 8%, transparent)',
             }}
           >
-            Your API key is stored unencrypted in this browser's IndexedDB. Anyone with
-            access to this browser profile can read it.
+            Your API key is stored unencrypted in this browser's IndexedDB. Anyone with access to
+            this browser profile can read it.
           </p>
         </>
       )}
@@ -308,10 +302,10 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
             />
           </FieldRow>
           <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-            Open-source machine translation. Use a public instance (most require
-            an API key — see <code>libretranslate.com</code>) or point this at
-            your own self-hosted server. Base languages only — regional variants
-            like <code>pt-BR</code> are folded to <code>pt</code>.
+            Open-source machine translation. Use a public instance (most require an API key — see{' '}
+            <code>libretranslate.com</code>) or point this at your own self-hosted server. Base
+            languages only — regional variants like <code>pt-BR</code> are folded to <code>pt</code>
+            .
           </p>
         </>
       )}
@@ -333,7 +327,11 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
           </span>
         )}
         {test.status === 'error' && (
-          <span className="text-footnote" style={{ color: 'var(--color-error)' }} title={test.message}>
+          <span
+            className="text-footnote"
+            style={{ color: 'var(--color-error)' }}
+            title={test.message}
+          >
             ✗ {test.message.slice(0, 40)}
           </span>
         )}
@@ -343,10 +341,7 @@ function ProviderCard({ id, settings, onPatch }: ProviderCardProps) {
 }
 
 export function MTSettingsSection() {
-  const stored = useLiveQuery(
-    () => settingsRepo.get<Partial<MTSettings>>(MT_SETTINGS_KEY),
-    [],
-  )
+  const stored = useLiveQuery(() => settingsRepo.get<Partial<MTSettings>>(MT_SETTINGS_KEY), [])
   const merged = useMemo(() => mergeMTSettings(stored), [stored])
   const [draft, setDraft] = useState<MTSettings>(merged)
   const lastStoredRef = useRef<string>(JSON.stringify(merged))
@@ -382,9 +377,8 @@ export function MTSettingsSection() {
     <Section title="Machine translation">
       <div className="flex flex-col gap-3">
         <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-          Verbalis ships with <strong>MyMemory</strong> enabled — a free
-          translation service that needs no setup. Add another provider below
-          for higher quality or quota.
+          Verbalis ships with <strong>MyMemory</strong> enabled — a free translation service that
+          needs no setup. Add another provider below for higher quality or quota.
         </p>
         <ProviderCard id="mymemory" settings={draft} onPatch={patch} />
         <ProviderCard id="ollama" settings={draft} onPatch={patch} />

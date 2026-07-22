@@ -24,7 +24,9 @@ export interface ProjectThread extends CommentThread {
 
 function newId(): string {
   const c = globalThis.crypto as Crypto | undefined
-  return c?.randomUUID ? c.randomUUID() : `cmt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  return c?.randomUUID
+    ? c.randomUUID()
+    : `cmt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Group a segment's flat comments into threads (roots + their replies), in order. */
@@ -93,10 +95,7 @@ export async function setThreadResolved(
 }
 
 /** Delete a whole thread (root + replies) and its anchor highlight. */
-export async function deleteThread(
-  segmentId: string,
-  thread: CommentThread,
-): Promise<void> {
+export async function deleteThread(segmentId: string, thread: CommentThread): Promise<void> {
   for (const reply of thread.replies) await segmentRepo.deleteComment(segmentId, reply.id)
   await segmentRepo.deleteComment(segmentId, thread.root.id)
   if (thread.root.anchorId) await dropAnchor(segmentId, thread.root.anchorId)
@@ -107,7 +106,8 @@ export async function dropAnchor(segmentId: string, anchorId: string): Promise<v
   const seg = await segmentRepo.getById(segmentId)
   if (!seg?.targetRich) return
   const next = removeCommentMark(seg.targetRich, anchorId)
-  if (next) await segmentRepo.update(segmentId, { targetRich: next.targetRich, target: next.target })
+  if (next)
+    await segmentRepo.update(segmentId, { targetRich: next.targetRich, target: next.target })
 }
 
 /** Every thread across a project's segments, in reading order. */

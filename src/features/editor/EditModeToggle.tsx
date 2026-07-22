@@ -34,7 +34,11 @@ export function EditModeToggle({ forced = false }: { forced?: boolean }) {
       data-forced={forced ? 'true' : undefined}
       title={forced ? 'Your role must suggest changes at this workflow stage' : undefined}
       className="inline-flex items-center gap-1 self-start rounded-full border p-1"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', opacity: forced ? 0.7 : 1 }}
+      style={{
+        borderColor: 'var(--color-border)',
+        background: 'var(--color-surface)',
+        opacity: forced ? 0.7 : 1,
+      }}
     >
       {MODES.map(({ id, label, icon: Icon, hint }) => {
         const isActive = editMode === id

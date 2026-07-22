@@ -56,7 +56,9 @@ export function RemoteCaretOverlay({
         try {
           const container = containerRef.current
           if (!container) return
-          const spans = editor.getEditorState().read(() => buildLeafSpans($getRoot().getFirstChild()))
+          const spans = editor
+            .getEditorState()
+            .read(() => buildLeafSpans($getRoot().getFirstChild()))
           const crect = container.getBoundingClientRect()
           const next: CaretPaint[] = []
           for (const p of remotes) {
@@ -99,7 +101,11 @@ export function RemoteCaretOverlay({
   if (carets.length === 0) return null
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden data-testid="remote-carets">
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      aria-hidden
+      data-testid="remote-carets"
+    >
       {carets.map((c) => (
         <div
           key={c.peerId}

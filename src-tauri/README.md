@@ -4,19 +4,19 @@ This is the **thin desktop peer** for Verbalis. It exists for one reason a brows
 cannot satisfy: **LAN collaboration**. Browsers can't bind sockets or do mDNS; a
 Tauri shell can, while reusing 100% of the existing React app.
 
-> Design rule (roadmap §9.3): *all product logic stays in the shared React app;
-> the desktop shell stays thin — discovery + transport only.* Nothing in `src/`
+> Design rule (roadmap §9.3): _all product logic stays in the shared React app;
+> the desktop shell stays thin — discovery + transport only._ Nothing in `src/`
 > here knows about segments, TM, or the UI. It moves opaque, already-encrypted
 > bytes between peers.
 
 ## What's here
 
-| File | Role |
-|---|---|
-| `src/mdns.rs` | Advertise + browse `_verbalis._tcp.local` peers (zero-config). |
-| `src/transport.rs` | Encrypted LAN socket carrying the JS `SyncMessage`s. |
-| `src/commands.rs` | `start_sharing` / `stop_sharing` / `broadcast_sync_message`. |
-| `src/lib.rs` | Tauri builder; registers commands + shared sync state. |
+| File               | Role                                                           |
+| ------------------ | -------------------------------------------------------------- |
+| `src/mdns.rs`      | Advertise + browse `_verbalis._tcp.local` peers (zero-config). |
+| `src/transport.rs` | Encrypted LAN socket carrying the JS `SyncMessage`s.           |
+| `src/commands.rs`  | `start_sharing` / `stop_sharing` / `broadcast_sync_message`.   |
+| `src/lib.rs`       | Tauri builder; registers commands + shared sync state.         |
 
 The JS side talks to this shell through `src/storage/sync/transport/tauri.ts`,
 which `createTransport()` selects automatically when `isTauri()` is true. Inbound

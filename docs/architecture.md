@@ -6,20 +6,20 @@ VERBALIS is a local-first, browser-native CAT (Computer-Assisted Translation) to
 
 ## Tech Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Framework | React 18 + TypeScript | Strict mode, full type safety |
-| Bundler | Vite 6 | base: '/' for the custom-domain root (override with `BASE_PATH` for subdirectory builds) |
-| Styling | Tailwind CSS 3 + shadcn/ui | Owned components, Radix primitives |
-| State | Zustand (UI) + TanStack Query v5 (async) | No Redux boilerplate |
-| Routing | React Router v6 HashRouter | GH Pages SPA compatibility |
-| Storage | Dexie.js v4 (IndexedDB) | Promise API, live hooks, migrations |
-| Parsing | unified + remark-parse + remark-gfm + sbd | AST-based, not regex |
-| DOCX | mammoth | Only viable browser-side parser |
-| Fuzzy search | Fuse.js (TM) + MiniSearch (terminology) | Different tools for different jobs |
-| Workers | Comlink | Makes Web Worker calls look like async functions |
-| PWA | vite-plugin-pwa (Workbox) | Offline support, installable |
-| Fonts | geist npm package | Self-hosted, works fully offline |
+| Layer        | Choice                                    | Notes                                                                                    |
+| ------------ | ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Framework    | React 18 + TypeScript                     | Strict mode, full type safety                                                            |
+| Bundler      | Vite 6                                    | base: '/' for the custom-domain root (override with `BASE_PATH` for subdirectory builds) |
+| Styling      | Tailwind CSS 3 + shadcn/ui                | Owned components, Radix primitives                                                       |
+| State        | Zustand (UI) + TanStack Query v5 (async)  | No Redux boilerplate                                                                     |
+| Routing      | React Router v6 HashRouter                | GH Pages SPA compatibility                                                               |
+| Storage      | Dexie.js v4 (IndexedDB)                   | Promise API, live hooks, migrations                                                      |
+| Parsing      | unified + remark-parse + remark-gfm + sbd | AST-based, not regex                                                                     |
+| DOCX         | mammoth                                   | Only viable browser-side parser                                                          |
+| Fuzzy search | Fuse.js (TM) + MiniSearch (terminology)   | Different tools for different jobs                                                       |
+| Workers      | Comlink                                   | Makes Web Worker calls look like async functions                                         |
+| PWA          | vite-plugin-pwa (Workbox)                 | Offline support, installable                                                             |
+| Fonts        | geist npm package                         | Self-hosted, works fully offline                                                         |
 
 ## Key Folder Map
 
@@ -41,22 +41,22 @@ src/
 
 ## Storage Schema (v7)
 
-| Table | Indexes | Since |
-|---|---|---|
-| projects | id, name, updatedAt | v1 |
-| segments | id, projectId, index, status, [projectId+status], [projectId+index] | v1 (compound idx v4) |
-| tm | id, source, sourceLang, targetLang, projectId, corpusId, updatedAt | v1 |
-| glossary | id, term, projectId, updatedAt | v1 |
-| settings | &key | v2 |
-| embeddings | id, tmId, model, [tmId+model] | v2 |
-| corpusTerms | id, corpusId | v3 |
-| corpusPacks | id | v3 |
-| projectTemplates | projectId | v4 |
-| versions | id, projectId, createdAt, [projectId+createdAt] | v5 |
-| documents | id, projectId | v6 |
-| blocks | id, documentId, projectId, [documentId+index] | v6 |
-| assets | id, documentId, projectId | v6 |
-| syncTombstones | [resource+rowId], resource, deletedAt | v7 |
+| Table            | Indexes                                                             | Since                |
+| ---------------- | ------------------------------------------------------------------- | -------------------- |
+| projects         | id, name, updatedAt                                                 | v1                   |
+| segments         | id, projectId, index, status, [projectId+status], [projectId+index] | v1 (compound idx v4) |
+| tm               | id, source, sourceLang, targetLang, projectId, corpusId, updatedAt  | v1                   |
+| glossary         | id, term, projectId, updatedAt                                      | v1                   |
+| settings         | &key                                                                | v2                   |
+| embeddings       | id, tmId, model, [tmId+model]                                       | v2                   |
+| corpusTerms      | id, corpusId                                                        | v3                   |
+| corpusPacks      | id                                                                  | v3                   |
+| projectTemplates | projectId                                                           | v4                   |
+| versions         | id, projectId, createdAt, [projectId+createdAt]                     | v5                   |
+| documents        | id, projectId                                                       | v6                   |
+| blocks           | id, documentId, projectId, [documentId+index]                       | v6                   |
+| assets           | id, documentId, projectId                                           | v6                   |
+| syncTombstones   | [resource+rowId], resource, deletedAt                               | v7                   |
 
 Migrations are handled by Dexie's versioning system (`this.version(N).stores(...)`). Always increment, never modify existing version blocks. Notable steps: v3 adds the bundled-corpora tables + a `corpusId` index on `tm`; v4 adds compound segment indexes and moves the XLIFF template blob to its own table; v5 adds version snapshots; v6 adds the document/block model (backfilled from `sourceMeta.blockIndex`); v7 adds `updatedAt` indexes on `tm`/`glossary` and the `syncTombstones` table for the personal-resource cloud reconciler.
 
@@ -67,6 +67,7 @@ Migrations are handled by Dexie's versioning system (`this.version(N).stores(...
 Static build → GitHub Actions → GitHub Pages at `https://verbalis.britx.me/`.
 
 Critical GH Pages constraints:
+
 - `base: '/'` in vite.config.ts, overridable via the `BASE_PATH` env var (e.g.
   `BASE_PATH=/verbalis/ pnpm build`) for anyone forking this project into a
   path-based GitHub Pages deployment instead
@@ -82,17 +83,17 @@ DOCX import uses `mammoth.convertToHtml`, then a small DOM walker (`src/core/seg
 
 ## Phase Roadmap
 
-| Phase | Scope |
-|---|---|
-| 0 | Foundation — scaffold, CI/CD, PWA, app shell ✅ |
-| 1 | TXT + MD import, segmentation, side-by-side editor ✅ |
-| 2 | Translation Memory — store, exact/fuzzy match, TMX import/export ✅ |
-| 3 | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅ |
-| 4 | DOCX import, command palette, review modes ✅ |
-| 5 | PWA hardening, offline edge cases, update notification ✅ |
-| 6 | AI integrations (Ollama, Claude, LibreTranslate), semantic TM ✅ |
-| 7+ | Project-level exports, terminology extraction, collaborative TM |
-| 8+ | Professional CAT features — rich editor, segment handling, versioning, LAN collaboration, document standards. See [`roadmap-professional-features.md`](roadmap-professional-features.md) |
+| Phase | Scope                                                                                                                                                                                    |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Foundation — scaffold, CI/CD, PWA, app shell ✅                                                                                                                                          |
+| 1     | TXT + MD import, segmentation, side-by-side editor ✅                                                                                                                                    |
+| 2     | Translation Memory — store, exact/fuzzy match, TMX import/export ✅                                                                                                                      |
+| 3     | Terminology — glossary CRUD, CSV + TBX I/O, inline editor panel, Wiktionary adapter ✅                                                                                                   |
+| 4     | DOCX import, command palette, review modes ✅                                                                                                                                            |
+| 5     | PWA hardening, offline edge cases, update notification ✅                                                                                                                                |
+| 6     | AI integrations (Ollama, Claude, LibreTranslate), semantic TM ✅                                                                                                                         |
+| 7+    | Project-level exports, terminology extraction, collaborative TM                                                                                                                          |
+| 8+    | Professional CAT features — rich editor, segment handling, versioning, LAN collaboration, document standards. See [`roadmap-professional-features.md`](roadmap-professional-features.md) |
 
 ## Phase 5 — PWA Layer
 

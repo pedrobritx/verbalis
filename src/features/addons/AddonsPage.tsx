@@ -2,11 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { Puzzle } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { extensionRegistry } from '@/core/extensions/registry'
-import type {
-  ExtensionKind,
-  ExtensionManifest,
-  ExtensionPermission,
-} from '@/core/extensions/types'
+import type { ExtensionKind, ExtensionManifest, ExtensionPermission } from '@/core/extensions/types'
 
 /**
  * The Add-ons catalogue (ROADMAP §6.2). Lists everything pluggable — MT
@@ -66,13 +62,20 @@ export default function AddonsPage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-3xl mx-auto pb-8" data-testid="addons-page">
-      <PageHeader title="Add-ons" subtitle="Built-in extensions — enable or disable what Verbalis offers" />
+      <PageHeader
+        title="Add-ons"
+        subtitle="Built-in extensions — enable or disable what Verbalis offers"
+      />
 
       {SECTIONS.map((section) => {
         const items = all.filter((m) => m.kinds.some((k) => section.kinds.includes(k)))
         if (items.length === 0) return null
         return (
-          <section className="flex flex-col gap-3" key={section.title} data-testid={`addons-section-${section.kinds[0]}`}>
+          <section
+            className="flex flex-col gap-3"
+            key={section.title}
+            data-testid={`addons-section-${section.kinds[0]}`}
+          >
             <div className="flex flex-col gap-0.5">
               <h2 className="text-callout font-semibold" style={{ color: 'var(--color-text)' }}>
                 {section.title}
@@ -110,7 +113,10 @@ function AddonRow({ manifest }: { manifest: ExtensionManifest }) {
       <div className="flex min-w-0 items-start gap-2.5">
         <Puzzle size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--color-accent)' }} />
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+          <span
+            className="flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: 'var(--color-text)' }}
+          >
             {manifest.name}
             <span
               className="rounded-full border px-1.5 text-[10px] uppercase tracking-wider"
@@ -128,14 +134,19 @@ function AddonRow({ manifest }: { manifest: ExtensionManifest }) {
             {manifest.permissions.length === 0 ? (
               <PermissionChip label="No special access" />
             ) : (
-              manifest.permissions.map((p) => <PermissionChip key={p} label={PERMISSION_LABEL[p]} />)
+              manifest.permissions.map((p) => (
+                <PermissionChip key={p} label={PERMISSION_LABEL[p]} />
+              ))
             )}
           </span>
         </div>
       </div>
 
       {toggleable ? (
-        <label className="flex shrink-0 items-center gap-1.5 text-footnote" style={{ color: 'var(--color-muted)' }}>
+        <label
+          className="flex shrink-0 items-center gap-1.5 text-footnote"
+          style={{ color: 'var(--color-muted)' }}
+        >
           <input
             type="checkbox"
             checked={enabled}
