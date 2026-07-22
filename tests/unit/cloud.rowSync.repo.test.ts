@@ -17,7 +17,12 @@ describe('repos stamp updatedAt', () => {
     const g = await db.glossary.get(gid)
     expect(typeof g?.updatedAt).toBe('number')
 
-    const tid = await tmRepo.upsert({ source: 'a', target: 'b', sourceLang: 'en', targetLang: 'pt' })
+    const tid = await tmRepo.upsert({
+      source: 'a',
+      target: 'b',
+      sourceLang: 'en',
+      targetLang: 'pt',
+    })
     const t = await db.tm.get(tid)
     expect(typeof t?.updatedAt).toBe('number')
   })

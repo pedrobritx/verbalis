@@ -43,7 +43,13 @@ describe('presence tracker (F3)', () => {
   it('carries the stable userId and caret through upsert (§4.4)', () => {
     const t = new PresenceTracker('self')
     t.upsert(
-      { peerId: 'a', displayName: 'Ana', userId: 'user-9', activeSegmentId: 's1', caret: { anchor: 2, focus: 5 } },
+      {
+        peerId: 'a',
+        displayName: 'Ana',
+        userId: 'user-9',
+        activeSegmentId: 's1',
+        caret: { anchor: 2, focus: 5 },
+      },
       1000,
     )
     const [peer] = t.list(1000)

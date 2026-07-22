@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  isCloudConfigured,
-  getSupabase,
-  configuredProviders,
-} from '@/storage/cloud/supabaseClient'
+import { isCloudConfigured, getSupabase, configuredProviders } from '@/storage/cloud/supabaseClient'
 
 // Default test env leaves VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY unset, so
 // this mirrors a local-only deployment: the cloud is off and the module must

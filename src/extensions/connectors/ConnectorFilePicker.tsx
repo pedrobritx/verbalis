@@ -130,7 +130,11 @@ export function ConnectorFilePicker({
             </p>
           )}
           {!loading && error && (
-            <p className="p-3 text-footnote" style={{ color: 'var(--color-error)' }} data-testid="connector-error">
+            <p
+              className="p-3 text-footnote"
+              style={{ color: 'var(--color-error)' }}
+              data-testid="connector-error"
+            >
               {error}
             </p>
           )}
@@ -151,7 +155,11 @@ export function ConnectorFilePicker({
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--color-fill)] disabled:opacity-50"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <FileText size={15} className="shrink-0" style={{ color: 'var(--color-muted)' }} />
+                    <FileText
+                      size={15}
+                      className="shrink-0"
+                      style={{ color: 'var(--color-muted)' }}
+                    />
                     <span className="min-w-0 flex-1 truncate">{f.name}</span>
                     {downloadingId === f.id && (
                       <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>

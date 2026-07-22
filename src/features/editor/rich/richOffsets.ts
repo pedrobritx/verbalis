@@ -27,7 +27,8 @@ function offsetWithin(node: LexicalNode, point: Point): number | null {
   if (node.getKey() === point.key) {
     // Element point: `offset` is a child index → sum the plain text before it.
     let acc = 0
-    for (let i = 0; i < point.offset && i < kids.length; i += 1) acc += kids[i].getTextContent().length
+    for (let i = 0; i < point.offset && i < kids.length; i += 1)
+      acc += kids[i].getTextContent().length
     return acc
   }
   if (kids.length === 0) return null // atomic node (tag / line break), point not on it

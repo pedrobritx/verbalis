@@ -15,15 +15,7 @@ const entry: TMEntry = {
 describe('TMEditDialog', () => {
   it('saves edited source/target and resolves project to undefined for global', async () => {
     const onSave = vi.fn()
-    render(
-      <TMEditDialog
-        open
-        entry={entry}
-        projects={[]}
-        onOpenChange={vi.fn()}
-        onSave={onSave}
-      />,
-    )
+    render(<TMEditDialog open entry={entry} projects={[]} onOpenChange={vi.fn()} onSave={onSave} />)
 
     const target = screen.getByTestId('tm-edit-target') as HTMLTextAreaElement
     expect(target.value).toBe('olá')

@@ -3,10 +3,7 @@ import { db, type SyncResource } from '@/storage/db'
 import type { GlossaryEntry, TMEntry } from '@/core/types'
 import { settingsRepo } from '@/storage/repositories/settingsRepo'
 import { isCloudConfigured, getSupabase } from './supabaseClient'
-import {
-  setRowSyncEnabled,
-  subscribeResourceChange,
-} from './rowSyncState'
+import { setRowSyncEnabled, subscribeResourceChange } from './rowSyncState'
 import { useAuthStore } from '@/features/account/useAuthStore'
 
 /**

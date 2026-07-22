@@ -48,9 +48,7 @@ describe('findMatches', () => {
   })
 
   it('respects the limit', () => {
-    const candidates = Array.from({ length: 10 }, (_, i) =>
-      entry(`c${i}`, `hello world ${i}`),
-    )
+    const candidates = Array.from({ length: 10 }, (_, i) => entry(`c${i}`, `hello world ${i}`))
     const out = findMatches('hello world', candidates, { threshold: 0.5, limit: 3 })
     expect(out).toHaveLength(3)
   })

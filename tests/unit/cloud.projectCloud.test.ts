@@ -130,7 +130,11 @@ describe('insertCloudProject', () => {
   it('propagates an insert error', async () => {
     const client = {
       from: () => ({
-        insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'RLS denied' } }) }) }),
+        insert: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: null, error: { message: 'RLS denied' } }),
+          }),
+        }),
       }),
     } as unknown as SupabaseClient
     await expect(

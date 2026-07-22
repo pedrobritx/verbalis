@@ -11,7 +11,7 @@ export interface BrandLink {
 /** Canonical project + author links, shared by the About page and footer. */
 export const REPO_URL = 'https://github.com/pedrobritx/verbalis'
 export const AUTHOR_NAME = 'Pedro Brito'
-export const AUTHOR_EMAIL = 'pedrohbrito@me.com'
+export const AUTHOR_EMAIL = 'pedrobritx@gmail.com'
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE.md`
 
 export const BRAND_LINKS: BrandLink[] = [
@@ -29,8 +29,8 @@ export const BRAND_LINKS: BrandLink[] = [
   },
   {
     label: 'Website',
-    description: 'pedrobritx — portfolio',
-    href: 'https://pedrobritx.github.io/EwP/',
+    description: 'Pedro Brito — britx.me',
+    href: 'https://britx.me',
     icon: Globe,
   },
   {

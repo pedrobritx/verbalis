@@ -82,7 +82,7 @@ export function Sidebar() {
       </div>
 
       <button
-        onClick={() => setCollapsed(c => !c)}
+        onClick={() => setCollapsed((c) => !c)}
         className="flex items-center justify-center p-2 m-2 rounded transition-colors"
         style={{ color: 'var(--color-muted)' }}
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}

@@ -57,22 +57,32 @@ describe('createOnedriveConnector', () => {
 
   it('lists files through an injected token + fetch', async () => {
     const getToken = vi.fn().mockResolvedValue('tok-x')
-    const fetchImpl = vi.fn().mockResolvedValueOnce(jsonOk({ value: [{ id: '1', name: 'a.txt', file: {} }] }))
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonOk({ value: [{ id: '1', name: 'a.txt', file: {} }] }))
     const c = createOnedriveConnector({ getToken, fetchImpl: fetchImpl as unknown as typeof fetch })
 
     const files = await c.listFiles()
     expect(getToken).toHaveBeenCalled()
     expect(files).toEqual([{ id: '1', name: 'a.txt' }])
-    expect((fetchImpl.mock.calls[0][1].headers as Record<string, string>).Authorization).toBe('Bearer tok-x')
+    expect((fetchImpl.mock.calls[0][1].headers as Record<string, string>).Authorization).toBe(
+      'Bearer tok-x',
+    )
   })
 
   it('downloads a file into a named File with its mime type', async () => {
     const getToken = vi.fn().mockResolvedValue('tok')
     const bytes = new TextEncoder().encode('body').buffer
-    const fetchImpl = vi.fn().mockResolvedValueOnce({ ok: true, status: 200, arrayBuffer: async () => bytes })
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, status: 200, arrayBuffer: async () => bytes })
     const c = createOnedriveConnector({ getToken, fetchImpl: fetchImpl as unknown as typeof fetch })
 
-    const file = await c.downloadFile({ id: '9', name: 'report.docx', mimeType: 'application/x-docx' })
+    const file = await c.downloadFile({
+      id: '9',
+      name: 'report.docx',
+      mimeType: 'application/x-docx',
+    })
     expect(file).toBeInstanceOf(File)
     expect(file.name).toBe('report.docx')
     expect(file.type).toBe('application/x-docx')
@@ -84,7 +94,11 @@ describe('createOnedriveConnector', () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(jsonOk({ id: 'up1', name: 'x.docx', file: {} }))
     const c = createOnedriveConnector({ getToken, fetchImpl: fetchImpl as unknown as typeof fetch })
 
-    const created = await c.uploadFile({ name: 'x.docx', mimeType: 'application/x-docx', bytes: new Uint8Array([1, 2]) })
+    const created = await c.uploadFile({
+      name: 'x.docx',
+      mimeType: 'application/x-docx',
+      bytes: new Uint8Array([1, 2]),
+    })
     expect(created).toEqual({ id: 'up1', name: 'x.docx' })
     expect(fetchImpl.mock.calls[0][1].method).toBe('PUT')
   })

@@ -31,5 +31,8 @@ export function isOnedriveConfigured(): boolean {
  */
 export function isOnedriveAvailable(): boolean {
   if (!isOnedriveConfigured()) return false
-  return !extensionRegistry.has(CONNECTOR_ONEDRIVE_ID) || extensionRegistry.isEnabled(CONNECTOR_ONEDRIVE_ID)
+  return (
+    !extensionRegistry.has(CONNECTOR_ONEDRIVE_ID) ||
+    extensionRegistry.isEnabled(CONNECTOR_ONEDRIVE_ID)
+  )
 }

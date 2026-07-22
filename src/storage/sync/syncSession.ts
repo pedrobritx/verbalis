@@ -61,7 +61,7 @@ export function startSyncSession(opts: SyncSessionOptions): SyncSessionHandle {
   const presence = new PresenceTracker(peerId)
   const subscribers = new Set<(peers: PeerPresence[]) => void>()
 
-  let displayName = opts.displayName
+  const displayName = opts.displayName
   let activeSegmentId: string | undefined
   let caret: CaretRange | undefined
   let heartbeat: ReturnType<typeof setInterval> | null = null

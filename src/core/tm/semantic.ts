@@ -50,11 +50,7 @@ export async function findSemanticMatches(
   return out
 }
 
-export function mergeMatches(
-  lexical: TMMatch[],
-  semantic: TMMatch[],
-  limit: number,
-): TMMatch[] {
+export function mergeMatches(lexical: TMMatch[], semantic: TMMatch[], limit: number): TMMatch[] {
   const seen = new Map<string, TMMatch>()
   const annotatedLex = lexical.map((m) => ({
     ...m,

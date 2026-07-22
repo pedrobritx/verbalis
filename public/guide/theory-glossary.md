@@ -3,7 +3,7 @@
 Concept definitions for translation-industry and CAT/localisation terminology.
 Use when a source or target text references translation-process concepts
 (TM, alignment, fuzzy match, MT post-editing, etc.) and you need the precise
-sense. These are *concept* definitions, not bilingual term pairs.
+sense. These are _concept_ definitions, not bilingual term pairs.
 
 ---
 
@@ -357,11 +357,11 @@ A broad range of interactive digital media that exhibit dynamic motion, taking a
 
 **- Term Level** — Contains any descriptive fields that apply to a given term.
 
-  The termbase definition for a given termbase specifies the number and type of fields that a termbase entry may contain and the entry structure that entries must conform to. The entry structure specifies:
+The termbase definition for a given termbase specifies the number and type of fields that a termbase entry may contain and the entry structure that entries must conform to. The entry structure specifies:
 
-  -- The number and type of fields that may exist at each level in the entry.
+-- The number and type of fields that may exist at each level in the entry.
 
-  -- The hierarchical structure of fields within each level; fields nested or not.
+-- The hierarchical structure of fields within each level; fields nested or not.
 
 **Termbase Fields** — The different types of field are as follows:
 

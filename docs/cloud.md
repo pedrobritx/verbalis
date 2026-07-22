@@ -15,10 +15,10 @@ never talks to a real Supabase instance.
 
 The live Verbalis project is already provisioned:
 
-| | |
-| --- | --- |
-| Project ref | `qutcuzlppbjbsymowavc` (region `us-east-2`, Postgres 17) |
-| `VITE_SUPABASE_URL` | `https://qutcuzlppbjbsymowavc.supabase.co` |
+|                          |                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| Project ref              | `qutcuzlppbjbsymowavc` (region `us-east-2`, Postgres 17)                            |
+| `VITE_SUPABASE_URL`      | `https://qutcuzlppbjbsymowavc.supabase.co`                                          |
 | `VITE_SUPABASE_ANON_KEY` | `sb_publishable_c8YdrT2-abKdW1Kl7FDKyA_v5OwqLdY` (publishable — safe in the bundle) |
 
 These two values are also in `.env.example` — copy it to `.env.local` for local
@@ -35,8 +35,8 @@ production, the repository Variables in §1.
 Set these at build time (e.g. in the CI/deploy environment). Leaving
 `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` unset keeps the app local-only.
 
-**Production (GitHub Pages / `deploy.yml`)**: add them under *Settings → Secrets
-and variables → Actions*. A repository **Variable** is the natural home (all
+**Production (GitHub Pages / `deploy.yml`)**: add them under _Settings → Secrets
+and variables → Actions_. A repository **Variable** is the natural home (all
 three are public — they end up in the client bundle), but `deploy.yml` accepts
 either a Variable or a Secret via a fallback chain, and also accepts the URL
 under the unprefixed name `SUPABASE_URL`:
@@ -51,11 +51,11 @@ build; the `sb_secret_...` key must never reach the client bundle.
 
 **Local dev**: `cp .env.example .env.local` (git-ignored) and run `pnpm dev`.
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | yes (to enable cloud) | Supabase project URL, e.g. `https://xxxx.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | yes (to enable cloud) | The project's anon / publishable key (safe to ship in a client bundle) |
-| `VITE_AUTH_PROVIDERS` | no | Comma-separated OAuth providers to show, using **Supabase provider ids**: `google,azure,apple`. Defaults to `google`. Providers not configured server-side are simply hidden. |
+| Variable                 | Required              | Purpose                                                                                                                                                                       |
+| ------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | yes (to enable cloud) | Supabase project URL, e.g. `https://xxxx.supabase.co`                                                                                                                         |
+| `VITE_SUPABASE_ANON_KEY` | yes (to enable cloud) | The project's anon / publishable key (safe to ship in a client bundle)                                                                                                        |
+| `VITE_AUTH_PROVIDERS`    | no                    | Comma-separated OAuth providers to show, using **Supabase provider ids**: `google,azure,apple`. Defaults to `google`. Providers not configured server-side are simply hidden. |
 
 > Note on provider ids: Microsoft is `azure` (not `microsoft`) in Supabase Auth.
 
@@ -92,7 +92,7 @@ and safe to re-run:
   allowlist lives in `src/storage/cloud/settingsSync.ts`).
 - `0004_personal_resources.sql` — the user's personal term bank + TM
   (`personal_glossary` / `personal_tm`, each `id, user_id, updated_at, deleted,
-  payload jsonb`) + owner-scoped RLS. A generic cursor-based reconciler
+payload jsonb`) + owner-scoped RLS. A generic cursor-based reconciler
   (`src/storage/cloud/rowSync.ts`) syncs them with per-row LWW and soft-delete
   tombstones. Backs Phase 3.4; **bundled corpora never sync** (corpus-seeded TM
   carries a `corpusId` and is filtered out).
@@ -105,32 +105,32 @@ and safe to re-run:
   `has_project_role` RLS helpers into a non-API `private` schema so they are not
   reachable as PostgREST RPCs (clears the database linter). Apply after `0005`.
 - `0007_compaction.sql` — the `claim_compaction(project_id, expected_seq, state,
-  up_to_id)` RPC (SECURITY DEFINER, membership-checked): optimistically installs
+up_to_id)` RPC (SECURITY DEFINER, membership-checked): optimistically installs
   a fresh compacted `ydoc_state` snapshot (guarded by the `seq` generation) and
   prunes the subsumed `ydoc_updates` rows, so the append log stays bounded. Backs
-  Phase 4.3. Apply after `0006`. *(Numbering note: ROADMAP §4.3 sketched
+  Phase 4.3. Apply after `0006`. _(Numbering note: ROADMAP §4.3 sketched
   `0005_compaction.sql`, but `0005`/`0006` were taken by the 4.1 project
   migrations, so it ships as `0007`; and the RPC signature is widened from the
   sketch's `(project_id, expected_seq)` to also carry the new snapshot + the
   pruned-through id, so the whole compaction is one atomic, RLS-safe
-  transaction.)*
+  transaction.)_
 - `0008_member_policies.sql` — member management: adds `profiles.email` (backfilled
-  + seeded on signup) and a co-member `profiles` SELECT policy (`private.shares_project`);
-  switches `project_members` update/delete to **project_manager-only** (insert still
-  allows the owner's publish self-seed); a `enforce_min_one_pm` trigger that blocks
-  removing or demoting a project's **last** manager; and the `invite_member(project_id,
-  email, role)` RPC (SECURITY DEFINER, PM-checked) that resolves the email to a user id
-  and upserts the membership (returns NULL when no account has that email — no
-  enumeration surface). Backs Phase 5.1. Apply after `0007`. *(Numbering note: ROADMAP
-  §5.1 sketched `0006_member_policies.sql`, but `0006`/`0007` were taken, so it ships as
-  `0008`; invite resolves the email inside the RPC rather than via a client-side profiles
-  lookup, keeping emails/ids server-side.)*
+  - seeded on signup) and a co-member `profiles` SELECT policy (`private.shares_project`);
+    switches `project_members` update/delete to **project_manager-only** (insert still
+    allows the owner's publish self-seed); a `enforce_min_one_pm` trigger that blocks
+    removing or demoting a project's **last** manager; and the `invite_member(project_id,
+email, role)` RPC (SECURITY DEFINER, PM-checked) that resolves the email to a user id
+    and upserts the membership (returns NULL when no account has that email — no
+    enumeration surface). Backs Phase 5.1. Apply after `0007`. _(Numbering note: ROADMAP
+    §5.1 sketched `0006_member_policies.sql`, but `0006`/`0007` were taken, so it ships as
+    `0008`; invite resolves the email inside the RPC rather than via a client-side profiles
+    lookup, keeping emails/ids server-side.)_
 - `0009_workflow.sql` — adds a `project_stage` enum + `projects.stage`
   (default `translation`) and `projects.deadline`, gating role-based editing (§5.2).
   Writes are project_manager-only through the existing `projects_update` policy —
-  no new policy. Backs Phase 5.2. Apply after `0008`. *(Numbering note: ROADMAP
+  no new policy. Backs Phase 5.2. Apply after `0008`. _(Numbering note: ROADMAP
   §5.2 sketched `0007_workflow.sql`, but `0007`/`0008` were taken, so it ships as
-  `0009`.)*
+  `0009`.)_
 
 > Note: the linter's "Leaked Password Protection Disabled" warning is unrelated
 > to these migrations — it's an optional **Authentication → Policies** toggle
@@ -153,7 +153,7 @@ In the Supabase dashboard under **Authentication → Providers**:
 ### Redirect URL allow-list (critical)
 
 Verbalis is a **hash-routed static site**, so we pin Supabase's **PKCE** flow:
-the `?code=` lands in the query string *before* the `#/route` fragment, and a
+the `?code=` lands in the query string _before_ the `#/route` fragment, and a
 pre-router bootstrap (`src/storage/cloud/authBootstrap.ts`) exchanges it and
 strips the query before React mounts. For this to work, add every origin you
 serve from to **Authentication → URL Configuration → Redirect URLs**:
@@ -284,7 +284,7 @@ project card (`ManageMembersDialog` → `src/storage/cloud/members.ts`). Apply
 a second signed-in account:
 
 - [ ] **PM invites**: as the manager, open Members → invite the second account's
-      email as *translator*, then again as *revisor* → they appear in the roster
+      email as _translator_, then again as _revisor_ → they appear in the roster
       with the chosen role, and can open the project.
 - [ ] **Unknown email**: inviting an email with no Verbalis account yet shows the
       "no account uses that email" notice (the RPC returns NULL) — no row added.
@@ -308,13 +308,13 @@ first. With a project_manager, a translator, and a revisor on one cloud project:
 
 - [ ] **PM sets the stage**: in Members, the manager moves the project through
       Translation → Review → Final; a non-PM sees the stage read-only.
-- [ ] **Translator forced to suggest in review**: with the stage on *Review*, the
+- [ ] **Translator forced to suggest in review**: with the stage on _Review_, the
       translator's edit-mode toggle is locked to **Suggesting** (disabled) and
       typing produces tracked suggestions, not direct edits.
 - [ ] **Accept/reject is reviewer-only**: the translator sees suggestions but **no**
       Accept/Reject (panel buttons hidden, hover card suppressed); the revisor and
       the PM see and can resolve them.
-- [ ] **Final locks editing**: in *Final*, translator + revisor can't edit; only the
+- [ ] **Final locks editing**: in _Final_, translator + revisor can't edit; only the
       PM can (e.g. to reopen by moving the stage back).
 - [ ] **Local-only unchanged**: a project with no cloud link behaves as
       "PM-of-self" — direct editing, suggesting, and accept/reject all available,
@@ -336,7 +336,7 @@ verification burden. The access token lives in memory only (gone on reload).
    testing; add yourself as a test user). Add the scope
    `https://www.googleapis.com/auth/drive.file`.
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID →
-   Web application**. Under *Authorised JavaScript origins* add the exact
+   Web application**. Under _Authorised JavaScript origins_ add the exact
    origins the app runs on, e.g. `http://localhost:5173` and
    `https://verbalis.britx.me`. (No redirect URI is needed — GIS uses the token
    flow, not a redirect.)
@@ -350,8 +350,8 @@ script is loaded and the connector code stays out of the initial bundle.
 
 With `VITE_GOOGLE_CLIENT_ID` set:
 
-- [ ] **Addon listed**: the Add-ons page shows **Google Drive** under *Storage
-      connectors* with Network / API key / Files permission chips and a working
+- [ ] **Addon listed**: the Add-ons page shows **Google Drive** under _Storage
+      connectors_ with Network / API key / Files permission chips and a working
       on/off toggle.
 - [ ] **Import from Drive**: in the Import dialog, **From Google Drive** opens the
       Google consent popup, then a file list; picking a `.docx`/`.txt`/`.md`/XLIFF
@@ -396,8 +396,8 @@ never loaded and the connector code stays out of the initial bundle.
 
 With `VITE_MS_CLIENT_ID` set:
 
-- [ ] **Addon listed**: the Add-ons page shows **OneDrive** under *Storage
-      connectors* with Network / API key / Files permission chips and a working
+- [ ] **Addon listed**: the Add-ons page shows **OneDrive** under _Storage
+      connectors_ with Network / API key / Files permission chips and a working
       on/off toggle.
 - [ ] **Import from OneDrive**: in the Import dialog, **From OneDrive** opens the
       Microsoft login popup, then a file list; picking a

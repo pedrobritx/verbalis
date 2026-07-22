@@ -43,8 +43,14 @@ export function MobileSidebarSheet({
             paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
-          <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-            <DialogPrimitive.Title className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          <div
+            className="flex items-center justify-between px-3 py-2 border-b"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            <DialogPrimitive.Title
+              className="text-sm font-semibold"
+              style={{ color: 'var(--color-text)' }}
+            >
               Tools
             </DialogPrimitive.Title>
             <DialogPrimitive.Close

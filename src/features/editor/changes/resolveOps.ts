@@ -1,10 +1,6 @@
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { extractChanges, type ExtractedChange } from '@/core/changes/extract'
-import {
-  resolveChangeInRich,
-  resolveAllInRich,
-  type ResolveAction,
-} from '../rich/resolve'
+import { resolveChangeInRich, resolveAllInRich, type ResolveAction } from '../rich/resolve'
 
 /**
  * Orchestrates accept/reject on stored segments. Kept in the feature layer (not
@@ -34,10 +30,7 @@ export async function resolveSegmentChange(
 }
 
 /** Resolve every pending change in one segment. Returns the count applied. */
-export async function resolveSegmentAll(
-  segmentId: string,
-  action: ResolveAction,
-): Promise<number> {
+export async function resolveSegmentAll(segmentId: string, action: ResolveAction): Promise<number> {
   const seg = await segmentRepo.getById(segmentId)
   if (!seg?.targetRich) return 0
   const next = resolveAllInRich(seg.targetRich, action)
@@ -60,10 +53,7 @@ export async function listPendingChanges(projectId: string): Promise<PendingChan
 }
 
 /** Resolve every pending change in a whole project. Returns the count applied. */
-export async function resolveProjectAll(
-  projectId: string,
-  action: ResolveAction,
-): Promise<number> {
+export async function resolveProjectAll(projectId: string, action: ResolveAction): Promise<number> {
   const segments = await segmentRepo.byProject(projectId)
   let total = 0
   for (const seg of segments) {

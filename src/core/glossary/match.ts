@@ -30,10 +30,7 @@ export function findGlossaryHits(
     const term = entry.term.normalize('NFC').trim()
     if (term.length < GLOSSARY_MIN_TERM_LENGTH) continue
     // Unicode-aware whole-word match: no letter/number adjacent on either side.
-    const pattern = new RegExp(
-      `(?<![\\p{L}\\p{N}])${escapeRegex(term)}(?![\\p{L}\\p{N}])`,
-      'iu',
-    )
+    const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegex(term)}(?![\\p{L}\\p{N}])`, 'iu')
     const m = pattern.exec(normalized)
     if (!m) continue
     if (seen.has(entry.id)) continue

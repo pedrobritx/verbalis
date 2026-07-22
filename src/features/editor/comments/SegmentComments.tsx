@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import type { SegmentComment } from '@/core/types'
 import { relativeTime } from '../history/relativeTime'
+import { SELF_NAME_FALLBACK } from '@/features/account/displayName'
 import {
   groupThreads,
   addRootComment,
@@ -48,7 +49,12 @@ export function SegmentComments({ segmentId, comments, author }: SegmentComments
       {threads.length > 0 && (
         <ul className="flex flex-col gap-2">
           {threads.map((thread) => (
-            <ThreadView key={thread.root.id} segmentId={segmentId} thread={thread} author={author} />
+            <ThreadView
+              key={thread.root.id}
+              segmentId={segmentId}
+              thread={thread}
+              author={author}
+            />
           ))}
         </ul>
       )}
@@ -86,14 +92,11 @@ function CommentBubble({ c }: { c: SegmentComment }) {
         className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
         style={{ color: 'var(--color-muted)' }}
       >
-        <span className="font-semibold truncate">{c.author || 'You'}</span>
+        <span className="font-semibold truncate">{c.author || SELF_NAME_FALLBACK}</span>
         <span aria-hidden>·</span>
         <span className="tabular-nums">{relativeTime(c.createdAt)}</span>
       </div>
-      <p
-        className="whitespace-pre-wrap break-words"
-        style={{ color: 'var(--color-text)' }}
-      >
+      <p className="whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
         {c.body}
       </p>
     </div>
@@ -177,7 +180,10 @@ function ThreadView({
       </div>
 
       {replies.length > 0 && (
-        <ul className="flex flex-col gap-1.5 border-l pl-2" style={{ borderColor: 'var(--color-border)' }}>
+        <ul
+          className="flex flex-col gap-1.5 border-l pl-2"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
           {replies.map((r) => (
             <li key={r.id} data-testid={`comment-reply-${r.id}`}>
               <CommentBubble c={r} />

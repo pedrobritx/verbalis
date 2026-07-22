@@ -392,7 +392,6 @@ function EditorLogic(props: RichSegmentEditorProps) {
       unregisters.forEach((u) => u())
       propsRef.current.registerHandle(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor])
 
   // When the DB target diverges from what we last saved, an external action
@@ -449,13 +448,7 @@ function rebuildFromPlain(
  * the target at the caret; F9 inserts the next missing tag without leaving the
  * keyboard. Shown only when the segment actually has source tags.
  */
-function TagStrip({
-  source,
-  inlineTags,
-}: {
-  source: string
-  inlineTags?: Record<string, string>
-}) {
+function TagStrip({ source, inlineTags }: { source: string; inlineTags?: Record<string, string> }) {
   const [editor] = useLexicalComposerContext()
   // Distinct source tag ids, in first-appearance order.
   const ids = Array.from(new Set(listTagIds(source)))
@@ -473,9 +466,7 @@ function TagStrip({
           id={id}
           kind={classifyInlineTagKind(inlineTags?.[id])}
           title={`Insert tag ${id} (F9 for next)`}
-          onClick={() =>
-            insertInlineTag(editor, id, classifyInlineTagKind(inlineTags?.[id]))
-          }
+          onClick={() => insertInlineTag(editor, id, classifyInlineTagKind(inlineTags?.[id]))}
         />
       ))}
     </div>

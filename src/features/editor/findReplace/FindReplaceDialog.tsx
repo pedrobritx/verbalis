@@ -49,7 +49,10 @@ export function FindReplaceDialog({ projectId }: FindReplaceDialogProps) {
         const seg = segments?.find((s) => s.id === row.segmentId)
         const status =
           seg && seg.status === 'untranslated' && row.after.trim() ? 'draft' : undefined
-        await segmentRepo.update(row.segmentId, status ? { target: row.after, status } : { target: row.after })
+        await segmentRepo.update(
+          row.segmentId,
+          status ? { target: row.after, status } : { target: row.after },
+        )
       }
     })
     setDone(preview.length)
@@ -94,7 +97,10 @@ export function FindReplaceDialog({ projectId }: FindReplaceDialogProps) {
             }}
             data-testid="fr-replace"
           />
-          <div className="flex flex-wrap gap-3 text-footnote" style={{ color: 'var(--color-muted)' }}>
+          <div
+            className="flex flex-wrap gap-3 text-footnote"
+            style={{ color: 'var(--color-muted)' }}
+          >
             <label className="inline-flex items-center gap-1.5">
               <input
                 type="checkbox"
@@ -124,7 +130,11 @@ export function FindReplaceDialog({ projectId }: FindReplaceDialogProps) {
             </label>
           </div>
 
-          <div className="text-footnote" style={{ color: 'var(--color-muted)' }} data-testid="fr-count">
+          <div
+            className="text-footnote"
+            style={{ color: 'var(--color-muted)' }}
+            data-testid="fr-count"
+          >
             {done !== null
               ? `Replaced in ${done} segment${done === 1 ? '' : 's'}.`
               : find

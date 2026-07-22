@@ -5,18 +5,18 @@ import { createEditor, $getRoot, $createParagraphNode, $createTextNode } from 'l
 import { db } from '@/storage/db'
 import { segmentRepo } from '@/storage/repositories/segmentRepo'
 import { RICH_NAMESPACE, getRichNodes, richStateToPlain } from '@/core/editor/richText'
-import {
-  __resetBridgeForTest,
-  installSegmentBridge,
-  setDocResolver,
-} from '@/storage/sync/bridge'
+import { __resetBridgeForTest, installSegmentBridge, setDocResolver } from '@/storage/sync/bridge'
 import { installReverseBridge } from '@/storage/sync/reverseBridge'
 import { ORIGIN_REMOTE, getSegmentsMap, seedFromDexie } from '@/storage/sync/segmentCrdt'
 import type { Segment } from '@/core/types'
 
 /** A valid serialized Lexical target state whose plain derivation is `text`. */
 function richFor(text: string): string {
-  const editor = createEditor({ namespace: RICH_NAMESPACE, nodes: getRichNodes(), onError: () => {} })
+  const editor = createEditor({
+    namespace: RICH_NAMESPACE,
+    nodes: getRichNodes(),
+    onError: () => {},
+  })
   editor.update(
     () => {
       const p = $createParagraphNode()
@@ -66,7 +66,9 @@ describe('Yjs→Dexie reverse bridge (F3)', () => {
     const detach = installReverseBridge(local, 'p1')
 
     const remote = new Y.Doc()
-    seedFromDexie(remote, 'p1', [makeSeg({ id: 's1', source: 'hello', target: 'olá', status: 'translated' })])
+    seedFromDexie(remote, 'p1', [
+      makeSeg({ id: 's1', source: 'hello', target: 'olá', status: 'translated' }),
+    ])
     Y.applyUpdate(local, Y.encodeStateAsUpdate(remote), ORIGIN_REMOTE)
     await tick()
 
@@ -141,7 +143,9 @@ describe('Yjs→Dexie reverse bridge (F3)', () => {
   it('does not loop: the reverse write is mirror-suppressed', async () => {
     const detach = installReverseBridge(local, 'p1')
     const remote = new Y.Doc()
-    seedFromDexie(remote, 'p1', [makeSeg({ id: 's1', target: 'x', updatedAt: '2020-01-01T00:00:00.000Z' })])
+    seedFromDexie(remote, 'p1', [
+      makeSeg({ id: 's1', target: 'x', updatedAt: '2020-01-01T00:00:00.000Z' }),
+    ])
     Y.applyUpdate(local, Y.encodeStateAsUpdate(remote), ORIGIN_REMOTE)
     await tick()
 

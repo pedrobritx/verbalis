@@ -22,7 +22,12 @@ const ManageMembersDialog = lazy(() =>
 export function CloudBadge({ project }: { project: Project }) {
   if (!isCloudConfigured() || !project.cloud) return null
   return (
-    <Badge variant="outline" className="gap-1" style={{ color: 'var(--color-accent)' }} data-testid="cloud-badge">
+    <Badge
+      variant="outline"
+      className="gap-1"
+      style={{ color: 'var(--color-accent)' }}
+      data-testid="cloud-badge"
+    >
       <Cloud size={12} /> Cloud
     </Badge>
   )

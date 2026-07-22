@@ -11,7 +11,11 @@ export async function getPipeline(model: string): Promise<FeaturePipeline> {
   pipelineModel = model
   pipelinePromise = (async () => {
     const mod = (await import('@xenova/transformers')) as unknown as {
-      pipeline: (task: string, model: string, opts: { quantized?: boolean }) => Promise<FeaturePipeline>
+      pipeline: (
+        task: string,
+        model: string,
+        opts: { quantized?: boolean },
+      ) => Promise<FeaturePipeline>
       env: { allowLocalModels: boolean }
     }
     mod.env.allowLocalModels = false

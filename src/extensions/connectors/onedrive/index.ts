@@ -1,9 +1,4 @@
-import type {
-  ConnectorFile,
-  ConnectorUpload,
-  ListFilesOptions,
-  StorageConnector,
-} from '../types'
+import type { ConnectorFile, ConnectorUpload, ListFilesOptions, StorageConnector } from '../types'
 import { CONNECTOR_ONEDRIVE_ID, isOnedriveConfigured } from './config'
 import { downloadOnedriveFile, listOnedriveFiles, uploadOnedriveFile } from './graphApi'
 import { requestGraphToken } from './msal'

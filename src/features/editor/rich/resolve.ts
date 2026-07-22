@@ -1,9 +1,4 @@
-import {
-  createEditor,
-  $getRoot,
-  $isElementNode,
-  type LexicalNode,
-} from 'lexical'
+import { createEditor, $getRoot, $isElementNode, type LexicalNode } from 'lexical'
 import { RICH_NAMESPACE, getRichNodes, richStateToPlain } from '@/core/editor/richText'
 import { $isChangeMarkNode, ChangeMarkNode } from './ChangeMarkNode'
 

@@ -8,7 +8,10 @@ import { fetchDictionary, type SpellLang } from './dictionaries'
 const loads = new Map<SpellLang, Promise<boolean>>()
 
 /** Ensure the worker has a checker for `lang`, loading it once. */
-export function ensureDictionaryLoaded(lang: SpellLang, personalWords: string[] = []): Promise<boolean> {
+export function ensureDictionaryLoaded(
+  lang: SpellLang,
+  personalWords: string[] = [],
+): Promise<boolean> {
   const existing = loads.get(lang)
   if (existing) return existing
   const p = (async () => {

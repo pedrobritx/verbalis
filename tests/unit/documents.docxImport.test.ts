@@ -13,7 +13,9 @@ describe('extractRuns', () => {
   }
 
   it('captures bold / italic / underline / sub / sup / links, merging like runs', () => {
-    const out = runs('plain <strong>bold</strong> and <em>it</em><sub>x</sub><sup>y</sup> <a href="u">link</a>')
+    const out = runs(
+      'plain <strong>bold</strong> and <em>it</em><sub>x</sub><sup>y</sup> <a href="u">link</a>',
+    )
     expect(out).toEqual([
       { text: 'plain ' },
       { text: 'bold', bold: true },
@@ -27,7 +29,9 @@ describe('extractRuns', () => {
   })
 
   it('composes nested formats', () => {
-    expect(runs('<strong><em>both</em></strong>')).toEqual([{ text: 'both', bold: true, italic: true }])
+    expect(runs('<strong><em>both</em></strong>')).toEqual([
+      { text: 'both', bold: true, italic: true },
+    ])
   })
 })
 
@@ -35,7 +39,10 @@ describe('htmlToParsedDocx', () => {
   it('keeps whole-block source runs on a heading while segmenting text', () => {
     const { segments, blocks } = htmlToParsedDocx('<h2>The <strong>Big</strong> Title</h2>')
     expect(segments).toEqual([
-      { source: 'The Big Title', sourceMeta: { kind: 'heading', depth: 2, blockIndex: 0, sentenceIndex: 0 } },
+      {
+        source: 'The Big Title',
+        sourceMeta: { kind: 'heading', depth: 2, blockIndex: 0, sentenceIndex: 0 },
+      },
     ])
     expect(blocks[0]).toMatchObject({
       kind: 'heading',
@@ -50,7 +57,11 @@ describe('htmlToParsedDocx', () => {
     expect(segments.map((s) => s.source)).toEqual(['One two.', 'Three.'])
     expect(blocks).toHaveLength(1)
     expect(blocks[0].kind).toBe('paragraph')
-    expect(blocks[0].sourceRuns).toEqual([{ text: 'One ' }, { text: 'two', italic: true }, { text: '. Three.' }])
+    expect(blocks[0].sourceRuns).toEqual([
+      { text: 'One ' },
+      { text: 'two', italic: true },
+      { text: '. Three.' },
+    ])
   })
 
   it('emits a table block with cell runs and one segment per non-empty cell', () => {

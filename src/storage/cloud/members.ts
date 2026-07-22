@@ -48,9 +48,10 @@ export async function listMembers(
   const profRes = await client.from('profiles').select('id, display_name, email').in('id', ids)
   if (profRes.error) throw new Error(profRes.error.message)
   const profiles = new Map(
-    ((profRes.data as { id: string; display_name: string | null; email: string | null }[] | null) ?? []).map(
-      (p) => [p.id, p] as const,
-    ),
+    (
+      (profRes.data as
+        { id: string; display_name: string | null; email: string | null }[] | null) ?? []
+    ).map((p) => [p.id, p] as const),
   )
 
   return rows

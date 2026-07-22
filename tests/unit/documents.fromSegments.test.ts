@@ -43,10 +43,10 @@ describe('buildBlocksFromSegments', () => {
   })
 
   it('yields no blocks for segments without sourceMeta (e.g. XLIFF)', () => {
-    const { blocks, segmentBlockIds } = buildBlocksFromSegments(
-      [seg('x'), seg('y')],
-      { documentId: 'd', projectId: 'p' },
-    )
+    const { blocks, segmentBlockIds } = buildBlocksFromSegments([seg('x'), seg('y')], {
+      documentId: 'd',
+      projectId: 'p',
+    })
     expect(blocks).toEqual([])
     expect(segmentBlockIds.size).toBe(0)
   })

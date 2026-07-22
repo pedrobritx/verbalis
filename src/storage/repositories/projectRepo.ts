@@ -96,7 +96,8 @@ export const projectRepo = {
     await db.transaction('rw', [db.projects, db.projectTemplates, db.segments], async () => {
       await db.projects.add(clone)
       if (clonedSegments.length > 0) await db.segments.bulkAdd(clonedSegments)
-      if (template) await db.projectTemplates.put({ projectId: newId, templateXml: template.templateXml })
+      if (template)
+        await db.projectTemplates.put({ projectId: newId, templateXml: template.templateXml })
     })
     return newId
   },

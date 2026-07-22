@@ -56,8 +56,8 @@ export function SegmentActionsMenu({
   const joinTitle = isBilingual
     ? 'Not available for XLIFF projects (would break round-trip)'
     : !canJoinNext
-    ? 'No segment to join in the same block'
-    : undefined
+      ? 'No segment to join in the same block'
+      : undefined
 
   const items: MenuItem[] = [
     {

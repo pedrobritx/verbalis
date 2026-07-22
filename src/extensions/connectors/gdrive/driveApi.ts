@@ -59,7 +59,7 @@ export async function listDriveFiles(
   options: ListFilesOptions = {},
   fetchImpl: typeof fetch = fetch,
 ): Promise<ConnectorFile[]> {
-  const q = ["trashed = false", "mimeType != 'application/vnd.google-apps.folder'"]
+  const q = ['trashed = false', "mimeType != 'application/vnd.google-apps.folder'"]
   if (options.query?.trim()) {
     q.push(`name contains '${options.query.trim().replace(/'/g, "\\'")}'`)
   }
@@ -74,7 +74,11 @@ export async function listDriveFiles(
   try {
     resp = await fetchImpl(`${FILES_URL}?${params.toString()}`, { headers: authHeaders(token) })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_GDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await driveError(resp)
   const body = (await resp.json()) as { files?: DriveFileResource[] }
@@ -94,7 +98,11 @@ export async function downloadDriveFile(
       headers: authHeaders(token),
     })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_GDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await driveError(resp)
   return resp.arrayBuffer()
@@ -130,7 +138,11 @@ export async function uploadDriveFile(
       body,
     })
   } catch (err) {
-    throw new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', err instanceof Error ? err.message : 'fetch failed')
+    throw new ConnectorError(
+      CONNECTOR_GDRIVE_ID,
+      'network',
+      err instanceof Error ? err.message : 'fetch failed',
+    )
   }
   if (!resp.ok) throw await driveError(resp)
   return mapFile((await resp.json()) as DriveFileResource)

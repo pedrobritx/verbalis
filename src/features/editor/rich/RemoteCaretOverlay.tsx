@@ -4,6 +4,7 @@ import { $getRoot } from 'lexical'
 import { mapOffsetToNode } from '@/core/spell/offsets'
 import { usePresenceStore } from '../peers/usePresenceStore'
 import { buildLeafSpans } from './richOffsets'
+import { PEER_NAME_FALLBACK } from '@/features/account/displayName'
 
 /**
  * Live remote cursors for the rich target editor (ROADMAP §4.4.1).
@@ -55,7 +56,9 @@ export function RemoteCaretOverlay({
         try {
           const container = containerRef.current
           if (!container) return
-          const spans = editor.getEditorState().read(() => buildLeafSpans($getRoot().getFirstChild()))
+          const spans = editor
+            .getEditorState()
+            .read(() => buildLeafSpans($getRoot().getFirstChild()))
           const crect = container.getBoundingClientRect()
           const next: CaretPaint[] = []
           for (const p of remotes) {
@@ -71,7 +74,7 @@ export function RemoteCaretOverlay({
             const rect = range.getClientRects()[0] ?? range.getBoundingClientRect()
             next.push({
               peerId: p.peerId,
-              name: p.displayName || 'Anonymous',
+              name: p.displayName || PEER_NAME_FALLBACK,
               color: p.color,
               left: rect.left - crect.left,
               top: rect.top - crect.top,
@@ -98,7 +101,11 @@ export function RemoteCaretOverlay({
   if (carets.length === 0) return null
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden data-testid="remote-carets">
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      aria-hidden
+      data-testid="remote-carets"
+    >
       {carets.map((c) => (
         <div
           key={c.peerId}

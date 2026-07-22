@@ -58,7 +58,10 @@ export function SpellPanel({ targetLang, focusedTarget, focusedSegmentId }: Spel
       if (!active) return
       const visible = tokens.filter((t) => !ignored.has(t.word.toLowerCase()))
       const withSuggestions = await Promise.all(
-        visible.map(async (token) => ({ token, suggestions: (await suggest(token.word)).slice(0, 5) })),
+        visible.map(async (token) => ({
+          token,
+          suggestions: (await suggest(token.word)).slice(0, 5),
+        })),
       )
       if (active) setMistakes(withSuggestions)
     })()

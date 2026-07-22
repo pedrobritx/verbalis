@@ -34,11 +34,7 @@ describe('segment TXT', () => {
   it('splits paragraph into multiple sentences', () => {
     const out = segment('First sentence. Second sentence. Third one.', 'txt')
     expect(out).toHaveLength(3)
-    expect(out.map((s) => s.source)).toEqual([
-      'First sentence.',
-      'Second sentence.',
-      'Third one.',
-    ])
+    expect(out.map((s) => s.source)).toEqual(['First sentence.', 'Second sentence.', 'Third one.'])
     expect(out.map((s) => s.sourceMeta.sentenceIndex)).toEqual([0, 1, 2])
     expect(out.every((s) => s.sourceMeta.blockIndex === 0)).toBe(true)
   })

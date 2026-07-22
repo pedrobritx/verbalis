@@ -64,10 +64,22 @@ const config: Config = {
         xl: 'var(--radius-xl)',
       },
       fontSize: {
-        'large-title': ['var(--text-large-title)', { lineHeight: 'var(--leading-large-title)', letterSpacing: '-0.022em' }],
-        'title-1': ['var(--text-title-1)', { lineHeight: 'var(--leading-title-1)', letterSpacing: '-0.02em' }],
-        'title-2': ['var(--text-title-2)', { lineHeight: 'var(--leading-title-2)', letterSpacing: '-0.015em' }],
-        'title-3': ['var(--text-title-3)', { lineHeight: 'var(--leading-title-3)', letterSpacing: '-0.01em' }],
+        'large-title': [
+          'var(--text-large-title)',
+          { lineHeight: 'var(--leading-large-title)', letterSpacing: '-0.022em' },
+        ],
+        'title-1': [
+          'var(--text-title-1)',
+          { lineHeight: 'var(--leading-title-1)', letterSpacing: '-0.02em' },
+        ],
+        'title-2': [
+          'var(--text-title-2)',
+          { lineHeight: 'var(--leading-title-2)', letterSpacing: '-0.015em' },
+        ],
+        'title-3': [
+          'var(--text-title-3)',
+          { lineHeight: 'var(--leading-title-3)', letterSpacing: '-0.01em' },
+        ],
         headline: ['var(--text-headline)', { lineHeight: 'var(--leading-headline)' }],
         body: ['var(--text-body)', { lineHeight: 'var(--leading-body)' }],
         callout: ['var(--text-callout)', { lineHeight: 'var(--leading-callout)' }],

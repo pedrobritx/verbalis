@@ -3,7 +3,14 @@ import { concordance } from '@/core/tm/concordance'
 import type { TMEntry } from '@/core/types'
 
 function tm(id: string, source: string, target: string): TMEntry {
-  return { id, source, target, sourceLang: 'en', targetLang: 'es', date: '2024-01-01T00:00:00.000Z' }
+  return {
+    id,
+    source,
+    target,
+    sourceLang: 'en',
+    targetLang: 'es',
+    date: '2024-01-01T00:00:00.000Z',
+  }
 }
 
 const entries = [

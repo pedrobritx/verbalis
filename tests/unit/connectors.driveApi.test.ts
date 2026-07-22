@@ -15,7 +15,13 @@ describe('driveApi.listDriveFiles', () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(
       jsonOk({
         files: [
-          { id: 'a', name: 'doc.docx', mimeType: 'application/vnd...', modifiedTime: '2026-07-20T00:00:00Z', size: '1234' },
+          {
+            id: 'a',
+            name: 'doc.docx',
+            mimeType: 'application/vnd...',
+            modifiedTime: '2026-07-20T00:00:00Z',
+            size: '1234',
+          },
           { id: 'b', name: 'notes.txt' },
         ],
       }),
@@ -29,7 +35,13 @@ describe('driveApi.listDriveFiles', () => {
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer tok-123')
 
     expect(files).toEqual([
-      { id: 'a', name: 'doc.docx', mimeType: 'application/vnd...', modifiedTime: '2026-07-20T00:00:00Z', sizeBytes: 1234 },
+      {
+        id: 'a',
+        name: 'doc.docx',
+        mimeType: 'application/vnd...',
+        modifiedTime: '2026-07-20T00:00:00Z',
+        sizeBytes: 1234,
+      },
       { id: 'b', name: 'notes.txt' },
     ])
   })
@@ -46,7 +58,9 @@ describe('driveApi.listDriveFiles', () => {
       status: 401,
       json: async () => ({ error: { message: 'Invalid Credentials' } }),
     })
-    await expect(listDriveFiles('bad', {}, fetchImpl as unknown as typeof fetch)).rejects.toMatchObject({
+    await expect(
+      listDriveFiles('bad', {}, fetchImpl as unknown as typeof fetch),
+    ).rejects.toMatchObject({
       name: 'ConnectorError',
       code: 'auth',
       message: 'Invalid Credentials',
@@ -54,8 +68,12 @@ describe('driveApi.listDriveFiles', () => {
   })
 
   it('maps a 429 to rate_limit', async () => {
-    const fetchImpl = vi.fn().mockResolvedValueOnce({ ok: false, status: 429, json: async () => ({}) })
-    await expect(listDriveFiles('t', {}, fetchImpl as unknown as typeof fetch)).rejects.toMatchObject({
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 429, json: async () => ({}) })
+    await expect(
+      listDriveFiles('t', {}, fetchImpl as unknown as typeof fetch),
+    ).rejects.toMatchObject({
       code: 'rate_limit',
     })
   })
@@ -80,9 +98,11 @@ describe('driveApi.downloadDriveFile', () => {
 
 describe('driveApi.uploadDriveFile', () => {
   it('POSTs a multipart/related body with metadata + media and returns the file', async () => {
-    const fetchImpl = vi.fn().mockResolvedValueOnce(
-      jsonOk({ id: 'new1', name: 'out.docx', mimeType: 'application/x-docx' }),
-    )
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonOk({ id: 'new1', name: 'out.docx', mimeType: 'application/x-docx' }),
+      )
     const bytes = new TextEncoder().encode('DOCXBYTES')
     const created = await uploadDriveFile(
       'tok',

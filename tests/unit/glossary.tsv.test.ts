@@ -71,9 +71,7 @@ describe('exportTSV', () => {
 
   it('skips entries that have no translation in the chosen language', () => {
     const out = exportTSV(
-      [
-        { id: 'a', term: 'hello', definition: '', translations: { fr: 'bonjour' } },
-      ],
+      [{ id: 'a', term: 'hello', definition: '', translations: { fr: 'bonjour' } }],
       'es',
     )
     expect(out).toBe('')

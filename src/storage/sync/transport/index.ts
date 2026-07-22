@@ -16,7 +16,5 @@ export type { SyncTransport, SyncMessage, SyncMessageHandler, PeerId } from './t
  */
 export function createTransport(projectId: string, opts?: { cloudId?: string }): SyncTransport {
   if (opts?.cloudId) return new SupabaseRealtimeTransport(opts.cloudId)
-  return isTauri()
-    ? new TauriLanTransport(projectId)
-    : new BroadcastChannelTransport(projectId)
+  return isTauri() ? new TauriLanTransport(projectId) : new BroadcastChannelTransport(projectId)
 }

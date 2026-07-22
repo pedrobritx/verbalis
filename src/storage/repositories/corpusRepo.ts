@@ -45,8 +45,7 @@ export const corpusRepo = {
   termsByCorpus: (corpusId: string) => db.corpusTerms.where({ corpusId }).toArray(),
   totalTermCount: (): Promise<number> => db.corpusTerms.count(),
 
-  isInstalled: async (id: string): Promise<boolean> =>
-    (await db.corpusPacks.get(id)) !== undefined,
+  isInstalled: async (id: string): Promise<boolean> => (await db.corpusPacks.get(id)) !== undefined,
 
   // Install a downloaded pack: persist its terms, record install state, and
   // optionally seed the TM. Idempotent — re-installing replaces the pack.

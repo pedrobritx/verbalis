@@ -57,11 +57,29 @@ function loadGis(): Promise<GoogleOAuth2> {
     const onReady = () => {
       const oauth2 = window.google?.accounts?.oauth2
       if (oauth2) resolve(oauth2)
-      else reject(new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', 'Google Identity Services failed to initialise'))
+      else
+        reject(
+          new ConnectorError(
+            CONNECTOR_GDRIVE_ID,
+            'network',
+            'Google Identity Services failed to initialise',
+          ),
+        )
     }
     if (existing) {
       existing.addEventListener('load', onReady, { once: true })
-      existing.addEventListener('error', () => reject(new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', 'Failed to load Google Identity Services')), { once: true })
+      existing.addEventListener(
+        'error',
+        () =>
+          reject(
+            new ConnectorError(
+              CONNECTOR_GDRIVE_ID,
+              'network',
+              'Failed to load Google Identity Services',
+            ),
+          ),
+        { once: true },
+      )
       return
     }
     const script = document.createElement('script')
@@ -69,7 +87,14 @@ function loadGis(): Promise<GoogleOAuth2> {
     script.async = true
     script.defer = true
     script.onload = onReady
-    script.onerror = () => reject(new ConnectorError(CONNECTOR_GDRIVE_ID, 'network', 'Failed to load Google Identity Services'))
+    script.onerror = () =>
+      reject(
+        new ConnectorError(
+          CONNECTOR_GDRIVE_ID,
+          'network',
+          'Failed to load Google Identity Services',
+        ),
+      )
     document.head.appendChild(script)
   })
   return scriptPromise
@@ -81,7 +106,8 @@ function loadGis(): Promise<GoogleOAuth2> {
  */
 export async function requestDriveToken(forceConsent = false): Promise<string> {
   const clientId = googleClientId()
-  if (!clientId) throw new ConnectorError(CONNECTOR_GDRIVE_ID, 'auth', 'Google client id not configured')
+  if (!clientId)
+    throw new ConnectorError(CONNECTOR_GDRIVE_ID, 'auth', 'Google client id not configured')
   if (!forceConsent && cachedToken && cachedToken.expiresAt - EXPIRY_SKEW_MS > Date.now()) {
     return cachedToken.value
   }
@@ -92,7 +118,13 @@ export async function requestDriveToken(forceConsent = false): Promise<string> {
       scope: DRIVE_SCOPE,
       callback: (resp) => {
         if (resp.error || !resp.access_token) {
-          reject(new ConnectorError(CONNECTOR_GDRIVE_ID, 'auth', resp.error_description || resp.error || 'Authorisation failed'))
+          reject(
+            new ConnectorError(
+              CONNECTOR_GDRIVE_ID,
+              'auth',
+              resp.error_description || resp.error || 'Authorisation failed',
+            ),
+          )
           return
         }
         cachedToken = {
@@ -102,7 +134,9 @@ export async function requestDriveToken(forceConsent = false): Promise<string> {
         resolve(resp.access_token)
       },
       error_callback: (err) => {
-        reject(new ConnectorError(CONNECTOR_GDRIVE_ID, 'auth', err.message || 'Authorisation cancelled'))
+        reject(
+          new ConnectorError(CONNECTOR_GDRIVE_ID, 'auth', err.message || 'Authorisation cancelled'),
+        )
       },
     })
     client.requestAccessToken({ prompt: forceConsent ? 'consent' : '' })

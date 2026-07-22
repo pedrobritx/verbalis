@@ -76,7 +76,11 @@ describe('versionRepo', () => {
     await segmentRepo.bulkCreate([makeSeg({ id: 's1', target: 'v1text', status: 'draft' })])
     const v1 = await versionRepo.saveNamed('p1', 'before rich', doc)
 
-    await segmentRepo.update('s1', { target: 'richtext', targetRich: '{"root":{}}', status: 'translated' })
+    await segmentRepo.update('s1', {
+      target: 'richtext',
+      targetRich: '{"root":{}}',
+      status: 'translated',
+    })
     expect((await segmentRepo.getById('s1'))?.targetRich).toBeDefined()
 
     const ok = await versionRepo.restoreSegment('p1', 's1', v1!.id)
@@ -146,7 +150,17 @@ describe('versionRepo', () => {
       root: {
         children: [
           {
-            children: [{ detail: 0, format: 0, mode: 'normal', style: '', text: 'rico', type: 'text', version: 1 }],
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'rico',
+                type: 'text',
+                version: 1,
+              },
+            ],
             direction: 'ltr',
             format: '',
             indent: 0,

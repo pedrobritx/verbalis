@@ -122,7 +122,7 @@ async function fetchRemoteEntries(
     .eq('user_id', userId)
     .in('key', SYNCED_SETTINGS_KEYS as unknown as string[])
   if (error) throw new Error(error.message)
-  return (data as RemoteRow[] | null ?? []).map((r) => ({
+  return ((data as RemoteRow[] | null) ?? []).map((r) => ({
     key: r.key,
     value: r.value,
     updatedAt: toEpoch(r.updated_at),
@@ -165,11 +165,7 @@ export async function pullAndReconcile(client: SupabaseClient, userId: string): 
 }
 
 /** Push a single allowlisted key's current local value to the cloud. */
-export async function pushKey(
-  client: SupabaseClient,
-  userId: string,
-  key: string,
-): Promise<void> {
+export async function pushKey(client: SupabaseClient, userId: string, key: string): Promise<void> {
   if (!SYNCED_KEY_SET.has(key)) return
   const row = await settingsRepo.getRow(key)
   if (row === undefined) return

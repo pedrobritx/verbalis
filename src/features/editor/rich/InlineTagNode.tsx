@@ -76,7 +76,10 @@ export class InlineTagNode extends DecoratorNode<JSX.Element> {
   }
 }
 
-export function $createInlineTagNode(tagId: string, kind: InlineTagKind = 'generic'): InlineTagNode {
+export function $createInlineTagNode(
+  tagId: string,
+  kind: InlineTagKind = 'generic',
+): InlineTagNode {
   return new InlineTagNode(tagId, kind)
 }
 

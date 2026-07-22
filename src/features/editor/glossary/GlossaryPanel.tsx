@@ -140,9 +140,17 @@ function HitCard({
       )}
 
       {rest.length > 0 && (
-        <div className="flex flex-col gap-1.5 pt-1 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <div
+          className="flex flex-col gap-1.5 pt-1 border-t"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
           {rest.map((c) => (
-            <CandidateRow key={`${c.lang}:${c.value}`} candidate={c} primary={false} onInsert={onInsert} />
+            <CandidateRow
+              key={`${c.lang}:${c.value}`}
+              candidate={c}
+              primary={false}
+              onInsert={onInsert}
+            />
           ))}
         </div>
       )}
@@ -262,7 +270,8 @@ export function GlossaryPanel({
   }, [hits, targetLang, focusedSource])
 
   const candidatesFor = useCallback(
-    (entryId: string): TranslationCandidate[] => aiByEntry[entryId] ?? localCandidates[entryId] ?? [],
+    (entryId: string): TranslationCandidate[] =>
+      aiByEntry[entryId] ?? localCandidates[entryId] ?? [],
     [aiByEntry, localCandidates],
   )
 
@@ -364,7 +373,11 @@ export function GlossaryPanel({
     <div className="flex flex-col gap-2" data-testid="glossary-hits">
       {header}
       {aiState === 'error' && (
-        <p className="text-xs" style={{ color: 'var(--color-error)' }} data-testid="glossary-ai-error">
+        <p
+          className="text-xs"
+          style={{ color: 'var(--color-error)' }}
+          data-testid="glossary-ai-error"
+        >
           AI ranking failed — showing local ranking.
         </p>
       )}

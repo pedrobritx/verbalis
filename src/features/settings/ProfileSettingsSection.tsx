@@ -8,6 +8,7 @@ import {
   PROFILE_SETTINGS_KEY,
   type ProfileSettings,
 } from '@/storage/repositories/settingsRepo'
+import { useAuthStore } from '@/features/account/useAuthStore'
 
 export function ProfileSettingsSection() {
   const stored = useLiveQuery(
@@ -15,6 +16,8 @@ export function ProfileSettingsSection() {
     [],
   )
   const [draft, setDraft] = useState<ProfileSettings>(DEFAULT_PROFILE_SETTINGS)
+  const signedIn = useAuthStore((s) => s.status === 'authenticated')
+  const accountName = useAuthStore((s) => s.profileDisplayName ?? s.user?.displayName ?? null)
 
   useEffect(() => {
     if (stored !== undefined) setDraft(mergeProfileSettings(stored ?? undefined))
@@ -26,11 +29,26 @@ export function ProfileSettingsSection() {
     await settingsRepo.set(PROFILE_SETTINGS_KEY, next)
   }
 
+  // Signed in: attribution uses your account name automatically, so there's no
+  // separate local name to enter — point at Account settings instead of asking.
+  if (signedIn) {
+    return (
+      <p
+        className="text-footnote"
+        style={{ color: 'var(--color-muted)' }}
+        data-testid="settings-profile-account-note"
+      >
+        Your name for comments, tracked changes and collaboration comes from your account
+        {accountName ? ` — ${accountName}` : ''}. Change it in Account settings.
+      </p>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-        The name attached to comments you write. It will also identify you to
-        peers once local-network collaboration lands. Stored on this device only.
+        The name attached to your comments, tracked changes and collaboration presence. Stored on
+        this device only.
       </p>
       <label className="flex flex-col gap-1 text-footnote" style={{ color: 'var(--color-muted)' }}>
         Display name

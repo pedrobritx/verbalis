@@ -52,10 +52,7 @@ describe('embeddingsRepo', () => {
   })
 
   it('deleteByModel removes only matching records', async () => {
-    await embeddingsRepo.bulkUpsert([
-      makeRecord({ model: 'a' }),
-      makeRecord({ model: 'b' }),
-    ])
+    await embeddingsRepo.bulkUpsert([makeRecord({ model: 'a' }), makeRecord({ model: 'b' })])
     await embeddingsRepo.deleteByModel('a')
     expect(await embeddingsRepo.count('a')).toBe(0)
     expect(await embeddingsRepo.count('b')).toBe(1)

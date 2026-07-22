@@ -111,9 +111,7 @@ export class SupabaseRealtimeTransport implements SyncTransport {
       channel.unsubscribe()
       return
     }
-    channel.on('broadcast', { event: EVENT }, ({ payload }) =>
-      this.onInbound(payload as WireChunk),
-    )
+    channel.on('broadcast', { event: EVENT }, ({ payload }) => this.onInbound(payload as WireChunk))
     // Assign before subscribing: the SUBSCRIBED callback may fire synchronously
     // and flush the outbox, which sends through `this.channel`.
     this.channel = channel

@@ -5,6 +5,7 @@ framework, terminology protocols, and exact output templates. SKILL.md routes he
 task and direction are known.
 
 ## Contents
+
 1. Shared first move: context analysis
 2. Mode A — Translation
 3. Mode B — Revision / Audit
@@ -18,6 +19,7 @@ task and direction are known.
 ## 1. Shared first move: context analysis
 
 Before translating or revising **anything**, establish:
+
 - **Document type** (judicial filing, statute, contract, CADE decision, economic report,
   academic paper, certificate, news article…).
 - **Direction**: PT→EN or EN→PT. EN target ⇒ British English by default.
@@ -34,7 +36,7 @@ overriding (see §5).
 
 1. **Context analysis** (§1).
 2. **Terminology pass** — identify the load-bearing terms (legal, economic, institutional,
-   technical) and resolve them *before* drafting, using `scripts/lookup.py` against the master
+   technical) and resolve them _before_ drafting, using `scripts/lookup.py` against the master
    glossary, then the authority hierarchy for anything unresolved or ambiguous (§5).
 3. **Draft** applying the strategy framework (§4): formal equivalence for legal/judicial;
    dynamic equivalence for economic/journalistic; preserve structure, legal effect, register.
@@ -71,6 +73,7 @@ The primary, rigorous mode. You are an evaluator, not a re-writer: justify every
    terminology table, key rationale.
 
 **Severity bands** (use consistently):
+
 - **Critical** — meaning, legal, regulatory, or factual error (changes outcome/effect).
 - **Major** — terminology, register, or significant wording problem.
 - **Minor** — grammar, style, or consistency issue.
@@ -81,22 +84,24 @@ The primary, rigorous mode. You are an evaluator, not a re-writer: justify every
 Apply consciously; name the strategy in rationale when it explains a non-obvious choice.
 
 **Vinay & Darbelnet procedures**
-- *Borrowing* — keep internationally recognised terms (e.g. *leniency*, *holding*) when natural.
-- *Calque* — only where it reads naturally in the target.
-- *Literal* — only when clarity and fluency survive.
-- *Transposition* — shift word class/structure to fit target grammar.
-- *Modulation* — reframe to match native phrasing.
-- *Equivalence* — swap idioms for functional idiomatic equivalents.
-- *Adaptation* — localise cultural references when required.
+
+- _Borrowing_ — keep internationally recognised terms (e.g. _leniency_, _holding_) when natural.
+- _Calque_ — only where it reads naturally in the target.
+- _Literal_ — only when clarity and fluency survive.
+- _Transposition_ — shift word class/structure to fit target grammar.
+- _Modulation_ — reframe to match native phrasing.
+- _Equivalence_ — swap idioms for functional idiomatic equivalents.
+- _Adaptation_ — localise cultural references when required.
 
 **Governing theories**
-- *Skopos* — choose by the text's purpose and function for its audience.
-- *Formal vs dynamic equivalence* — legal/judicial → formal; economic/academic/journalistic →
+
+- _Skopos_ — choose by the text's purpose and function for its audience.
+- _Formal vs dynamic equivalence_ — legal/judicial → formal; economic/academic/journalistic →
   dynamic where it aids readability without altering meaning.
-- *Domestication vs foreignisation* — legal references: jurisdictionally appropriate terms;
+- _Domestication vs foreignisation_ — legal references: jurisdictionally appropriate terms;
   cultural references: balance localisation against preserving significant concepts.
-- *Interpretive theory* — convey intended meaning, not surface structure.
-- *Functionalist* — same communicative function in the target. Judicial → overt translation;
+- _Interpretive theory_ — convey intended meaning, not surface structure.
+- _Functionalist_ — same communicative function in the target. Judicial → overt translation;
   economic/journalistic → covert.
 
 ## 5. Terminology verification & ambiguity protocol
@@ -124,6 +129,7 @@ Apply consciously; name the strategy in rationale when it explains a non-obvious
 ## 6. Output templates
 
 ### Translation output
+
 ```
 ## Translation ([PT→EN | EN→PT], [document type])
 
@@ -140,6 +146,7 @@ Apply consciously; name the strategy in rationale when it explains a non-obvious
 ```
 
 ### Revision / audit output
+
 ```
 ## Overall assessment
 Concise verdict on accuracy, terminology, fluency, register, completeness.

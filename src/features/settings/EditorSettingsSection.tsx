@@ -66,9 +66,9 @@ export function EditorSettingsSection() {
         <span className="flex flex-col">
           Rich text editing
           <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-            On by default: edit targets with bold/italic/underline,
-            sub-/superscript, case transforms, tracked changes and comments.
-            Turn off to use the plain text editor. Code segments stay plain.
+            On by default: edit targets with bold/italic/underline, sub-/superscript, case
+            transforms, tracked changes and comments. Turn off to use the plain text editor. Code
+            segments stay plain.
           </span>
         </span>
         <input

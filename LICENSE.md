@@ -33,8 +33,8 @@ licence to use, copy, modify, and self-host the Software for their own work,
 > existing "Created by Pedro Brito" credit and the link to
 > <https://github.com/pedrobritx/verbalis> intact in the application's
 > About/credits screen, and — where you publish work, a fork, or a derivative
-> built on the Software — state that it is *"powered by Verbalis, created by
-> Pedro Brito"* with a link back to this repository.
+> built on the Software — state that it is _"powered by Verbalis, created by
+> Pedro Brito"_ with a link back to this repository.
 
 That attribution is the only thing asked of Individuals.
 
@@ -49,7 +49,7 @@ If you are an Organization (any entity larger than one person), please contact
 the Author to arrange terms. Pricing is set individually and scaled to the size
 and nature of your use:
 
-- **Email:** pedrohbrito@me.com
+- **Email:** pedrobritx@gmail.com
 - **GitHub:** <https://github.com/pedrobritx>
 - **LinkedIn:** <https://www.linkedin.com/in/pedrobritx/>
 
@@ -78,6 +78,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-*Not sure which tier applies to you? If you are one person using Verbalis for
+_Not sure which tier applies to you? If you are one person using Verbalis for
 your own translation work, you are covered for free under Section 2 — just keep
-the credit. Anything bigger, reach out and we'll sort out fair terms.*
+the credit. Anything bigger, reach out and we'll sort out fair terms._

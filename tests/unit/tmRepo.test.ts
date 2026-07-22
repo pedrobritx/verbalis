@@ -81,7 +81,11 @@ describe('tmRepo', () => {
   })
 
   it('removeMany deletes by id list', async () => {
-    const entries = [makeEntry({ source: 'a' }), makeEntry({ source: 'b' }), makeEntry({ source: 'c' })]
+    const entries = [
+      makeEntry({ source: 'a' }),
+      makeEntry({ source: 'b' }),
+      makeEntry({ source: 'c' }),
+    ]
     await tmRepo.bulkAdd(entries)
     await tmRepo.removeMany([entries[0].id, entries[2].id])
     const left = await db.tm.toArray()

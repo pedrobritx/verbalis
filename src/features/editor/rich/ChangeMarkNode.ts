@@ -175,9 +175,7 @@ export function $createChangeMarkNode(attrs: ChangeMarkAttrs): ChangeMarkNode {
   return new ChangeMarkNode(attrs)
 }
 
-export function $isChangeMarkNode(
-  node: LexicalNode | null | undefined,
-): node is ChangeMarkNode {
+export function $isChangeMarkNode(node: LexicalNode | null | undefined): node is ChangeMarkNode {
   return node instanceof ChangeMarkNode
 }
 

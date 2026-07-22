@@ -1,14 +1,8 @@
 import { db, type SettingsRow } from '@/storage/db'
 import type { LookupSettings, MTSettings, SemanticTMSettings } from '@/core/types'
 import { DEFAULT_QA_RULES, type QARuleToggles } from '@/core/qa/types'
-import {
-  DEFAULT_AUTOCORRECT_SETTINGS,
-  type AutocorrectSettings,
-} from '@/core/text/autocorrect'
-import {
-  DEFAULT_WEB_SEARCH_SETTINGS,
-  type WebSearchSettings,
-} from '@/core/websearch/providers'
+import { DEFAULT_AUTOCORRECT_SETTINGS, type AutocorrectSettings } from '@/core/text/autocorrect'
+import { DEFAULT_WEB_SEARCH_SETTINGS, type WebSearchSettings } from '@/core/websearch/providers'
 
 export const MT_SETTINGS_KEY = 'mt.providers'
 export const SEMANTIC_TM_KEY = 'tm.semantic'
@@ -185,9 +179,7 @@ export async function getSemanticTMSettings(): Promise<SemanticTMSettings> {
   return mergeSemanticTMSettings(stored)
 }
 
-export function mergeLookupSettings(
-  stored: Partial<LookupSettings> | undefined,
-): LookupSettings {
+export function mergeLookupSettings(stored: Partial<LookupSettings> | undefined): LookupSettings {
   if (!stored) return { ...DEFAULT_LOOKUP_SETTINGS }
   return { ...DEFAULT_LOOKUP_SETTINGS, ...stored }
 }

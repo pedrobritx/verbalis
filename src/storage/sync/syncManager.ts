@@ -8,6 +8,7 @@ import { projectRepo } from '@/storage/repositories/projectRepo'
 import { isCloudConfigured } from '@/storage/cloud/supabaseClient'
 import { startYdocPersistence, type YdocPersistenceHandle } from '@/storage/cloud/ydocPersistence'
 import { useAuthStore } from '@/features/account/useAuthStore'
+import { resolveDisplayName, PEER_NAME_FALLBACK } from '@/features/account/displayName'
 
 /**
  * Owns the live {@link SyncSessionHandle} per shared project (Foundation F3).
@@ -55,8 +56,7 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
   // keeps the same-machine BroadcastChannel (or Tauri LAN) transport (§4.2).
   const auth = useAuthStore.getState()
   const signedIn = auth.status === 'authenticated'
-  const cloudId =
-    signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
+  const cloudId = signedIn && isCloudConfigured() && project?.cloud ? project.cloud.id : undefined
 
   // Stable identity for presence attribution (§4.4, D8): the signed-in user id
   // when available, else the device-local author id used for tracked changes —
@@ -66,7 +66,9 @@ export async function startProjectSync(projectId: string): Promise<SyncSessionHa
   const handle = startSyncSession({
     projectId,
     doc,
-    displayName: profile.displayName || 'Anonymous',
+    // Signed-in peers present under their account name automatically; local-only
+    // peers use their device name, else "Anonymous".
+    displayName: resolveDisplayName(profile.displayName, auth, PEER_NAME_FALLBACK),
     transport: createTransport(projectId, { cloudId }),
     codec,
     userId,

@@ -42,8 +42,7 @@ export function EditProjectDialog() {
 
   const langChanged =
     project != null && (sourceLang !== project.sourceLang || targetLang !== project.targetLang)
-  const canSave =
-    name.trim().length > 0 && sourceLang !== targetLang && !saving && project != null
+  const canSave = name.trim().length > 0 && sourceLang !== targetLang && !saving && project != null
 
   const save = async () => {
     if (!projectId || !canSave) return
@@ -130,7 +129,11 @@ export function EditProjectDialog() {
             </p>
           )}
           {langChanged && sourceLang !== targetLang && (
-            <p className="text-xs" style={{ color: 'var(--color-muted)' }} data-testid="edit-lang-note">
+            <p
+              className="text-xs"
+              style={{ color: 'var(--color-muted)' }}
+              data-testid="edit-lang-note"
+            >
               Changing the language pair affects which translation-memory entries match this
               project. Existing translations are kept.
             </p>

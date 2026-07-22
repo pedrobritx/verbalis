@@ -89,7 +89,7 @@ export function TMTable({
               {e.sourceLang} → {e.targetLang}
             </td>
             <td className="p-2 align-top text-xs" style={{ color: 'var(--color-muted)' }}>
-              {e.projectId ? projectsById.get(e.projectId)?.name ?? '—' : '—'}
+              {e.projectId ? (projectsById.get(e.projectId)?.name ?? '—') : '—'}
             </td>
             <td className="p-2 align-top text-xs" style={{ color: 'var(--color-muted)' }}>
               {formatDate(e.date)}

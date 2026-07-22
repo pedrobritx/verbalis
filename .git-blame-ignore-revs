@@ -1,0 +1,6 @@
+# Revisions to ignore in `git blame` — bulk reformats with no logic changes.
+# Enable locally with:  git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub applies it automatically.)
+
+# Phase E2 — prettier --write across the repo
+91c11503a665307c4ce2f5bb5b6a15ef2e16fa75

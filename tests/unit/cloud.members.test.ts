@@ -1,18 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import {
-  listMembers,
-  inviteMember,
-  changeMemberRole,
-  removeMember,
-} from '@/storage/cloud/members'
+import { listMembers, inviteMember, changeMemberRole, removeMember } from '@/storage/cloud/members'
 
 type Row = Record<string, unknown>
 type Filter = ['eq', string, unknown] | ['in', string, unknown[]]
 
 function applyFilters(rows: Row[], filters: Filter[]): Row[] {
   return rows.filter((r) =>
-    filters.every((f) => (f[0] === 'eq' ? r[f[1]] === f[2] : (f[2] as unknown[]).includes(r[f[1]]))),
+    filters.every((f) =>
+      f[0] === 'eq' ? r[f[1]] === f[2] : (f[2] as unknown[]).includes(r[f[1]]),
+    ),
   )
 }
 
@@ -103,7 +100,12 @@ function makeClient(
         (m) => m.project_id === args.p_project_id && m.user_id === uid,
       )
       if (existing) existing.role = args.p_role
-      else tables.project_members.push({ project_id: args.p_project_id, user_id: uid, role: args.p_role })
+      else
+        tables.project_members.push({
+          project_id: args.p_project_id,
+          user_id: uid,
+          role: args.p_role,
+        })
       return Promise.resolve({ data: uid, error: null })
     },
   }
@@ -145,20 +147,33 @@ describe('inviteMember', () => {
     })
     const res = await inviteMember(client, PID, 'Cid@x.com ', 'revisor')
     expect(res).toEqual({ status: 'invited', userId: 'u9' })
-    expect(tables.project_members).toContainEqual({ project_id: PID, user_id: 'u9', role: 'revisor' })
+    expect(tables.project_members).toContainEqual({
+      project_id: PID,
+      user_id: 'u9',
+      role: 'revisor',
+    })
   })
 
   it('reports not_found when no account uses that email', async () => {
     const { client } = makeClient({ profiles: [] })
-    expect(await inviteMember(client, PID, 'ghost@x.com', 'translator')).toEqual({ status: 'not_found' })
+    expect(await inviteMember(client, PID, 'ghost@x.com', 'translator')).toEqual({
+      status: 'not_found',
+    })
   })
 
   it('propagates a forbidden error from the RPC', async () => {
     const { client } = makeClient(
       {},
-      { invite: () => ({ data: null, error: { message: 'only a project_manager may invite members' } }) },
+      {
+        invite: () => ({
+          data: null,
+          error: { message: 'only a project_manager may invite members' },
+        }),
+      },
     )
-    await expect(inviteMember(client, PID, 'x@x.com', 'translator')).rejects.toThrow(/project_manager/)
+    await expect(inviteMember(client, PID, 'x@x.com', 'translator')).rejects.toThrow(
+      /project_manager/,
+    )
   })
 })
 

@@ -43,11 +43,7 @@ const EMPTY_DRAFT: GlossaryEditDraft = {
   notes: '',
 }
 
-function CorporaBanner({
-  packs,
-}: {
-  packs: Array<{ id: string; count: number }> | undefined
-}) {
+function CorporaBanner({ packs }: { packs: Array<{ id: string; count: number }> | undefined }) {
   const installedCount = packs?.length ?? 0
   const termTotal = (packs ?? []).reduce((sum, p) => sum + p.count, 0)
   return (
@@ -136,9 +132,7 @@ export default function TerminologyPage() {
 
   const handleBulkRelang = async (lang: string) => {
     if (!lang || !entries) return
-    const updated = entries
-      .filter((e) => selected.has(e.id))
-      .map((e) => relangEntry(e, lang))
+    const updated = entries.filter((e) => selected.has(e.id)).map((e) => relangEntry(e, lang))
     if (updated.length === 0) return
     await glossaryRepo.bulkPut(updated)
     setSelected(new Set())

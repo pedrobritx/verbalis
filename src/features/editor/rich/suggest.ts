@@ -51,9 +51,7 @@ function newMark(type: ChangeType, author: SuggestionAuthor): ChangeMarkNode {
 
 /** True when `mark` is a pending insertion owned by `author`. */
 function isOwnInsert(mark: ChangeMarkNode | null, author: SuggestionAuthor): boolean {
-  return (
-    !!mark && mark.getChangeType() === 'insert' && mark.getAuthorId() === author.authorId
-  )
+  return !!mark && mark.getChangeType() === 'insert' && mark.getAuthorId() === author.authorId
 }
 
 /**

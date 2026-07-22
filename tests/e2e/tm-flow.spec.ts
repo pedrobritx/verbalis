@@ -24,9 +24,7 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
-test('TM auto-populates on confirm and surfaces matches in a second project', async ({
-  page,
-}) => {
+test('TM auto-populates on confirm and surfaces matches in a second project', async ({ page }) => {
   // Project 1: translate the first paragraph sentence.
   await importSample(page, 'first')
   const target1 = targetEditor(page, 1)

@@ -15,7 +15,13 @@ import { extractChanges } from '@/core/changes/extract'
 const AUTHOR = { authorId: 'a1', authorName: 'Ada' }
 
 function makeEditor(): LexicalEditor {
-  return createEditor({ namespace: RICH_NAMESPACE, nodes: getRichNodes(), onError: (e) => { throw e } })
+  return createEditor({
+    namespace: RICH_NAMESPACE,
+    nodes: getRichNodes(),
+    onError: (e) => {
+      throw e
+    },
+  })
 }
 
 /**

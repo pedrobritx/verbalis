@@ -76,13 +76,8 @@ export function GlossaryTable({
             <td className="p-2 font-medium" style={{ color: 'var(--color-text)' }}>
               <div className="whitespace-pre-wrap break-words">{e.term}</div>
             </td>
-            <td
-              className="p-2 max-w-xs text-xs"
-              style={{ color: 'var(--color-muted)' }}
-            >
-              <div className="whitespace-pre-wrap break-words line-clamp-3">
-                {e.definition}
-              </div>
+            <td className="p-2 max-w-xs text-xs" style={{ color: 'var(--color-muted)' }}>
+              <div className="whitespace-pre-wrap break-words line-clamp-3">{e.definition}</div>
             </td>
             <td className="p-2">
               <div className="flex flex-wrap gap-1">
@@ -102,12 +97,10 @@ export function GlossaryTable({
               </div>
             </td>
             <td className="p-2 text-xs" style={{ color: 'var(--color-muted)' }}>
-              {e.projectId ? projectsById.get(e.projectId)?.name ?? '—' : '—'}
+              {e.projectId ? (projectsById.get(e.projectId)?.name ?? '—') : '—'}
             </td>
             <td className="p-2 text-xs" style={{ color: 'var(--color-muted)' }}>
-              <div className="whitespace-pre-wrap break-words line-clamp-2">
-                {e.notes ?? ''}
-              </div>
+              <div className="whitespace-pre-wrap break-words line-clamp-2">{e.notes ?? ''}</div>
             </td>
             <td className="p-2">
               <div className="flex items-center gap-1">

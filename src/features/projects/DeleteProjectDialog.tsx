@@ -69,17 +69,13 @@ export function DeleteProjectDialog() {
         data-testid="delete-project-dialog"
       >
         <DialogHeader>
-          <DialogTitle
-            className="flex items-center gap-2"
-            style={{ color: 'var(--color-error)' }}
-          >
+          <DialogTitle className="flex items-center gap-2" style={{ color: 'var(--color-error)' }}>
             <AlertTriangle size={18} />
             Delete project
           </DialogTitle>
           <DialogDescription>
-            This permanently deletes <strong>{project?.name}</strong> and its{' '}
-            {stats?.segments ?? 0} segment{stats?.segments === 1 ? '' : 's'}. This cannot be
-            undone.
+            This permanently deletes <strong>{project?.name}</strong> and its {stats?.segments ?? 0}{' '}
+            segment{stats?.segments === 1 ? '' : 's'}. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
 

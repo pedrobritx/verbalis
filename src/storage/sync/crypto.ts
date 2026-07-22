@@ -105,10 +105,7 @@ export async function deterministicSalt(seed: string): Promise<Uint8Array> {
  * Build an AES-GCM codec from a shared passphrase, keyed by a seed (the project
  * id) so all peers of one shared project converge on the same key.
  */
-export async function codecForPassphrase(
-  passphrase: string,
-  seed: string,
-): Promise<PayloadCodec> {
+export async function codecForPassphrase(passphrase: string, seed: string): Promise<PayloadCodec> {
   const salt = await deterministicSalt(seed)
   const key = await deriveKey(passphrase, salt)
   return createAesCodec(key, salt)

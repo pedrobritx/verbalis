@@ -82,7 +82,11 @@ export function DuplicateProjectDialog() {
             <Button type="button" variant="plain" onClick={close} disabled={working}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || working} data-testid="duplicate-confirm">
+            <Button
+              type="submit"
+              disabled={!name.trim() || working}
+              data-testid="duplicate-confirm"
+            >
               {working ? 'Duplicating…' : 'Duplicate'}
             </Button>
           </DialogFooter>

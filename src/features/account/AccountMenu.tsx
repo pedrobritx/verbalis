@@ -86,10 +86,7 @@ export function AccountMenu() {
             data-testid="account-menu"
           >
             <div className="px-2 py-1.5">
-              <p
-                className="truncate text-sm font-medium"
-                style={{ color: 'var(--color-text)' }}
-              >
+              <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                 {user.displayName || 'Signed in'}
               </p>
               {user.email ? (

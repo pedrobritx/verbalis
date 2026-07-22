@@ -82,7 +82,10 @@ function assemble(kind: SyncMessage['kind'], from: PeerId, b64: string): SyncMes
  * pass straight through. Partial messages are held until complete.
  */
 export class ChunkReassembler {
-  private pending = new Map<string, { n: number; kind: SyncMessage['kind']; from: PeerId; parts: Map<number, string> }>()
+  private pending = new Map<
+    string,
+    { n: number; kind: SyncMessage['kind']; from: PeerId; parts: Map<number, string> }
+  >()
 
   /** Feed one chunk; returns the assembled message when this completes it. */
   push(chunk: WireChunk): SyncMessage | null {

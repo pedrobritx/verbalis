@@ -61,5 +61,6 @@ export const useEditorModeStore = create<EditorModeState>((set, get) => ({
   setReviewMode: (on) => get().setStage(on ? 'revise' : 'translate'),
   setStatusFilter: (statusFilter) => set({ statusFilter }),
   setEditMode: (editMode) => set({ editMode }),
-  toggleEditMode: () => set({ editMode: get().editMode === 'suggesting' ? 'direct' : 'suggesting' }),
+  toggleEditMode: () =>
+    set({ editMode: get().editMode === 'suggesting' ? 'direct' : 'suggesting' }),
 }))

@@ -70,8 +70,14 @@ describe('encodeMessage + ChunkReassembler', () => {
     // Interleave a[0], b[0], a[1], b[1], …
     const max = Math.max(a.length, b.length)
     for (let i = 0; i < max; i++) {
-      if (a[i]) { const m = r.push(a[i]); if (m) done.push(m) }
-      if (b[i]) { const m = r.push(b[i]); if (m) done.push(m) }
+      if (a[i]) {
+        const m = r.push(a[i])
+        if (m) done.push(m)
+      }
+      if (b[i]) {
+        const m = r.push(b[i])
+        if (m) done.push(m)
+      }
     }
     expect(done).toHaveLength(2)
     const byPeer = Object.fromEntries(

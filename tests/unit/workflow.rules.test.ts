@@ -46,7 +46,12 @@ describe('workflowCapabilities — role × stage matrix (§5.2)', () => {
     expect(t).toMatchObject({ canEditDirect: false, mustSuggest: false, canResolveChanges: true })
 
     const r = caps('revisor', 'review')
-    expect(r).toMatchObject({ canEditDirect: true, mustSuggest: false, canResolveChanges: true, canReview: true })
+    expect(r).toMatchObject({
+      canEditDirect: true,
+      mustSuggest: false,
+      canResolveChanges: true,
+      canReview: true,
+    })
     expect(r.canManage).toBe(false)
   })
 
@@ -70,12 +75,23 @@ describe('effectiveRoleStage — local-only is PM-of-self', () => {
   it('grants a manager in translation with no cloud link (zero regression)', () => {
     expect(effectiveRoleStage(undefined)).toEqual({ role: 'project_manager', stage: 'translation' })
     const c = workflowCapabilities('project_manager', 'translation', 'draft')
-    expect(c).toMatchObject({ canEditDirect: true, canResolveChanges: true, canManage: true, mustSuggest: false })
+    expect(c).toMatchObject({
+      canEditDirect: true,
+      canResolveChanges: true,
+      canManage: true,
+      mustSuggest: false,
+    })
   })
 
   it('reads a cloud project’s role and defaults the stage to translation', () => {
-    expect(effectiveRoleStage({ role: 'translator' })).toEqual({ role: 'translator', stage: 'translation' })
-    expect(effectiveRoleStage({ role: 'revisor', stage: 'review' })).toEqual({ role: 'revisor', stage: 'review' })
+    expect(effectiveRoleStage({ role: 'translator' })).toEqual({
+      role: 'translator',
+      stage: 'translation',
+    })
+    expect(effectiveRoleStage({ role: 'revisor', stage: 'review' })).toEqual({
+      role: 'revisor',
+      stage: 'review',
+    })
   })
 })
 

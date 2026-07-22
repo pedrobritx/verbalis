@@ -141,8 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
         supabase.auth.getUserIdentities(),
       ])
-      const displayName =
-        (profileResult.data?.display_name as string | null | undefined) ?? null
+      const displayName = (profileResult.data?.display_name as string | null | undefined) ?? null
       const rawIdentities = (identityResult.data?.identities ?? []) as SupabaseIdentity[]
       set((s) => ({
         profileDisplayName: displayName,
@@ -163,9 +162,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ error: null })
     try {
       const supabase = await getSupabase()
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: user.id, display_name: value })
+      const { error } = await supabase.from('profiles').upsert({ id: user.id, display_name: value })
       if (error) {
         set({ error: error.message })
         return

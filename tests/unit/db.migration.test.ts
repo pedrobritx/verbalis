@@ -187,7 +187,14 @@ describe('v6 document/block backfill', () => {
   it('builds a document + blocks for monolingual projects and stamps blockId', async () => {
     const v5 = openV5()
     await v5.table('projects').bulkAdd([
-      { id: 'mono', name: 'Doc', sourceLang: 'en', targetLang: 'fr', createdAt: 'n', updatedAt: 'n' },
+      {
+        id: 'mono',
+        name: 'Doc',
+        sourceLang: 'en',
+        targetLang: 'fr',
+        createdAt: 'n',
+        updatedAt: 'n',
+      },
       {
         id: 'xliff',
         name: 'Bi',
@@ -199,11 +206,50 @@ describe('v6 document/block backfill', () => {
       },
     ])
     await v5.table('segments').bulkAdd([
-      { id: 's0', projectId: 'mono', index: 0, source: 'Title', target: '', status: 'untranslated', sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 }, createdAt: 'n', updatedAt: 'n' },
-      { id: 's1', projectId: 'mono', index: 1, source: 'A.', target: '', status: 'untranslated', sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 }, createdAt: 'n', updatedAt: 'n' },
-      { id: 's2', projectId: 'mono', index: 2, source: 'B.', target: '', status: 'untranslated', sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 1 }, createdAt: 'n', updatedAt: 'n' },
+      {
+        id: 's0',
+        projectId: 'mono',
+        index: 0,
+        source: 'Title',
+        target: '',
+        status: 'untranslated',
+        sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 },
+        createdAt: 'n',
+        updatedAt: 'n',
+      },
+      {
+        id: 's1',
+        projectId: 'mono',
+        index: 1,
+        source: 'A.',
+        target: '',
+        status: 'untranslated',
+        sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 },
+        createdAt: 'n',
+        updatedAt: 'n',
+      },
+      {
+        id: 's2',
+        projectId: 'mono',
+        index: 2,
+        source: 'B.',
+        target: '',
+        status: 'untranslated',
+        sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 1 },
+        createdAt: 'n',
+        updatedAt: 'n',
+      },
       // XLIFF segment: no sourceMeta.
-      { id: 'x0', projectId: 'xliff', index: 0, source: 'x', target: '', status: 'untranslated', createdAt: 'n', updatedAt: 'n' },
+      {
+        id: 'x0',
+        projectId: 'xliff',
+        index: 0,
+        source: 'x',
+        target: '',
+        status: 'untranslated',
+        createdAt: 'n',
+        updatedAt: 'n',
+      },
     ])
     v5.close()
 

@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  createEditor,
-  $getRoot,
-  $createParagraphNode,
-  $createTextNode,
-} from 'lexical'
+import { createEditor, $getRoot, $createParagraphNode, $createTextNode } from 'lexical'
 import { RICH_NAMESPACE, getRichNodes } from '@/core/editor/richText'
 // Importing the node registers it (side effect) so the headless editor can build
 // and serialize states containing change marks.

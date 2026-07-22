@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  baseLanguage,
-  displayLanguage,
-  LANGUAGE_OPTIONS,
-} from '@/core/i18n/languages'
+import { baseLanguage, displayLanguage, LANGUAGE_OPTIONS } from '@/core/i18n/languages'
 
 describe('LANGUAGE_OPTIONS', () => {
   it('includes regional variants for English and Portuguese', () => {

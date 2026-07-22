@@ -17,6 +17,8 @@ const XML_ESCAPE: Record<string, string> = {
 }
 
 function escapeXml(s: string): string {
+  // Strip XML 1.0 invalid control chars — matching them is intentional.
+  // eslint-disable-next-line no-control-regex
   const cleaned = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
   return cleaned.replace(/[&<>"']/g, (c) => XML_ESCAPE[c])
 }
@@ -37,9 +39,7 @@ function childByTag(parent: Element, tag: string): Element | undefined {
 }
 
 function childrenByTag(parent: Element, tag: string): Element[] {
-  return Array.from(parent.children).filter(
-    (c) => c.nodeName === tag || c.localName === tag,
-  )
+  return Array.from(parent.children).filter((c) => c.nodeName === tag || c.localName === tag)
 }
 
 export function parseTBX(xml: string, sourceLang?: string): ParsedGlossaryTBX[] {
@@ -56,8 +56,7 @@ export function parseTBX(xml: string, sourceLang?: string): ParsedGlossaryTBX[] 
     throw new Error('Invalid TBX: expected <martif> or <tbx> root element')
   }
 
-  const docLang =
-    sourceLang ?? getXmlLang(root) ?? undefined
+  const docLang = sourceLang ?? getXmlLang(root) ?? undefined
 
   const termEntries = Array.from(doc.getElementsByTagName('termEntry'))
   const out: ParsedGlossaryTBX[] = []
@@ -75,8 +74,7 @@ export function parseTBX(xml: string, sourceLang?: string): ParsedGlossaryTBX[] 
     for (const ls of langSets) {
       const lang = getXmlLang(ls)
       if (!lang) continue
-      const termEl =
-        ls.getElementsByTagName('term')[0] ?? null
+      const termEl = ls.getElementsByTagName('term')[0] ?? null
       const text = termEl?.textContent?.trim() ?? ''
       if (!text) continue
       if (!term && (docLang ? lang === docLang : true)) {

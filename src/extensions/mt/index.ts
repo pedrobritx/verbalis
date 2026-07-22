@@ -21,10 +21,12 @@ const EXT_TO_PROVIDER: Record<string, MTProviderId> = Object.fromEntries(
 )
 
 /** Every MT provider addon, manifest paired to its core provider. */
-export const mtProviderExtensions: MTProviderExtension[] = MT_EXTENSION_MANIFESTS.map((manifest) => ({
-  manifest,
-  provider: MT_PROVIDERS[EXT_TO_PROVIDER[manifest.id]],
-}))
+export const mtProviderExtensions: MTProviderExtension[] = MT_EXTENSION_MANIFESTS.map(
+  (manifest) => ({
+    manifest,
+    provider: MT_PROVIDERS[EXT_TO_PROVIDER[manifest.id]],
+  }),
+)
 
 /** The MT provider ids whose addon is currently enabled in the registry. */
 export function registryEnabledMtProviderIds(): MTProviderId[] {

@@ -74,10 +74,7 @@ function MatchCard({
       >
         {match.entry.source}
       </div>
-      <div
-        className="whitespace-pre-wrap break-words"
-        style={{ color: 'var(--color-text)' }}
-      >
+      <div className="whitespace-pre-wrap break-words" style={{ color: 'var(--color-text)' }}>
         {match.entry.target}
       </div>
     </div>

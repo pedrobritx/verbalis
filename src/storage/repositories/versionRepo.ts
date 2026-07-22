@@ -67,6 +67,10 @@ async function capture(
   label?: string,
   liveDoc?: Y.Doc,
   signOff = false,
+  // Caller-resolved, account-aware display name (see features/account/displayName).
+  // The storage layer stays account-agnostic; when omitted, the device-local
+  // name is used. `authorId` is always the local identity (D8).
+  resolvedName?: string,
 ): Promise<ProjectVersion | null> {
   const doc = liveDoc ?? peekProjectDoc(projectId)
   if (!doc) return null
@@ -74,6 +78,7 @@ async function capture(
   const profile = await getProfileSettings()
   // The same stable identity that attributes marks, comments, and presence (§5.3).
   const { authorId, authorName } = await ensureLocalAuthor()
+  const name = resolvedName?.trim() || authorName
   const createdAt = new Date().toISOString()
   const version: ProjectVersion = {
     id: crypto.randomUUID(),
@@ -82,9 +87,9 @@ async function capture(
     label: label?.trim() ? label.trim() : undefined,
     snapshot: encodeDoc(doc),
     segmentCount: segments.length,
-    author: profile.displayName || undefined,
+    author: resolvedName?.trim() || profile.displayName || undefined,
     authorId,
-    approval: signOff ? { authorId, authorName, at: createdAt } : undefined,
+    approval: signOff ? { authorId, authorName: name, at: createdAt } : undefined,
     createdAt,
   }
   await db.versions.add(version)
@@ -101,8 +106,8 @@ function listAsc(projectId: string): Promise<ProjectVersion[]> {
 
 export const versionRepo = {
   /** Manual "Save version" with a label. */
-  saveNamed: (projectId: string, label: string, liveDoc?: Y.Doc) =>
-    capture(projectId, 'named', label, liveDoc),
+  saveNamed: (projectId: string, label: string, liveDoc?: Y.Doc, resolvedName?: string) =>
+    capture(projectId, 'named', label, liveDoc, false, resolvedName),
 
   /**
    * Revisor / PM **sign-off** (ROADMAP §5.3): a labeled `named` version stamped
@@ -110,9 +115,13 @@ export const versionRepo = {
    * timeline. Gating (who may sign off) is enforced at the call site via the
    * workflow rules; this only records it.
    */
-  signOff: async (projectId: string, liveDoc?: Y.Doc): Promise<ProjectVersion | null> => {
-    const { authorName } = await ensureLocalAuthor()
-    return capture(projectId, 'named', `Approved by ${authorName}`, liveDoc, true)
+  signOff: async (
+    projectId: string,
+    liveDoc?: Y.Doc,
+    resolvedName?: string,
+  ): Promise<ProjectVersion | null> => {
+    const name = resolvedName?.trim() || (await ensureLocalAuthor()).authorName
+    return capture(projectId, 'named', `Approved by ${name}`, liveDoc, true, name)
   },
 
   /**
@@ -205,10 +214,7 @@ export const versionRepo = {
    * The history of one segment, newest first, with consecutive identical
    * (status + target) states collapsed so each entry marks an actual change.
    */
-  segmentTimeline: async (
-    projectId: string,
-    segmentId: string,
-  ): Promise<SegmentHistoryEntry[]> => {
+  segmentTimeline: async (projectId: string, segmentId: string): Promise<SegmentHistoryEntry[]> => {
     const versions = await listAsc(projectId)
     const out: SegmentHistoryEntry[] = []
     let prevKey: string | null = null

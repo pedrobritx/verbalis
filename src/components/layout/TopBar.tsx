@@ -25,7 +25,7 @@ function Breadcrumb() {
   const { pathname } = useLocation()
   const label = pathname.startsWith('/project/')
     ? 'Translation Workspace'
-    : ROUTE_LABELS[pathname] ?? pathname
+    : (ROUTE_LABELS[pathname] ?? pathname)
 
   return (
     <span className="text-sm" style={{ color: 'var(--color-muted)' }}>
@@ -51,10 +51,7 @@ function ProjectProgress({ projectId }: { projectId: string }) {
         className="h-1.5 w-24 rounded-full overflow-hidden"
         style={{ background: 'var(--color-border)' }}
       >
-        <div
-          className="h-full"
-          style={{ width: `${pct}%`, background: 'var(--color-accent)' }}
-        />
+        <div className="h-full" style={{ width: `${pct}%`, background: 'var(--color-accent)' }} />
       </div>
     </div>
   )

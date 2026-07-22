@@ -41,10 +41,7 @@ export class MTError extends Error {
 }
 
 export type ProviderSettings =
-  | OllamaSettings
-  | ClaudeSettings
-  | LibreTranslateSettings
-  | MyMemorySettings
+  OllamaSettings | ClaudeSettings | LibreTranslateSettings | MyMemorySettings
 
 export interface MTProvider<S extends ProviderSettings = ProviderSettings> {
   id: MTProviderId

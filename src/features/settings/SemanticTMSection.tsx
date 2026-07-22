@@ -61,8 +61,8 @@ export function SemanticTMSection() {
           Enable semantic matches in TM panel
         </label>
         <p className="text-footnote" style={{ color: 'var(--color-muted)' }}>
-          The first time you enable this and run a search, a ~50&nbsp;MB model is
-          downloaded and cached in your browser. Everything runs locally after that.
+          The first time you enable this and run a search, a ~50&nbsp;MB model is downloaded and
+          cached in your browser. Everything runs locally after that.
         </p>
 
         <div className="flex flex-col gap-1">
@@ -127,7 +127,11 @@ export function SemanticTMSection() {
         </div>
 
         {state.error && (
-          <p className="text-footnote" style={{ color: 'var(--color-error)' }} data-testid="semantic-error">
+          <p
+            className="text-footnote"
+            style={{ color: 'var(--color-error)' }}
+            data-testid="semantic-error"
+          >
             {state.error}
           </p>
         )}

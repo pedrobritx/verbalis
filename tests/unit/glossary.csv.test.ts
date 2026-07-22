@@ -117,10 +117,7 @@ describe('exportCSV', () => {
   }
 
   it('writes one row per (entry, translation lang)', () => {
-    const out = exportCSV(
-      [entry({ translations: { es: 'hola', fr: 'bonjour' } })],
-      'en',
-    )
+    const out = exportCSV([entry({ translations: { es: 'hola', fr: 'bonjour' } })], 'en')
     const lines = out.trim().split('\n')
     expect(lines[0]).toBe('term,definition,sourceLang,targetLang,translation,notes')
     expect(lines).toHaveLength(3)
@@ -134,10 +131,7 @@ describe('exportCSV', () => {
   })
 
   it('quotes values containing commas, newlines, and quotes', () => {
-    const out = exportCSV(
-      [entry({ term: 'with, comma', definition: 'has "quotes"' })],
-      'en',
-    )
+    const out = exportCSV([entry({ term: 'with, comma', definition: 'has "quotes"' })], 'en')
     expect(out).toContain('"with, comma"')
     expect(out).toContain('"has ""quotes"""')
   })

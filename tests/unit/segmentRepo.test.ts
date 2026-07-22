@@ -231,8 +231,20 @@ describe('segmentRepo', () => {
   it('joinWithNext merges sources, targets and re-indexes', async () => {
     const meta = { kind: 'paragraph' as const, blockIndex: 0, sentenceIndex: 0 }
     await segmentRepo.bulkCreate([
-      makeSeg({ index: 0, source: 'One.', target: 'Um.', status: 'translated', sourceMeta: { ...meta, sentenceIndex: 0 } }),
-      makeSeg({ index: 1, source: 'Two.', target: '', status: 'untranslated', sourceMeta: { ...meta, sentenceIndex: 1 } }),
+      makeSeg({
+        index: 0,
+        source: 'One.',
+        target: 'Um.',
+        status: 'translated',
+        sourceMeta: { ...meta, sentenceIndex: 0 },
+      }),
+      makeSeg({
+        index: 1,
+        source: 'Two.',
+        target: '',
+        status: 'untranslated',
+        sourceMeta: { ...meta, sentenceIndex: 1 },
+      }),
       makeSeg({ index: 2, source: 'Three.', sourceMeta: { ...meta, sentenceIndex: 2 } }),
     ])
     const rows = await segmentRepo.byProject('p1')
@@ -250,8 +262,16 @@ describe('segmentRepo', () => {
 
   it('joinWithNext refuses to join across source blocks', async () => {
     await segmentRepo.bulkCreate([
-      makeSeg({ index: 0, source: 'Heading', sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 } }),
-      makeSeg({ index: 1, source: 'Body', sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 } }),
+      makeSeg({
+        index: 0,
+        source: 'Heading',
+        sourceMeta: { kind: 'heading', blockIndex: 0, sentenceIndex: 0 },
+      }),
+      makeSeg({
+        index: 1,
+        source: 'Body',
+        sourceMeta: { kind: 'paragraph', blockIndex: 1, sentenceIndex: 0 },
+      }),
     ])
     const rows = await segmentRepo.byProject('p1')
     expect(await segmentRepo.joinWithNext('p1', rows[0].id)).toBe(false)

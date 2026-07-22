@@ -69,8 +69,8 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
         <DialogHeader>
           <DialogTitle>Sign in to Verbalis</DialogTitle>
           <DialogDescription>
-            Sync your preferences, term bank, and cloud projects across devices. Verbalis stays
-            100% local until you sign in.
+            Sync your preferences, term bank, and cloud projects across devices. Verbalis stays 100%
+            local until you sign in.
           </DialogDescription>
         </DialogHeader>
 

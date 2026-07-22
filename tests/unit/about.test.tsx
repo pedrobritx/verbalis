@@ -20,7 +20,7 @@ describe('AboutPage', () => {
     const hrefs = Array.from(document.querySelectorAll('a')).map((a) => a.getAttribute('href'))
     expect(hrefs).toContain('https://github.com/pedrobritx/verbalis')
     expect(hrefs).toContain('https://www.linkedin.com/in/pedrobritx/')
-    expect(hrefs).toContain('https://pedrobritx.github.io/EwP/')
+    expect(hrefs).toContain('https://britx.me')
     expect(hrefs).toContain('https://buymeacoffee.com/pedrobritx')
   })
 })

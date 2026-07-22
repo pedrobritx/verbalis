@@ -6,7 +6,9 @@ describe('parseCSV — MultiTerm-style locale headers', () => {
     const text = `EN,DE,FR\nhello,hallo,bonjour\nworld,welt,monde`
     const rows = parseCSV(text)
     expect(rows).toHaveLength(4)
-    expect(rows.map((r) => ({ term: r.term, targetLang: r.targetLang, translation: r.translation }))).toEqual([
+    expect(
+      rows.map((r) => ({ term: r.term, targetLang: r.targetLang, translation: r.translation })),
+    ).toEqual([
       { term: 'hello', targetLang: 'DE', translation: 'hallo' },
       { term: 'hello', targetLang: 'FR', translation: 'bonjour' },
       { term: 'world', targetLang: 'DE', translation: 'welt' },

@@ -133,12 +133,21 @@ function emitSentences(
   const sentences = splitSentences(text)
   if (sentences.length === 0) return false
   sentences.forEach((source, sentenceIndex) => {
-    ctx.segments.push({ source, sourceMeta: { kind, blockIndex: ctx.blockIndex, sentenceIndex, ...extras } })
+    ctx.segments.push({
+      source,
+      sourceMeta: { kind, blockIndex: ctx.blockIndex, sentenceIndex, ...extras },
+    })
   })
   return true
 }
 
-function emitTextBlock(el: Element, text: string, kind: SegmentBlockKind, ctx: Ctx, extras: Partial<ParsedSegment['sourceMeta']> = {}) {
+function emitTextBlock(
+  el: Element,
+  text: string,
+  kind: SegmentBlockKind,
+  ctx: Ctx,
+  extras: Partial<ParsedSegment['sourceMeta']> = {},
+) {
   if (!emitSentences(text, kind, ctx, extras)) return
   ctx.blocks.push({
     blockIndex: ctx.blockIndex,
@@ -165,7 +174,9 @@ function emitImageBlock(img: Element, ctx: Ctx) {
 function emitTableBlock(table: Element, ctx: Ctx) {
   const rows: InlineRun[][][] = []
   let sentenceIndex = 0
-  for (const tr of Array.from(table.querySelectorAll(':scope > thead > tr, :scope > tbody > tr, :scope > tr'))) {
+  for (const tr of Array.from(
+    table.querySelectorAll(':scope > thead > tr, :scope > tbody > tr, :scope > tr'),
+  )) {
     const cells: InlineRun[][] = []
     for (const cell of Array.from(tr.children)) {
       if (cell.tagName !== 'TD' && cell.tagName !== 'TH') continue
@@ -193,7 +204,8 @@ function walk(root: Element, ctx: Ctx) {
     if (HEADING_TAGS.has(tag)) {
       const depth = Number(tag.slice(1))
       const text = (child.textContent ?? '').trim()
-      if (text) emitTextBlock(child, text, 'heading', ctx, { depth: Number.isFinite(depth) ? depth : 1 })
+      if (text)
+        emitTextBlock(child, text, 'heading', ctx, { depth: Number.isFinite(depth) ? depth : 1 })
     } else if (tag === 'P') {
       const img = loneImage(child)
       if (img) {
@@ -219,7 +231,10 @@ function walk(root: Element, ctx: Ctx) {
     } else if (tag === 'PRE') {
       const raw = child.textContent ?? ''
       if (raw.trim()) {
-        ctx.segments.push({ source: raw, sourceMeta: { kind: 'code', blockIndex: ctx.blockIndex, sentenceIndex: 0 } })
+        ctx.segments.push({
+          source: raw,
+          sourceMeta: { kind: 'code', blockIndex: ctx.blockIndex, sentenceIndex: 0 },
+        })
         ctx.blocks.push({ blockIndex: ctx.blockIndex, kind: 'code', sourceRuns: [{ text: raw }] })
         ctx.blockIndex += 1
       }
@@ -237,7 +252,10 @@ function walk(root: Element, ctx: Ctx) {
 }
 
 /** Parse mammoth-converted HTML into segments + structured blocks. Pure. */
-export function htmlToParsedDocx(html: string): { segments: ParsedSegment[]; blocks: ParsedBlock[] } {
+export function htmlToParsedDocx(html: string): {
+  segments: ParsedSegment[]
+  blocks: ParsedBlock[]
+} {
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html')
   const ctx: Ctx = { blockIndex: 0, segments: [], blocks: [] }
   walk(doc.body, ctx)
@@ -250,7 +268,13 @@ export async function parseDocxDocument(arrayBuffer: ArrayBuffer): Promise<Parse
   const options: Record<string, unknown> = { styleMap: STYLE_MAP }
   // mammoth.images is unavailable under the segmentation test's minimal mock;
   // guard so image capture is opt-in on the real library.
-  const images = (mammoth as unknown as { images?: { imgElement?: (fn: (image: DocxImage) => Promise<Record<string, string>>) => unknown } }).images
+  const images = (
+    mammoth as unknown as {
+      images?: {
+        imgElement?: (fn: (image: DocxImage) => Promise<Record<string, string>>) => unknown
+      }
+    }
+  ).images
   if (images?.imgElement) {
     options.convertImage = images.imgElement(async (image: DocxImage) => {
       const id = crypto.randomUUID()

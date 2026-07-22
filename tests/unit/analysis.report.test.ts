@@ -75,12 +75,20 @@ describe('analyzeProject', () => {
   })
 
   it('buckets unmatched content as no-match', () => {
-    const report = analyzeProject([seg(0, 'unrelated text here')], [tm('Hello world', 'Hola')], opts)
+    const report = analyzeProject(
+      [seg(0, 'unrelated text here')],
+      [tm('Hello world', 'Hola')],
+      opts,
+    )
     expect(report.leverage.none.segments).toBe(1)
   })
 
   it('tracks status counts', () => {
-    const report = analyzeProject([seg(0, 'a', 'translated'), seg(1, 'b', 'untranslated')], [], opts)
+    const report = analyzeProject(
+      [seg(0, 'a', 'translated'), seg(1, 'b', 'untranslated')],
+      [],
+      opts,
+    )
     expect(report.statusCounts.translated).toBe(1)
     expect(report.statusCounts.untranslated).toBe(1)
   })

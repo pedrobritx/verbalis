@@ -122,7 +122,11 @@ export async function exportProjectDocx(
         children.push(
           new Paragraph({
             children: [
-              new ImageRun({ type: imageType(asset.mime), data, transformation: { width: 400, height: 300 } }),
+              new ImageRun({
+                type: imageType(asset.mime),
+                data,
+                transformation: { width: 400, height: 300 },
+              }),
             ],
           }),
         )
@@ -151,7 +155,12 @@ export async function exportProjectDocx(
 
     const runs = blockRuns(segs)
     if (block.kind === 'heading') {
-      children.push(new Paragraph({ heading: HEADING[Math.min(5, Math.max(0, (block.depth ?? 1) - 1))], children: runChildren(runs) }))
+      children.push(
+        new Paragraph({
+          heading: HEADING[Math.min(5, Math.max(0, (block.depth ?? 1) - 1))],
+          children: runChildren(runs),
+        }),
+      )
     } else if (block.kind === 'list_item') {
       children.push(
         new Paragraph({
@@ -175,7 +184,9 @@ export async function exportProjectDocx(
       config: [
         {
           reference: 'ordered-list',
-          levels: [{ level: 0, format: 'decimal', text: '%1.', alignment: docx.AlignmentType.START }],
+          levels: [
+            { level: 0, format: 'decimal', text: '%1.', alignment: docx.AlignmentType.START },
+          ],
         },
       ],
     },

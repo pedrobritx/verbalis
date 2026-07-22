@@ -8,8 +8,8 @@ This is a second paragraph. It also has two sentences.
 - Second item.
 
 ```js
-const x = 1;
-const y = 2;
+const x = 1
+const y = 2
 ```
 
 > A quote sentence. Another one.

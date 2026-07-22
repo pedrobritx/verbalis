@@ -84,10 +84,10 @@ export function workflowCapabilities(
  * cloud link) is "PM-of-self": project_manager in the translation stage, so every
  * capability is granted and there is zero behaviour change without an account.
  */
-export function effectiveRoleStage(cloud?: {
+export function effectiveRoleStage(cloud?: { role: ProjectRole; stage?: WorkflowStage }): {
   role: ProjectRole
-  stage?: WorkflowStage
-}): { role: ProjectRole; stage: WorkflowStage } {
+  stage: WorkflowStage
+} {
   if (!cloud) return { role: 'project_manager', stage: 'translation' }
   return { role: cloud.role, stage: cloud.stage ?? 'translation' }
 }

@@ -18,12 +18,7 @@ beforeEach(async () => {
 function renderPanel(onApply = vi.fn()) {
   return render(
     <MemoryRouter>
-      <MTPanel
-        focusedSource="Hello world"
-        sourceLang="en"
-        targetLang="es"
-        onApply={onApply}
-      />
+      <MTPanel focusedSource="Hello world" sourceLang="en" targetLang="es" onApply={onApply} />
     </MemoryRouter>,
   )
 }

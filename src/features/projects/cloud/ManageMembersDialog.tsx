@@ -114,7 +114,9 @@ export function ManageMembersDialog({
       const email = inviteEmail.trim()
       const res = await m.inviteMember(client, cloudId!, email, inviteRole)
       if (res.status === 'not_found') {
-        setNotice(`No Verbalis account uses ${email} yet. Ask them to sign in once, then invite again.`)
+        setNotice(
+          `No Verbalis account uses ${email} yet. Ask them to sign in once, then invite again.`,
+        )
         return 'skip'
       }
       setInviteEmail('')
@@ -194,7 +196,11 @@ export function ManageMembersDialog({
                 </option>
               ))}
             </Select>
-            <Button type="submit" disabled={busy || !inviteEmail.trim()} data-testid="invite-submit">
+            <Button
+              type="submit"
+              disabled={busy || !inviteEmail.trim()}
+              data-testid="invite-submit"
+            >
               <UserPlus size={16} /> Invite
             </Button>
           </form>
@@ -222,14 +228,21 @@ export function ManageMembersDialog({
               ))}
             </Select>
           ) : (
-            <Badge variant="outline" style={{ color: 'var(--color-muted)' }} data-testid="workflow-stage-readonly">
+            <Badge
+              variant="outline"
+              style={{ color: 'var(--color-muted)' }}
+              data-testid="workflow-stage-readonly"
+            >
               {STAGE_LABEL[stage]}
             </Badge>
           )}
         </div>
 
         {members === null ? (
-          <div className="flex items-center justify-center gap-2 py-6" style={{ color: 'var(--color-muted)' }}>
+          <div
+            className="flex items-center justify-center gap-2 py-6"
+            style={{ color: 'var(--color-muted)' }}
+          >
             <Loader2 size={16} className="animate-spin" /> Loading…
           </div>
         ) : (
@@ -242,7 +255,10 @@ export function ManageMembersDialog({
                 data-testid={`member-${m.userId}`}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  <p
+                    className="truncate text-sm font-medium"
+                    style={{ color: 'var(--color-text)' }}
+                  >
                     {m.displayName || m.email || 'Member'}
                     {m.isSelf && <span style={{ color: 'var(--color-muted)' }}> (you)</span>}
                   </p>
@@ -290,12 +306,20 @@ export function ManageMembersDialog({
         )}
 
         {notice ? (
-          <p className="text-sm" style={{ color: 'var(--color-accent)' }} data-testid="members-notice">
+          <p
+            className="text-sm"
+            style={{ color: 'var(--color-accent)' }}
+            data-testid="members-notice"
+          >
             {notice}
           </p>
         ) : null}
         {error ? (
-          <p className="text-sm" style={{ color: 'var(--color-error)' }} data-testid="members-error">
+          <p
+            className="text-sm"
+            style={{ color: 'var(--color-error)' }}
+            data-testid="members-error"
+          >
             {error}
           </p>
         ) : null}

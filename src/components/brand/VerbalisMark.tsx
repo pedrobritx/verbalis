@@ -36,7 +36,14 @@ export function VerbalisMark({
       {withTile && (
         <>
           <defs>
-            <linearGradient id="vbMarkTile" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
+            <linearGradient
+              id="vbMarkTile"
+              x1="256"
+              y1="0"
+              x2="256"
+              y2="512"
+              gradientUnits="userSpaceOnUse"
+            >
               <stop offset="0" stopColor="#1c2126" />
               <stop offset="1" stopColor="#0b0d0e" />
             </linearGradient>

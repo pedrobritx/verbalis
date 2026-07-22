@@ -9,13 +9,31 @@ interface Tip {
 }
 
 const TIPS: Tip[] = [
-  { label: 'Confirm', body: 'Press Ctrl/⌘+Enter (or the ✓ button) to confirm a segment and jump to the next.' },
-  { label: 'Review', body: 'Ctrl/⌘+Shift+Enter marks a segment reviewed; Ctrl/⌘+Shift+R toggles review mode.' },
-  { label: 'Comments', body: 'Use the 💬 button on a row to leave a note for yourself or a reviewer.' },
-  { label: 'Edit source', body: 'The “Source” pencil under the source text lets you fix a mis-segmented original.' },
+  {
+    label: 'Confirm',
+    body: 'Press Ctrl/⌘+Enter (or the ✓ button) to confirm a segment and jump to the next.',
+  },
+  {
+    label: 'Review',
+    body: 'Ctrl/⌘+Shift+Enter marks a segment reviewed; Ctrl/⌘+Shift+R toggles review mode.',
+  },
+  {
+    label: 'Comments',
+    body: 'Use the 💬 button on a row to leave a note for yourself or a reviewer.',
+  },
+  {
+    label: 'Edit source',
+    body: 'The “Source” pencil under the source text lets you fix a mis-segmented original.',
+  },
   { label: 'Segments', body: 'The ⋯ menu on a row splits, joins (Ctrl/⌘+J), or locks a segment.' },
-  { label: 'Formatting', body: 'Enable “Rich text editing” in Settings for bold/italic/sub-sup and case changes.' },
-  { label: 'Everything', body: 'Press Ctrl/⌘+K to open the command palette and search every action.' },
+  {
+    label: 'Formatting',
+    body: 'Enable “Rich text editing” in Settings for bold/italic/sub-sup and case changes.',
+  },
+  {
+    label: 'Everything',
+    body: 'Press Ctrl/⌘+K to open the command palette and search every action.',
+  },
 ]
 
 function readDismissed(): boolean {
@@ -81,7 +99,10 @@ export function EditorTips() {
       role="note"
     >
       <Lightbulb size={16} className="shrink-0 mt-0.5" style={{ color: 'var(--color-accent)' }} />
-      <ul className="flex flex-col gap-1 flex-1 text-footnote" style={{ color: 'var(--color-text)' }}>
+      <ul
+        className="flex flex-col gap-1 flex-1 text-footnote"
+        style={{ color: 'var(--color-text)' }}
+      >
         {TIPS.map((t) => (
           <li key={t.label}>
             <span className="font-semibold" style={{ color: 'var(--color-accent)' }}>

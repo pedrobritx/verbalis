@@ -53,7 +53,9 @@ describe('Dexie→Yjs bridge', () => {
     expect(readSegment(doc, 'p1', 's1')?.locked).toBe(true)
 
     await segmentRepo.addComment('s1', { id: 'c1', body: 'hi', createdAt: 'x' })
-    expect(readSegment(doc, 'p1', 's1')?.comments).toEqual([{ id: 'c1', body: 'hi', createdAt: 'x' }])
+    expect(readSegment(doc, 'p1', 's1')?.comments).toEqual([
+      { id: 'c1', body: 'hi', createdAt: 'x' },
+    ])
 
     await segmentRepo.deleteComment('s1', 'c1')
     expect(readSegment(doc, 'p1', 's1')?.comments).toBeUndefined()

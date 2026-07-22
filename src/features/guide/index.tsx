@@ -51,9 +51,8 @@ export default function GuidePage() {
         style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
       >
         <p style={{ color: 'var(--color-text)' }}>
-          Reference material for Brazilian Portuguese ↔ British English work: the translate /
-          revise workflow, British-English &amp; ABNT/NBR conventions, and translation-theory
-          definitions.
+          Reference material for Brazilian Portuguese ↔ British English work: the translate / revise
+          workflow, British-English &amp; ABNT/NBR conventions, and translation-theory definitions.
         </p>
         <p className="mt-2" style={{ color: 'var(--color-muted)' }}>
           Where the source workflow refers to a terminology lookup, use the installed{' '}

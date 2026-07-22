@@ -1,11 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { MTProviderId, MTSettings } from '@/core/types'
-import {
-  MT_SETTINGS_KEY,
-  mergeMTSettings,
-  settingsRepo,
-} from '@/storage/repositories/settingsRepo'
+import { MT_SETTINGS_KEY, mergeMTSettings, settingsRepo } from '@/storage/repositories/settingsRepo'
 import { resolveDefaultProvider, isProviderExtensionEnabled } from '@/core/mt'
 import { extensionRegistry } from '@/core/extensions/registry'
 
@@ -14,10 +10,7 @@ export function useMTSettings(): {
   defaultProvider: MTProviderId | undefined
   enabledIds: MTProviderId[]
 } {
-  const stored = useLiveQuery(
-    () => settingsRepo.get<Partial<MTSettings>>(MT_SETTINGS_KEY),
-    [],
-  )
+  const stored = useLiveQuery(() => settingsRepo.get<Partial<MTSettings>>(MT_SETTINGS_KEY), [])
   // Re-derive when an MT addon is enabled/disabled in the registry (§6.1), so
   // disabling one removes it from the panel live.
   const registryVersion = useSyncExternalStore(

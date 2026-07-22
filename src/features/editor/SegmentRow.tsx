@@ -275,8 +275,8 @@ export function SegmentRow({
   const sourceTextClass = isCode
     ? 'whitespace-pre-wrap break-words text-sm'
     : isHeading
-    ? 'text-sm font-semibold'
-    : 'text-sm whitespace-pre-wrap'
+      ? 'text-sm font-semibold'
+      : 'text-sm whitespace-pre-wrap'
 
   return (
     <div
@@ -468,18 +468,18 @@ export function SegmentRow({
                   reviewMode
                     ? 'Mark reviewed'
                     : segment.status === 'translated'
-                    ? 'Un-confirm segment'
-                    : 'Confirm segment'
+                      ? 'Un-confirm segment'
+                      : 'Confirm segment'
                 }
                 aria-pressed={!reviewMode && segment.status === 'translated'}
                 title={
                   locked
                     ? 'Segment is locked'
                     : reviewMode
-                    ? 'Mark reviewed (Ctrl+Shift+Enter)'
-                    : segment.status === 'translated'
-                    ? 'Un-confirm segment (back to draft)'
-                    : 'Confirm segment (Ctrl+Enter)'
+                      ? 'Mark reviewed (Ctrl+Shift+Enter)'
+                      : segment.status === 'translated'
+                        ? 'Un-confirm segment (back to draft)'
+                        : 'Confirm segment (Ctrl+Enter)'
                 }
                 data-testid={`confirm-${segment.index}`}
                 className="inline-flex items-center justify-center w-7 h-7 rounded-md border transition-colors hover:bg-[var(--color-fill)] disabled:opacity-40 disabled:pointer-events-none"
@@ -495,8 +495,8 @@ export function SegmentRow({
                   color: reviewMode
                     ? 'var(--color-accent)'
                     : segment.status === 'translated'
-                    ? 'var(--color-bg)'
-                    : 'var(--color-confirm)',
+                      ? 'var(--color-bg)'
+                      : 'var(--color-confirm)',
                 }}
               >
                 {reviewMode ? <Eye size={15} /> : <Check size={16} />}

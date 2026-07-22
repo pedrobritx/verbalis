@@ -44,10 +44,7 @@ export interface SnapshotRow {
 }
 
 /** Fetch the current snapshot + seq for a project (nulls when unseeded). */
-export async function fetchSnapshot(
-  client: SupabaseClient,
-  cloudId: string,
-): Promise<SnapshotRow> {
+export async function fetchSnapshot(client: SupabaseClient, cloudId: string): Promise<SnapshotRow> {
   const { data, error } = await client
     .from('ydoc_state')
     .select('state,seq')
@@ -66,10 +63,7 @@ export interface UpdateRow {
 }
 
 /** Fetch the whole append log for a project, ordered oldest-first. */
-export async function fetchUpdates(
-  client: SupabaseClient,
-  cloudId: string,
-): Promise<UpdateRow[]> {
+export async function fetchUpdates(client: SupabaseClient, cloudId: string): Promise<UpdateRow[]> {
   const { data, error } = await client
     .from('ydoc_updates')
     .select('id,update')

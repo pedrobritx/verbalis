@@ -64,7 +64,10 @@ function renderNode(node: any): ReactNode {
     case 'heading': {
       const Tag = `h${node.depth}` as keyof JSX.IntrinsicElements
       return (
-        <Tag className={HEADING_CLASS[node.depth] ?? HEADING_CLASS[6]} style={{ color: 'var(--color-text)' }}>
+        <Tag
+          className={HEADING_CLASS[node.depth] ?? HEADING_CLASS[6]}
+          style={{ color: 'var(--color-text)' }}
+        >
           {renderChildren(node.children)}
         </Tag>
       )

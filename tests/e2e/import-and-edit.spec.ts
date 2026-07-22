@@ -14,7 +14,8 @@ test('import a markdown file, edit a segment, confirm with Ctrl+Enter', async ({
   await page.setInputFiles('#import-file', FIXTURE)
   await expect(page.locator('#import-name')).toHaveValue('sample')
 
-  // Defaults are en → es; just submit.
+  // Default pair (pt → en with no saved lookup history) is source ≠ target, so
+  // the monolingual guard is satisfied — just submit.
   await page.getByRole('button', { name: 'Import', exact: true }).click()
 
   await expect(page).toHaveURL(/#\/project\//)

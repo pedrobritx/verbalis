@@ -63,10 +63,7 @@ export const glossaryRepo = {
     const all = await db.glossary.toArray()
     return all.filter((e) => !e.projectId || e.projectId === projectId)
   },
-  findByTerm: async (
-    term: string,
-    projectId?: string,
-  ): Promise<GlossaryEntry | undefined> => {
+  findByTerm: async (term: string, projectId?: string): Promise<GlossaryEntry | undefined> => {
     const needle = normalizeTerm(term)
     if (!needle) return undefined
     const rows = projectId

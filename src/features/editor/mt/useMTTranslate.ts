@@ -67,8 +67,7 @@ export function useMTTranslate(opts: UseMTTranslateOptions): UseMTTranslateState
     } catch (err) {
       if (controller.signal.aborted) return
       if (err instanceof MTError) setError(err)
-      else if (err instanceof Error)
-        setError(new MTError(opts.providerId, 'invalid', err.message))
+      else if (err instanceof Error) setError(new MTError(opts.providerId, 'invalid', err.message))
       else setError(new MTError(opts.providerId, 'invalid', 'Translation failed'))
     } finally {
       if (abortRef.current === controller) abortRef.current = null
