@@ -6,6 +6,8 @@ import { useQuickLookupStore } from './useQuickLookupStore'
 export function QuickLookupDialog() {
   const open = useQuickLookupStore((s) => s.open)
   const prefill = useQuickLookupStore((s) => s.prefill)
+  const sourceLang = useQuickLookupStore((s) => s.sourceLang)
+  const targetLang = useQuickLookupStore((s) => s.targetLang)
   const close = useQuickLookupStore((s) => s.close)
 
   return (
@@ -52,7 +54,12 @@ export function QuickLookupDialog() {
           </div>
 
           <div className="flex-1 overflow-auto p-4">
-            <TranslateWorkspace active={open} prefill={prefill} />
+            <TranslateWorkspace
+              active={open}
+              prefill={prefill}
+              initialSourceLang={sourceLang}
+              initialTargetLang={targetLang}
+            />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

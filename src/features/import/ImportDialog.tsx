@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,11 @@ import type { ConnectorFile, StorageConnector } from '@/extensions/connectors/ty
 import { isGdriveAvailable } from '@/extensions/connectors/gdrive/config'
 import { isOnedriveAvailable } from '@/extensions/connectors/onedrive/config'
 import { useImportProject } from './useImportProject'
+import {
+  getLookupSettings,
+  settingsRepo,
+  LOOKUP_SETTINGS_KEY,
+} from '@/storage/repositories/settingsRepo'
 
 interface ImportDialogProps {
   open: boolean
@@ -53,6 +58,25 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const gdrive = isGdriveAvailable()
   const onedrive = isOnedriveAvailable()
+
+  // Seed the language pair from the user's saved lookup defaults / last-used
+  // languages when the dialog opens, instead of a fixed guess. Falls back to a
+  // sensible distinct pair (this is a PT↔EN-oriented tool) so the monolingual
+  // "source ≠ target" guard is satisfied out of the box.
+  useEffect(() => {
+    if (!open) return
+    void getLookupSettings().then((l) => {
+      const target = l.defaultTargetLang
+      const source =
+        l.lastSourceLang && l.lastSourceLang !== target
+          ? l.lastSourceLang
+          : target === 'en'
+            ? 'pt'
+            : 'en'
+      setSourceLang(source)
+      setTargetLang(target)
+    })
+  }, [open])
 
   function reset() {
     setName('')
@@ -96,6 +120,12 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     if (!bilingual && sourceLang === targetLang) return
     try {
       await importProject({ file, name: name.trim(), sourceLang, targetLang })
+      // Remember the working languages so the next import and the quick lookup
+      // default to them.
+      void settingsRepo.set(LOOKUP_SETTINGS_KEY, {
+        defaultTargetLang: targetLang,
+        lastSourceLang: sourceLang,
+      })
       reset()
       onOpenChange(false)
     } catch {

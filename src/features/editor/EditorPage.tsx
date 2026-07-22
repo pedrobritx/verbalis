@@ -34,6 +34,7 @@ import { AddTermDialog } from './glossary/AddTermDialog'
 import { GlossaryEditController } from './glossary/GlossaryEditController'
 import { ConcordanceDialog } from './concordance/ConcordanceDialog'
 import { useProjectDialogsStore } from '@/features/projects/useProjectDialogsStore'
+import { useQuickLookupStore } from '@/features/lookup/useQuickLookupStore'
 import { translateWith, resolveDefaultProvider, MTError } from '@/core/mt'
 import {
   getMTSettings,
@@ -108,6 +109,7 @@ export default function EditorPage() {
   const openFindReplace = useFindReplaceStore((s) => s.setOpen)
   const openAnalysis = useAnalysisStore((s) => s.setOpen)
   const openProjectDialog = useProjectDialogsStore((s) => s.open)
+  const setLookupProjectLangs = useQuickLookupStore((s) => s.setProjectLangs)
   const [toolMsg, setToolMsg] = useState<string | null>(null)
 
   const registerHandle = useCallback((index: number, handle: SegmentEditorHandle | null) => {
@@ -126,6 +128,15 @@ export default function EditorPage() {
     setWorkflow(role, wfStage)
     return () => resetWorkflow()
   }, [project?.cloud?.role, project?.cloud?.stage, setWorkflow, resetWorkflow])
+
+  // Publish the project's languages so every quick-lookup trigger (top bar,
+  // command palette, Ctrl-selection) defaults to them instead of the global
+  // lookup defaults. Cleared on unmount so lookups outside a project fall back.
+  useEffect(() => {
+    if (!project) return
+    setLookupProjectLangs({ source: project.sourceLang, target: project.targetLang })
+    return () => setLookupProjectLangs(null)
+  }, [project?.sourceLang, project?.targetLang, setLookupProjectLangs])
 
   // A translator in the review stage may only suggest — pin the edit mode.
   useEffect(() => {

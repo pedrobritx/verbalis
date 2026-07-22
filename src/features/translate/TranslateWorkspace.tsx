@@ -34,6 +34,10 @@ interface TranslateWorkspaceProps {
   prefill?: string
   autoFocus?: boolean
   testIdPrefix?: string
+  /** Seed languages (e.g. the open project's), taking precedence over the global
+   * lookup defaults. Auto-detection and manual selection still apply after. */
+  initialSourceLang?: string
+  initialTargetLang?: string
 }
 
 export function TranslateWorkspace({
@@ -41,6 +45,8 @@ export function TranslateWorkspace({
   prefill = '',
   autoFocus = true,
   testIdPrefix = 'quick-lookup',
+  initialSourceLang,
+  initialTargetLang,
 }: TranslateWorkspaceProps) {
   const online = useNetworkStatus()
 
@@ -74,13 +80,15 @@ export function TranslateWorkspace({
       if (cancelled) return
       setMtSettings(mt)
       setLookupSettings(lookup)
-      setTargetLang(lookup.defaultTargetLang)
-      if (lookup.lastSourceLang) setSourceLang(lookup.lastSourceLang)
+      // Injected (project) languages win over the global lookup defaults.
+      setTargetLang(initialTargetLang ?? lookup.defaultTargetLang)
+      const seedSource = initialSourceLang ?? lookup.lastSourceLang
+      if (seedSource) setSourceLang(seedSource)
     })
     return () => {
       cancelled = true
     }
-  }, [active])
+  }, [active, initialSourceLang, initialTargetLang])
 
   useEffect(() => {
     if (!active) return
