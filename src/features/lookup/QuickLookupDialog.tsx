@@ -8,10 +8,10 @@ export function QuickLookupDialog() {
   const prefill = useQuickLookupStore((s) => s.prefill)
   const sourceLang = useQuickLookupStore((s) => s.sourceLang)
   const targetLang = useQuickLookupStore((s) => s.targetLang)
-  const close = useQuickLookupStore((s) => s.close)
+  const setOpen = useQuickLookupStore((s) => s.setOpen)
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={(v) => !v && close()}>
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/70 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content

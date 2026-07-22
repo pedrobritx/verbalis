@@ -2,6 +2,7 @@ import { Users, Wifi } from 'lucide-react'
 import { shareRepo } from '@/storage/repositories/shareRepo'
 import { isTauri } from '@/storage/sync/platform'
 import { usePresenceStore } from './usePresenceStore'
+import { PEER_NAME_FALLBACK } from '@/features/account/displayName'
 
 /**
  * The Peers sidebar tab (Foundation F3, Phase 14).
@@ -71,7 +72,7 @@ export function PeersPanel({ projectId }: PeersPanelProps) {
                     style={{ background: peer.color }}
                   />
                   <span style={{ color: 'var(--color-text)' }}>
-                    {peer.displayName || 'Anonymous'}
+                    {peer.displayName || PEER_NAME_FALLBACK}
                   </span>
                   {peer.activeSegmentId && (
                     <span className="text-footnote" style={{ color: 'var(--color-muted)' }}>

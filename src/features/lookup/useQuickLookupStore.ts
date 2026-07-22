@@ -17,7 +17,9 @@ interface QuickLookupState {
   projectLangs: LookupLangs | null
   openWith: (prefill?: string, langs?: LookupLangs) => void
   setProjectLangs: (langs: LookupLangs | null) => void
-  close: () => void
+  /** Matches the `setOpen(boolean)` convention shared by the other disclosure
+   * stores (concordance, add-term, find-replace, …). */
+  setOpen: (open: boolean) => void
 }
 
 export const useQuickLookupStore = create<QuickLookupState>((set, get) => ({
@@ -36,5 +38,6 @@ export const useQuickLookupStore = create<QuickLookupState>((set, get) => ({
     })
   },
   setProjectLangs: (projectLangs) => set({ projectLangs }),
-  close: () => set({ open: false, prefill: '' }),
+  setOpen: (open) => set(open ? { open } : { open: false, prefill: '' }),
 }))
+

@@ -4,6 +4,7 @@ import { MessageSquare, Check, RotateCcw } from 'lucide-react'
 import { relativeTime } from '../history/relativeTime'
 import { useEditorActionsStore } from '../useEditorActionsStore'
 import { listProjectThreads, setThreadResolved, type ProjectThread } from './commentOps'
+import { SELF_NAME_FALLBACK } from '@/features/account/displayName'
 
 type Filter = 'open' | 'resolved' | 'all'
 
@@ -95,7 +96,7 @@ function ThreadCard({ thread, onJump }: { thread: ProjectThread; onJump: () => v
           #{segmentIndex + 1}
         </button>
         <span className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-          {root.author || 'You'}
+          {root.author || SELF_NAME_FALLBACK}
         </span>
         <span className="ml-auto" style={{ color: 'var(--color-muted)' }}>
           {relativeTime(root.createdAt)}

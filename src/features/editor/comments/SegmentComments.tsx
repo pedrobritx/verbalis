@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import type { SegmentComment } from '@/core/types'
 import { relativeTime } from '../history/relativeTime'
+import { SELF_NAME_FALLBACK } from '@/features/account/displayName'
 import {
   groupThreads,
   addRootComment,
@@ -86,7 +87,7 @@ function CommentBubble({ c }: { c: SegmentComment }) {
         className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
         style={{ color: 'var(--color-muted)' }}
       >
-        <span className="font-semibold truncate">{c.author || 'You'}</span>
+        <span className="font-semibold truncate">{c.author || SELF_NAME_FALLBACK}</span>
         <span aria-hidden>·</span>
         <span className="tabular-nums">{relativeTime(c.createdAt)}</span>
       </div>

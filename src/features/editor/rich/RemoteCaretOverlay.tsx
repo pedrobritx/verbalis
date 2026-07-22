@@ -4,6 +4,7 @@ import { $getRoot } from 'lexical'
 import { mapOffsetToNode } from '@/core/spell/offsets'
 import { usePresenceStore } from '../peers/usePresenceStore'
 import { buildLeafSpans } from './richOffsets'
+import { PEER_NAME_FALLBACK } from '@/features/account/displayName'
 
 /**
  * Live remote cursors for the rich target editor (ROADMAP §4.4.1).
@@ -71,7 +72,7 @@ export function RemoteCaretOverlay({
             const rect = range.getClientRects()[0] ?? range.getBoundingClientRect()
             next.push({
               peerId: p.peerId,
-              name: p.displayName || 'Anonymous',
+              name: p.displayName || PEER_NAME_FALLBACK,
               color: p.color,
               left: rect.left - crect.left,
               top: rect.top - crect.top,
